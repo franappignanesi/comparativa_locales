@@ -7,6 +7,7 @@ export const DIGITAL_VAT_RATE = Number(process.env.DIGITAL_VAT_RATE ?? 0.21);
 
 const ARS_CODES = new Set(["ARS", "AR$", "$"]);
 const USD_CODES = new Set(["USD", "US$"]);
+const SUPPORTED_EXCHANGE_CURRENCIES = ["ARS", "MXN", "EUR", "PEN", "CLP"] as const;
 
 export type ExchangeRate = {
   usdToArs: number;
@@ -16,6 +17,7 @@ export type ExchangeRate = {
   region: RegionId;
   source: string;
   timestamp: string | null;
+  usdRates?: Partial<Record<string, number>>;
   officialUsdToArs?: number;
   officialUsdToArsSource?: string;
   officialUsdToArsTimestamp?: string | null;
@@ -38,7 +40,18 @@ function toTarget(value: number | null, currency: string | null, rate: ExchangeR
   if (!code || code === rate.currency) return roundCurrency(value, rate.currency);
   if (ARS_CODES.has(code) && rate.currency === "ARS") return roundCurrency(value, rate.currency);
   if (USD_CODES.has(code)) return roundCurrency(value * rate.usdToTarget, rate.currency);
+  const sourceRate = getUsdRateForCurrency(code, rate);
+  if (sourceRate && sourceRate > 0) return roundCurrency((value / sourceRate) * rate.usdToTarget, rate.currency);
   return null;
+}
+
+function toUsd(value: number | null, currency: string | null, rate: ExchangeRate): number | null {
+  if (value == null || Number.isNaN(value)) return null;
+  const code = normalizeCurrency(currency);
+  if (!code || USD_CODES.has(code)) return roundUsd(value);
+  const sourceRate = getUsdRateForCurrency(code, rate);
+  if (!sourceRate || sourceRate <= 0) return null;
+  return roundUsd(value / sourceRate);
 }
 
 export function getDigitalTaxRate(regionId: RegionId): number {
@@ -65,6 +78,20 @@ function roundCurrency(value: number, currency: string): number {
   return zeroDecimalCurrencies.has(currency.toUpperCase()) ? Math.round(value) : Math.round(value * 100) / 100;
 }
 
+function roundUsd(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+function getUsdRateForCurrency(currency: string, rate: ExchangeRate): number | null {
+  const code = normalizeCurrency(currency);
+  if (!code) return null;
+  if (USD_CODES.has(code)) return 1;
+  if (ARS_CODES.has(code)) return rate.usdToArs;
+  if (code === rate.currency) return rate.usdToTarget;
+  const value = rate.usdRates?.[code];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
 export async function getUsdToArsRate(): Promise<ExchangeRate> {
   try {
     const [tarjetaResponse, oficialResponse] = await Promise.all([
@@ -89,6 +116,7 @@ export async function getUsdToArsRate(): Promise<ExchangeRate> {
       region: "AR",
       source: "DolarAPI dólar tarjeta venta",
       timestamp: data.fechaActualizacion ?? null,
+      usdRates: { ARS: data.venta },
       officialUsdToArs:
         typeof officialData?.venta === "number" && Number.isFinite(officialData.venta) ? officialData.venta : FALLBACK_OFFICIAL_USD_TO_ARS,
       officialUsdToArsSource: officialData ? "DolarAPI dólar oficial venta" : "fallback OFFICIAL_USD_TO_ARS",
@@ -103,6 +131,7 @@ export async function getUsdToArsRate(): Promise<ExchangeRate> {
       region: "AR",
       source: "fallback USD_TO_ARS",
       timestamp: null,
+      usdRates: { ARS: FALLBACK_USD_TO_ARS },
       officialUsdToArs: FALLBACK_OFFICIAL_USD_TO_ARS,
       officialUsdToArsSource: "fallback OFFICIAL_USD_TO_ARS",
       officialUsdToArsTimestamp: null
@@ -113,20 +142,19 @@ export async function getUsdToArsRate(): Promise<ExchangeRate> {
 export async function getExchangeRate(regionId: RegionId = DEFAULT_REGION): Promise<ExchangeRate> {
   if (regionId === "AR") return getUsdToArsRate();
   const region = REGIONS.find((item) => item.id === regionId) ?? REGIONS[0];
-  const fallbackRates: Record<string, number> = {
-    MXN: Number(process.env.USD_TO_MXN ?? 18.5),
-    EUR: Number(process.env.USD_TO_EUR ?? 0.92),
-    PEN: Number(process.env.USD_TO_PEN ?? 3.75),
-    CLP: Number(process.env.USD_TO_CLP ?? 930)
-  };
+  const fallbackRates = getFallbackUsdRates();
+  const liveRates = await getLiveUsdRates();
+  const usdRates = { ...fallbackRates, ...liveRates.rates };
+  const usdToTarget = usdRates[region.currency] ?? fallbackRates[region.currency] ?? 1;
   return {
     usdToArs: FALLBACK_USD_TO_ARS,
-    usdToTarget: fallbackRates[region.currency] ?? 1,
+    usdToTarget,
     currency: region.currency,
     locale: region.locale,
     region: region.id,
-    source: `fallback USD_TO_${region.currency}`,
-    timestamp: null
+    source: liveRates.rates[region.currency] ? liveRates.source : `fallback USD_TO_${region.currency}`,
+    timestamp: liveRates.rates[region.currency] ? liveRates.timestamp : null,
+    usdRates
   };
 }
 
@@ -138,12 +166,16 @@ export function normalizePrice(price: StorePrice, exchangeRate: ExchangeRate | n
   const original = effectiveOriginalPrice(price, rate as ExchangeRate);
   const arsConvertedFinalPrice = toTarget(original.finalPrice, original.currency, rate as ExchangeRate);
   const arsConvertedBasePrice = toTarget(original.basePrice, original.currency, rate as ExchangeRate);
+  const usdFinalPrice = toUsd(original.finalPrice, original.currency, rate as ExchangeRate);
+  const usdBasePrice = toUsd(original.basePrice, original.currency, rate as ExchangeRate);
 
   return {
     ...price,
     originalCurrency: original.currency,
     originalFinalPrice: original.finalPrice,
     originalBasePrice: original.basePrice,
+    usdFinalPrice,
+    usdBasePrice,
     arsConvertedFinalPrice,
     arsConvertedBasePrice,
     arsFinalPrice: withDigitalVat(arsConvertedFinalPrice, original.currency, rate),
@@ -167,6 +199,57 @@ function effectiveOriginalPrice(price: StorePrice, rate: ExchangeRate): Effectiv
     finalPrice: price.finalPrice == null ? null : Math.round((price.finalPrice / officialUsdToArs) * 100) / 100,
     basePrice: price.basePrice == null ? null : Math.round((price.basePrice / officialUsdToArs) * 100) / 100
   };
+}
+
+type LiveUsdRates = {
+  rates: Partial<Record<string, number>>;
+  source: string;
+  timestamp: string | null;
+};
+
+let liveUsdRatesPromise: Promise<LiveUsdRates> | null = null;
+
+function getFallbackUsdRates(): Record<string, number> {
+  return {
+    ARS: FALLBACK_USD_TO_ARS,
+    MXN: Number(process.env.USD_TO_MXN ?? 18.5),
+    EUR: Number(process.env.USD_TO_EUR ?? 0.92),
+    PEN: Number(process.env.USD_TO_PEN ?? 3.75),
+    CLP: Number(process.env.USD_TO_CLP ?? 930)
+  };
+}
+
+async function getLiveUsdRates(): Promise<LiveUsdRates> {
+  liveUsdRatesPromise ??= fetchLiveUsdRates();
+  return liveUsdRatesPromise;
+}
+
+async function fetchLiveUsdRates(): Promise<LiveUsdRates> {
+  try {
+    const response = await fetch("https://open.er-api.com/v6/latest/USD", {
+      headers: { accept: "application/json" },
+      next: { revalidate: 60 * 60 * 12 }
+    });
+    if (!response.ok) throw new Error(`ExchangeRate API HTTP ${response.status}`);
+    const data = (await response.json()) as {
+      result?: string;
+      time_last_update_utc?: string;
+      rates?: Record<string, number>;
+    };
+    if (data.result !== "success" || !data.rates) throw new Error("ExchangeRate API sin tasas");
+    const rates: Partial<Record<string, number>> = {};
+    for (const currency of SUPPORTED_EXCHANGE_CURRENCIES) {
+      const value = data.rates[currency];
+      if (typeof value === "number" && Number.isFinite(value)) rates[currency] = value;
+    }
+    return {
+      rates,
+      source: "ExchangeRate-API USD latest",
+      timestamp: data.time_last_update_utc ?? null
+    };
+  } catch {
+    return { rates: {}, source: "fallback USD rates", timestamp: null };
+  }
 }
 
 export function formatArs(value: number | null | undefined, currency = "ARS", locale = "es-AR"): string {

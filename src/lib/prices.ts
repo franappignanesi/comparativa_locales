@@ -64,6 +64,9 @@ export async function refreshPrices(regionId: RegionId = DEFAULT_REGION): Promis
     usdToArs: exchangeRate.usdToArs,
     usdToArsSource: exchangeRate.source,
     usdToArsTimestamp: exchangeRate.timestamp,
+    usdToTarget: exchangeRate.usdToTarget,
+    usdToTargetSource: exchangeRate.source,
+    usdToTargetTimestamp: exchangeRate.timestamp,
     digitalVatRate: getDigitalTaxRate(region.id),
     prices,
     errors
@@ -104,6 +107,9 @@ export async function refreshPriceBatch(options: { limit: number; offset: number
     usdToArs: exchangeRate.usdToArs,
     usdToArsSource: exchangeRate.source,
     usdToArsTimestamp: exchangeRate.timestamp,
+    usdToTarget: exchangeRate.usdToTarget,
+    usdToTargetSource: exchangeRate.source,
+    usdToTargetTimestamp: exchangeRate.timestamp,
     digitalVatRate: getDigitalTaxRate(region.id),
     prices: mergedRows,
     errors: [
@@ -237,6 +243,12 @@ function withRegionMetadata(latest: LatestPrices, region: RegionConfig, exchange
     region: latest.region ?? region.id,
     currency: latest.currency ?? region.currency,
     locale: latest.locale ?? region.locale,
+    usdToArs: exchangeRate.usdToArs,
+    usdToArsSource: exchangeRate.source,
+    usdToArsTimestamp: exchangeRate.timestamp,
+    usdToTarget: exchangeRate.usdToTarget,
+    usdToTargetSource: exchangeRate.source,
+    usdToTargetTimestamp: exchangeRate.timestamp,
     digitalVatRate: getDigitalTaxRate(region.id),
     prices: latest.prices.map((row) => ({
       ...row,

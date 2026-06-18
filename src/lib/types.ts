@@ -80,6 +80,8 @@ export type NormalizedPrice = StorePrice & {
   originalCurrency: string | null;
   originalFinalPrice: number | null;
   originalBasePrice: number | null;
+  usdFinalPrice: number | null;
+  usdBasePrice: number | null;
   arsConvertedFinalPrice: number | null;
   arsConvertedBasePrice: number | null;
   arsFinalPrice: number | null;
@@ -94,6 +96,9 @@ export type LatestPrices = {
   usdToArs: number;
   usdToArsSource?: string;
   usdToArsTimestamp?: string | null;
+  usdToTarget?: number;
+  usdToTargetSource?: string;
+  usdToTargetTimestamp?: string | null;
   digitalVatRate?: number;
   prices: Array<{
     gameId: string;

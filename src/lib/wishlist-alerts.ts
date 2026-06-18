@@ -92,7 +92,7 @@ async function evaluateWishlistAlerts(userId: string, wishlist: StoredWishlistIt
         }
       }
 
-      if (preferences.belowUsd && preferences.belowUsdValue != null && price.originalCurrency === "USD" && (price.originalFinalPrice ?? Infinity) <= preferences.belowUsdValue) {
+      if (preferences.belowUsd && preferences.belowUsdValue != null && (price.usdFinalPrice ?? Infinity) <= preferences.belowUsdValue) {
         alerts.push(
           buildAlert(
             userId,
