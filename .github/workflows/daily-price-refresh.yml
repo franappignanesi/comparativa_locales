@@ -10,7 +10,7 @@ on:
       max_ms:
         description: "Per-region max runtime in ms"
         required: false
-        default: "19800000"
+        default: "600000"
   schedule:
     # 05:00 UTC = 02:00 Argentina. Long refresh finishes before daytime traffic.
     - cron: "0 5 * * *"
@@ -18,6 +18,9 @@ on:
 concurrency:
   group: daily-full-price-refresh
   cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
   refresh-region:
@@ -37,8 +40,8 @@ jobs:
       PRICE_REGION: ${{ matrix.region }}
       PRICE_REFRESH_CONCURRENCY: "2"
       FULL_REFRESH_BATCH_SIZE: ${{ inputs.batch_size || '25' }}
-      FULL_REFRESH_MAX_MS: ${{ inputs.max_ms || '19800000' }}
-      FULL_REFRESH_RESERVE_MS: "180000"
+      FULL_REFRESH_MAX_MS: ${{ inputs.max_ms || '600000' }}
+      FULL_REFRESH_RESERVE_MS: "60000"
       FULL_REFRESH_SLEEP_MS: "1000"
     steps:
       - uses: actions/checkout@v4
@@ -58,7 +61,7 @@ jobs:
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
-      RELEASE_DISCOVERY_COUNT: "50"
+      RELEASE_DISCOVERY_COUNT: "20"
       RELEASE_PROMOTE_MODE: "fast"
     steps:
       - uses: actions/checkout@v4
