@@ -1,0 +1,10 @@
+.tools
+.next
+node_modules
+tsconfig.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+data/generated/*.log
+data/generated/*.err.log

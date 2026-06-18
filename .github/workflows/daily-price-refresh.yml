@@ -1,0 +1,70 @@
+name: Daily full price refresh
+
+on:
+  workflow_dispatch:
+    inputs:
+      batch_size:
+        description: "Games per batch"
+        required: false
+        default: "25"
+      max_ms:
+        description: "Per-region max runtime in ms"
+        required: false
+        default: "19800000"
+  schedule:
+    # 05:00 UTC = 02:00 Argentina. Long refresh finishes before daytime traffic.
+    - cron: "0 5 * * *"
+
+concurrency:
+  group: daily-full-price-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh-region:
+    name: Refresh ${{ matrix.region }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    strategy:
+      fail-fast: false
+      matrix:
+        region: [AR, MX, ES, PE, CL]
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+      ITAD_API_KEY: ${{ secrets.ITAD_API_KEY }}
+      USD_TO_ARS: ${{ secrets.USD_TO_ARS }}
+      DIGITAL_VAT_RATE: ${{ secrets.DIGITAL_VAT_RATE }}
+      PRICE_REGION: ${{ matrix.region }}
+      PRICE_REFRESH_CONCURRENCY: "2"
+      FULL_REFRESH_BATCH_SIZE: ${{ inputs.batch_size || '25' }}
+      FULL_REFRESH_MAX_MS: ${{ inputs.max_ms || '19800000' }}
+      FULL_REFRESH_RESERVE_MS: "180000"
+      FULL_REFRESH_SLEEP_MS: "1000"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run worker:full-refresh
+
+  release-automation:
+    name: Discover and promote new games
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: refresh-region
+    if: always()
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+      RELEASE_DISCOVERY_COUNT: "50"
+      RELEASE_PROMOTE_MODE: "fast"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run worker:release-automation
