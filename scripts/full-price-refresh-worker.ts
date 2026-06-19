@@ -111,12 +111,14 @@ async function refreshRegion(region: RegionId): Promise<WorkerStatus> {
     let stoppedReason: WorkerStatus["stoppedReason"] = "completed";
 
     while (Date.now() < deadline && batchesRun < maxBatches) {
+      console.log(JSON.stringify({ event: "batch_start", region, offset, batchSize, batchesRun, elapsedMs: Date.now() - Date.parse(startedAt) }));
       const result = await refreshPriceBatch({ region, limit: batchSize, offset });
       total = result.total;
       refreshed += result.refreshed;
       errors = result.latest.errors.length;
       batchesRun += 1;
       offset += batchSize;
+      console.log(JSON.stringify({ event: "batch_done", region, offset, total, batchesRun, refreshed, errors, elapsedMs: Date.now() - Date.parse(startedAt) }));
 
       if (total > 0 && offset >= total) {
         cursor.cursors[region] = 0;

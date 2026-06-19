@@ -1,4 +1,5 @@
 import { dataPath, readJson, writeJson } from "./cache";
+import { fetchItadCurrentPrices } from "./itad";
 import { appendLatestToHistory } from "./history";
 import { FALLBACK_USD_TO_ARS, getDigitalTaxRate, getExchangeRate, normalizePrice, type ExchangeRate } from "./normalize";
 import { DEFAULT_REGION, type RegionConfig, type RegionId, REGIONS } from "./regions";
@@ -137,17 +138,47 @@ async function buildPriceRows(
   fetchedAt: string
 ): Promise<{ prices: LatestPrices["prices"]; errors: LatestPrices["errors"] }> {
   const errors: LatestPrices["errors"] = [];
+  const itadCurrent = await fetchItadCurrentPrices(games, region, exchangeRate).catch((error) => {
+    errors.push({ gameId: "__itad__", store: "steam", error: error instanceof Error ? error.message : "Error consultando ITAD" });
+    return {
+      prices: new Map<string, Partial<Record<StoreId, NormalizedPrice>>>(),
+      matchedGames: 0,
+      updatedPrices: 0,
+      shopCoverage: {},
+      errors: []
+    };
+  });
+  for (const error of itadCurrent.errors) errors.push({ gameId: "__itad__", store: "steam", error });
+
   const steamChunkSize = 50;
-  const steamPrices = await fetchSteamPrices(games.filter((game) => game.availableStores.includes("steam")), steamChunkSize, region);
+  const useSteamLiveFallback = process.env.STEAM_LIVE_FALLBACK !== "0";
+  const steamPrices = useSteamLiveFallback
+    ? await fetchSteamPrices(games.filter((game) => game.availableStores.includes("steam") && !itadCurrent.prices.get(game.id)?.steam), steamChunkSize, region)
+    : new Map<string, StorePrice>();
+
   const prices = await mapWithConcurrency(games, getRefreshConcurrency(), async (game) => {
     const storePrices: Partial<Record<StoreId, NormalizedPrice>> = {};
 
     await Promise.all(
       STORES.map(async (store) => {
         if (!game.availableStores.includes(store)) {
-        storePrices[store] = withFreshness(normalizePrice({ ...unavailable(game, store, "No esperado en la muestra"), fetchedAt }, exchangeRate));
+          storePrices[store] = withFreshness(normalizePrice({ ...unavailable(game, store, "No esperado en la muestra"), fetchedAt }, exchangeRate));
           return;
         }
+
+        const itadPrice = store === "microsoft" ? undefined : itadCurrent.prices.get(game.id)?.[store];
+        if (itadPrice) {
+          storePrices[store] = withFreshness({ ...itadPrice, fetchedAt: itadPrice.fetchedAt ?? fetchedAt });
+          return;
+        }
+
+        if (store === "steam" && !useSteamLiveFallback) {
+          const price = unavailable(game, store, "Sin precio actual ITAD y fallback live Steam deshabilitado");
+          errors.push({ gameId: game.id, store, error: price.error ?? "Sin precio actual ITAD" });
+          storePrices[store] = withFreshness(normalizePrice({ ...price, fetchedAt }, exchangeRate));
+          return;
+        }
+
         const price = store === "steam" ? steamPrices.get(game.id) ?? (await fetchSteamPrice(game, region)) : await fetchPriceForStore(store, game, region);
         if (price.error) errors.push({ gameId: game.id, store, error: price.error });
         storePrices[store] = withFreshness(normalizePrice({ ...price, fetchedAt: price.fetchedAt ?? fetchedAt }, exchangeRate));
