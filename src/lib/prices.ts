@@ -149,6 +149,19 @@ async function buildPriceRows(
     };
   });
   for (const error of itadCurrent.errors) errors.push({ gameId: "__itad__", store: "steam", error });
+  if (process.env.GITHUB_ACTIONS === "true" || process.env.GLITCHPRICE_LOG_ITAD_COVERAGE === "1") {
+    console.log(
+      JSON.stringify({
+        event: "itad_current",
+        region: region.id,
+        games: games.length,
+        matchedGames: itadCurrent.matchedGames,
+        updatedPrices: itadCurrent.updatedPrices,
+        shopCoverage: itadCurrent.shopCoverage,
+        errors: itadCurrent.errors.length
+      })
+    );
+  }
 
   const steamChunkSize = 50;
   const useSteamLiveFallback = process.env.STEAM_LIVE_FALLBACK !== "0";
@@ -161,14 +174,14 @@ async function buildPriceRows(
 
     await Promise.all(
       STORES.map(async (store) => {
-        if (!game.availableStores.includes(store)) {
-          storePrices[store] = withFreshness(normalizePrice({ ...unavailable(game, store, "No esperado en la muestra"), fetchedAt }, exchangeRate));
-          return;
-        }
-
         const itadPrice = store === "microsoft" ? undefined : itadCurrent.prices.get(game.id)?.[store];
         if (itadPrice) {
           storePrices[store] = withFreshness({ ...itadPrice, fetchedAt: itadPrice.fetchedAt ?? fetchedAt });
+          return;
+        }
+
+        if (!game.availableStores.includes(store)) {
+          storePrices[store] = withFreshness(normalizePrice({ ...unavailable(game, store, "No esperado en la muestra"), fetchedAt }, exchangeRate));
           return;
         }
 
