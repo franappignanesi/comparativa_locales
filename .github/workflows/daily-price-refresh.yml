@@ -59,6 +59,7 @@ jobs:
     if: always()
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         region: [AR, MX, ES, PE, CL]
     env:

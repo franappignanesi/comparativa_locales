@@ -95,7 +95,7 @@ export async function refreshPriceBatch(options: { limit: number; offset: number
   const rowsById = new Map(cachedRowsById);
 
   for (const row of refreshedRows) {
-    rowsById.set(row.gameId, mergeTransientSafe(rowsById.get(row.gameId), row));
+    rowsById.set(row.gameId, mergeTransientSafe(rowsById.get(row.gameId), row, region.id));
   }
 
   const mergedRows = sample.broadSample.map((game) => rowsById.get(game.id)).filter((row): row is LatestPrices["prices"][number] => Boolean(row));
@@ -114,7 +114,7 @@ export async function refreshPriceBatch(options: { limit: number; offset: number
     prices: mergedRows,
     errors: [
       ...cached.errors.filter((error) => !selectedIds.has(error.gameId)),
-      ...errors.filter((error) => !hasCachedValidPrice(cachedRowsById.get(error.gameId), error.store, error.error))
+      ...errors.filter((error) => !hasCachedValidPrice(cachedRowsById.get(error.gameId), error.store, error.error, region.id))
     ]
   };
 
@@ -137,7 +137,7 @@ async function buildPriceRows(
   fetchedAt: string
 ): Promise<{ prices: LatestPrices["prices"]; errors: LatestPrices["errors"] }> {
   const errors: LatestPrices["errors"] = [];
-  const steamChunkSize = region.id === "AR" ? 50 : 1;
+  const steamChunkSize = 50;
   const steamPrices = await fetchSteamPrices(games.filter((game) => game.availableStores.includes("steam")), steamChunkSize, region);
   const prices = await mapWithConcurrency(games, getRefreshConcurrency(), async (game) => {
     const storePrices: Partial<Record<StoreId, NormalizedPrice>> = {};
@@ -171,14 +171,15 @@ async function buildPriceRows(
 
 function mergeTransientSafe(
   cached: LatestPrices["prices"][number] | undefined,
-  refreshed: LatestPrices["prices"][number]
+  refreshed: LatestPrices["prices"][number],
+  regionId: RegionId
 ): LatestPrices["prices"][number] {
   if (!cached) return refreshed;
   const prices = { ...refreshed.prices };
   for (const store of STORES) {
     const next = refreshed.prices[store];
     const previous = cached.prices[store];
-    if (previous?.available && previous.arsFinalPrice != null && next?.error) {
+    if (isUsableRegionalPrice(previous, regionId) && next?.error) {
       prices[store] = markPreservedPrice(previous, next.error);
     }
   }
@@ -196,10 +197,27 @@ function markPreservedPrice(price: NormalizedPrice, error: string): NormalizedPr
 function hasCachedValidPrice(
   cached: LatestPrices["prices"][number] | undefined,
   store: StoreId,
-  error: string
+  error: string,
+  regionId: RegionId
 ): boolean {
   const previous = cached?.prices[store];
-  return Boolean(previous?.available && previous.arsFinalPrice != null && error);
+  return Boolean(isUsableRegionalPrice(previous, regionId) && error);
+}
+
+function isUsableRegionalPrice(price: NormalizedPrice | undefined, regionId: RegionId): price is NormalizedPrice {
+  if (!price?.available || price.arsFinalPrice == null) return false;
+  const currency = normalizeCurrencyCode(price.originalCurrency ?? price.currency);
+  if (!currency) return false;
+  const region = getRegion(regionId);
+  return currency === "USD" || currency === region.currency;
+}
+
+function normalizeCurrencyCode(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const code = value.trim().toUpperCase();
+  if (code === "US$") return "USD";
+  if (code === "AR$" || code === "$") return "ARS";
+  return code;
 }
 
 async function mapWithConcurrency<T, R>(
