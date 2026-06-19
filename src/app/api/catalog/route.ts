@@ -5,19 +5,28 @@ import { DEFAULT_REGION, REGIONS, type RegionId } from "@/lib/regions";
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
 
-  return NextResponse.json(
-    await getCatalogPage({
-      mode: parseMode(params.get("mode")),
-      query: params.get("query") ?? "",
-      category: params.get("category") ?? "todas",
-      filter: params.get("filter") ?? "todos",
-      sort: params.get("sort") ?? "diferencia",
-      limit: parseNumber(params.get("limit")),
-      offset: parseNumber(params.get("offset")),
-      region: parseRegion(params.get("region")),
-      refresh: false
-    })
-  );
+  try {
+    return NextResponse.json(
+      await getCatalogPage({
+        mode: parseMode(params.get("mode")),
+        query: params.get("query") ?? "",
+        category: params.get("category") ?? "todas",
+        filter: params.get("filter") ?? "todos",
+        sort: params.get("sort") ?? "diferencia",
+        limit: parseNumber(params.get("limit")),
+        offset: parseNumber(params.get("offset")),
+        region: parseRegion(params.get("region")),
+        refresh: false
+      })
+    );
+  } catch (error) {
+    console.error("[api/catalog] failed", error);
+    return NextResponse.json({ error: "catalog_failed", message: errorMessage(error) }, { status: 500 });
+  }
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 function parseRegion(value: string | null): RegionId {

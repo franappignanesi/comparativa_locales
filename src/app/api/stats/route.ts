@@ -6,36 +6,44 @@ import { DEFAULT_REGION, REGIONS, type RegionId } from "@/lib/regions";
 import { getGameSample } from "@/lib/sample-builder";
 
 export async function GET(request: NextRequest) {
-  const refresh = request.nextUrl.searchParams.get("refresh") === "1";
-  const region = parseRegion(request.nextUrl.searchParams.get("region"));
-  const [sample, latest] = await Promise.all([getGameSample(), getLatestPrices({ refresh, region })]);
-  const expandedLatest = expandLatestWithSample(latest, sample);
-  const strictIds = new Set(sample.strictSample.map((game) => game.id));
-  const broadIds = new Set(sample.broadSample.map((game) => game.id));
-  const strictAnalysis = analyzePrices(expandedLatest, strictIds);
-  const broadAnalysis = analyzePrices(expandedLatest, broadIds);
+  try {
+    const region = parseRegion(request.nextUrl.searchParams.get("region"));
+    const [sample, latest] = await Promise.all([getGameSample(), getLatestPrices({ refresh: false, region })]);
+    const expandedLatest = expandLatestWithSample(latest, sample);
+    const strictIds = new Set(sample.strictSample.map((game) => game.id));
+    const broadIds = new Set(sample.broadSample.map((game) => game.id));
+    const strictAnalysis = analyzePrices(expandedLatest, strictIds);
+    const broadAnalysis = analyzePrices(expandedLatest, broadIds);
 
-  return NextResponse.json({
-    timestamp: latest.timestamp,
-    region: latest.region,
-    currency: latest.currency,
-    locale: latest.locale,
-    usdToArs: latest.usdToArs,
-    usdToArsSource: latest.usdToArsSource,
-    digitalVatRate: latest.digitalVatRate,
-    sampleMeta: {
-      strictTotal: sample.strictSample.length,
-      broadTotal: sample.broadSample.length,
-      rejectedTotal: sample.rejected.length,
-      storeCoverage: sample.storeCoverage,
-      categoryCoverage: sample.categoryCoverage,
-      categoryCoverageComparable: comparableCategoryCoverage(expandedLatest, broadAnalysis)
-    },
-    analysis: {
-      strict: compactAnalysis(strictAnalysis),
-      broad: compactAnalysis(broadAnalysis)
-    }
-  });
+    return NextResponse.json({
+      timestamp: latest.timestamp,
+      region: latest.region,
+      currency: latest.currency,
+      locale: latest.locale,
+      usdToArs: latest.usdToArs,
+      usdToArsSource: latest.usdToArsSource,
+      digitalVatRate: latest.digitalVatRate,
+      sampleMeta: {
+        strictTotal: sample.strictSample.length,
+        broadTotal: sample.broadSample.length,
+        rejectedTotal: sample.rejected.length,
+        storeCoverage: sample.storeCoverage,
+        categoryCoverage: sample.categoryCoverage,
+        categoryCoverageComparable: comparableCategoryCoverage(expandedLatest, broadAnalysis)
+      },
+      analysis: {
+        strict: compactAnalysis(strictAnalysis),
+        broad: compactAnalysis(broadAnalysis)
+      }
+    });
+  } catch (error) {
+    console.error("[api/stats] failed", error);
+    return NextResponse.json({ error: "stats_failed", message: errorMessage(error) }, { status: 500 });
+  }
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 function parseRegion(value: string | null): RegionId {
