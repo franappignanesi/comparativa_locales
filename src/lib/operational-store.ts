@@ -32,17 +32,10 @@ export async function writeJsonState(key: string, value: unknown): Promise<void>
   await getSql().query(
     `INSERT INTO app_json_state (key, value, hash, updated_at)
      VALUES ($1, $2::jsonb, $3, $4)
-     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, hash = EXCLUDED.hash, updated_at = EXCLUDED.updated_at`,
+     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, hash = EXCLUDED.hash, updated_at = EXCLUDED.updated_at
+     WHERE app_json_state.hash IS DISTINCT FROM EXCLUDED.hash`,
     [key, serialized, hash, new Date().toISOString()]
   );
-  if (isPriceSnapshotKey(key)) {
-    await getSql().query(
-      `INSERT INTO price_snapshots (state_key, hash, value, created_at)
-       VALUES ($1, $2, $3::jsonb, $4)
-       ON CONFLICT (state_key, hash) DO NOTHING`,
-      [key, hash, serialized, new Date().toISOString()]
-    );
-  }
 }
 
 export async function acquireOperationalLock(
@@ -89,6 +82,18 @@ export async function recordRefreshRun(input: { name: string; ok: boolean; statu
      VALUES ($1, $2, $3, $4::jsonb, $5)`,
     [input.name, input.ok, input.statusCode, JSON.stringify(summary), new Date().toISOString()]
   );
+}
+
+export async function pruneOperationalStore(): Promise<void> {
+  if (!hasOperationalStore()) return;
+  await ensureSchema();
+  const sql = getSql();
+  await sql.query("TRUNCATE TABLE price_snapshots");
+  await sql.query("DELETE FROM job_locks WHERE expires_at <= $1", [new Date().toISOString()]);
+  await sql.query("DELETE FROM refresh_runs WHERE created_at < NOW() - INTERVAL '14 days'");
+  await bestEffortQuery("VACUUM (ANALYZE) app_json_state");
+  await bestEffortQuery("VACUUM (ANALYZE) refresh_runs");
+  await bestEffortQuery("VACUUM (ANALYZE) price_snapshots");
 }
 
 async function releaseOperationalLock(name: string, owner: string): Promise<void> {
@@ -149,6 +154,14 @@ async function queryRows(query: string, params: unknown[] = []): Promise<Array<R
   return (await getSql().query(query, params)) as Array<Record<string, unknown>>;
 }
 
+async function bestEffortQuery(query: string, params: unknown[] = []): Promise<void> {
+  try {
+    await getSql().query(query, params);
+  } catch {
+    // Maintenance commands are opportunistic on serverless Postgres.
+  }
+}
+
 function postgresConnectionString(required = true): string {
   const value = process.env.POSTGRES_URL || (process.env.DATABASE_URL?.startsWith("postgres") ? process.env.DATABASE_URL : "");
   if (!value && required) throw new Error("Missing Postgres config. Set POSTGRES_URL or a postgres DATABASE_URL.");
@@ -183,10 +196,6 @@ function dateIso(value: unknown): string {
 
 function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
-}
-
-function isPriceSnapshotKey(key: string): boolean {
-  return /(^|\/)latest-prices(-[A-Z]{2})?\.json$/.test(key);
 }
 
 async function getStorageMetrics(): Promise<Record<string, unknown>> {

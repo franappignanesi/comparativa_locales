@@ -28,14 +28,14 @@ const emptyItad: ItadHistoryFile = {
   entries: []
 };
 const MIN_FULL_HISTORY_POINTS = 2;
+const DEFAULT_OWN_HISTORY_RETENTION_DAYS = 120;
 
 export async function appendLatestToHistory(latest: LatestPrices): Promise<void> {
   if (!latest.timestamp) return;
 
   const filePath = priceHistoryPath(parseRegion(latest.region));
   const history = await readJson<PriceHistoryFile>(filePath, emptyHistory);
-  const nextEntries = [...history.entries];
-  const seen = new Set(nextEntries.map((entry) => entryKey(entry)));
+  const byDay = new Map(compactOwnHistory(history.entries).map((entry) => [ownHistoryKey(entry), entry]));
 
   for (const row of latest.prices) {
     for (const store of STORES) {
@@ -55,15 +55,11 @@ export async function appendLatestToHistory(latest: LatestPrices): Promise<void>
         url: price.url,
         source: "snapshot"
       };
-      const key = entryKey(entry);
-      if (!seen.has(key)) {
-        seen.add(key);
-        nextEntries.push(entry);
-      }
+      byDay.set(ownHistoryKey(entry), entry);
     }
   }
 
-  await writeJson(filePath, { timestamp: latest.timestamp, entries: nextEntries });
+  await writeJson(filePath, { timestamp: latest.timestamp, entries: compactOwnHistory([...byDay.values()]) });
 }
 
 export async function getPriceHistoryReport(
@@ -237,6 +233,34 @@ function buildEntriesByGame(entries: PriceHistoryEntry[]): Record<string, PriceH
 
 function entryKey(entry: PriceHistoryEntry): string {
   return `${entry.gameId}:${entry.store}:${entry.timestamp}`;
+}
+
+function ownHistoryKey(entry: PriceHistoryEntry): string {
+  return `${entry.gameId}:${entry.store}:${entryDay(entry.timestamp)}`;
+}
+
+function compactOwnHistory(entries: PriceHistoryEntry[]): PriceHistoryEntry[] {
+  const cutoff = Date.now() - getOwnHistoryRetentionDays() * 24 * 60 * 60 * 1000;
+  const byGameStoreDay = new Map<string, PriceHistoryEntry>();
+  for (const entry of entries) {
+    if (entry.arsFinalPrice == null || entry.arsFinalPrice <= 0) continue;
+    const timestamp = Date.parse(entry.timestamp);
+    if (!Number.isFinite(timestamp) || timestamp < cutoff) continue;
+    const key = ownHistoryKey(entry);
+    const current = byGameStoreDay.get(key);
+    if (!current || timestamp >= Date.parse(current.timestamp)) byGameStoreDay.set(key, entry);
+  }
+  return [...byGameStoreDay.values()].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+}
+
+function entryDay(timestamp: string): string {
+  const date = new Date(timestamp);
+  return Number.isNaN(date.getTime()) ? timestamp.slice(0, 10) : date.toISOString().slice(0, 10);
+}
+
+function getOwnHistoryRetentionDays(): number {
+  const parsed = Number(process.env.PRICE_HISTORY_RETENTION_DAYS);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : DEFAULT_OWN_HISTORY_RETENTION_DAYS;
 }
 
 function parseRegion(value: string | undefined): RegionId {

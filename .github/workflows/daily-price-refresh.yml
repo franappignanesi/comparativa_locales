@@ -6,11 +6,11 @@ on:
       batch_size:
         description: "Games per batch"
         required: false
-        default: "25"
+        default: "100"
       max_ms:
         description: "Per-region max runtime in ms"
         required: false
-        default: "600000"
+        default: "19800000"
   schedule:
     # 05:00 UTC = 02:00 Argentina. Long refresh finishes before daytime traffic.
     - cron: "0 5 * * *"
@@ -23,10 +23,27 @@ permissions:
   contents: read
 
 jobs:
+  prune-operational-store:
+    name: Prune operational store
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run worker:prune-operational-store
+
   refresh-region:
     name: Refresh ${{ matrix.region }}
     runs-on: ubuntu-latest
     timeout-minutes: 355
+    needs: prune-operational-store
     strategy:
       fail-fast: false
       matrix:
@@ -39,15 +56,15 @@ jobs:
       DIGITAL_VAT_RATE: ${{ secrets.DIGITAL_VAT_RATE }}
       PRICE_REGION: ${{ matrix.region }}
       PRICE_REFRESH_CONCURRENCY: "2"
-      FULL_REFRESH_BATCH_SIZE: ${{ inputs.batch_size || '25' }}
-      FULL_REFRESH_MAX_MS: ${{ inputs.max_ms || '600000' }}
-      FULL_REFRESH_RESERVE_MS: "60000"
+      FULL_REFRESH_BATCH_SIZE: ${{ inputs.batch_size || '100' }}
+      FULL_REFRESH_MAX_MS: ${{ inputs.max_ms || '19800000' }}
+      FULL_REFRESH_RESERVE_MS: "180000"
       FULL_REFRESH_SLEEP_MS: "1000"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
       - run: npm ci
       - run: npm run worker:full-refresh
@@ -67,7 +84,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
       - run: npm ci
       - run: npm run worker:release-automation
