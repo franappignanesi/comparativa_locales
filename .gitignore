@@ -2,7 +2,12 @@ node_modules
 .next
 .vercel
 .tools
-data/generated
+data/generated/*
+!data/generated/game-sample.json
+!data/generated/latest-prices.json
+!data/generated/latest-prices-*.json
+!data/generated/price-history.json
+!data/generated/price-history-*.json
 out
 dist
 .env*.local

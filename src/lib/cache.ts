@@ -9,8 +9,15 @@ export function dataPath(...parts: string[]): string {
 }
 
 export async function readJson<T>(filePath: string, fallback: T): Promise<T> {
-  const operational = await readJsonState<T>(stateKeyFromPath(filePath));
-  if (operational) return operational;
+  try {
+    const operational = await readJsonState<T>(stateKeyFromPath(filePath));
+    if (operational) return operational;
+  } catch (error) {
+    console.error("[cache] operational read failed; falling back to local JSON", {
+      key: stateKeyFromPath(filePath),
+      error: error instanceof Error ? error.message : String(error)
+    });
+  }
   try {
     const content = await fs.readFile(filePath, "utf8");
     return JSON.parse(content) as T;
