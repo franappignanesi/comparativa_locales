@@ -73,7 +73,7 @@ jobs:
     name: Discover and promote new games
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    needs: refresh-region
+    needs: restore-current-prices
     if: always()
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -88,3 +88,23 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run worker:release-automation
+
+  restore-current-prices:
+    name: Restore current prices from history
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: refresh-region
+    if: always()
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+      USD_TO_ARS: ${{ secrets.USD_TO_ARS }}
+      DIGITAL_VAT_RATE: ${{ secrets.DIGITAL_VAT_RATE }}
+    steps:
+      - uses: actions/checkout@v7.0.0
+      - uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run worker:restore-current-prices

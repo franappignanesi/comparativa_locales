@@ -178,15 +178,19 @@ function mergeTransientSafe(
   for (const store of STORES) {
     const next = refreshed.prices[store];
     const previous = cached.prices[store];
-    if (previous?.available && previous.arsFinalPrice != null && next?.error && isTransientError(next.error)) {
-      prices[store] = previous;
+    if (previous?.available && previous.arsFinalPrice != null && next?.error) {
+      prices[store] = markPreservedPrice(previous, next.error);
     }
   }
   return { ...refreshed, prices };
 }
 
-function isTransientError(error: string): boolean {
-  return error === "fetch failed" || error.includes("HTTP 403") || error.includes("HTTP 429") || error.includes("network");
+function markPreservedPrice(price: NormalizedPrice, error: string): NormalizedPrice {
+  return {
+    ...price,
+    isStale: true,
+    staleReason: `Se conserva precio anterior por error de refresh: ${error}`
+  };
 }
 
 function hasCachedValidPrice(
@@ -195,7 +199,7 @@ function hasCachedValidPrice(
   error: string
 ): boolean {
   const previous = cached?.prices[store];
-  return Boolean(previous?.available && previous.arsFinalPrice != null && isTransientError(error));
+  return Boolean(previous?.available && previous.arsFinalPrice != null && error);
 }
 
 async function mapWithConcurrency<T, R>(

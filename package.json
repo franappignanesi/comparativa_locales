@@ -25,6 +25,7 @@
     "worker:full-refresh": "tsx scripts/full-price-refresh-worker.ts",
     "worker:release-automation": "tsx scripts/run-release-automation.ts",
     "worker:prune-operational-store": "tsx scripts/prune-operational-store.ts",
+    "worker:restore-current-prices": "tsx scripts/restore-current-prices-from-history.ts",
     "refresh:missing-prices": "tsx scripts/refresh-missing-prices.ts",
     "refresh:regional-prices": "tsx scripts/refresh-regional-prices.ts",
     "refresh:regional-prices:bg": "powershell -ExecutionPolicy Bypass -File scripts/start-regional-refresh.ps1",

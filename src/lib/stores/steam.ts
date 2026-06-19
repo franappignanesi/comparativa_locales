@@ -31,6 +31,11 @@ export async function fetchStorePrices(games: SampleGame[], chunkSize = 50, regi
     try {
       const response = await fetch(url, { next: { revalidate: 3600 } });
       if (!response.ok) {
+        if (chunk.length > 1 && response.status === 400) {
+          const fallback = await fetchStorePrices(chunk, 1, region);
+          for (const [gameId, price] of fallback) result.set(gameId, price);
+          continue;
+        }
         for (const game of chunk) result.set(game.id, unavailable(game.title, `Steam HTTP ${response.status}`));
         continue;
       }
