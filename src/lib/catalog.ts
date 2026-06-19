@@ -138,6 +138,7 @@ function filterAndSortRows(
     .filter((row) => !normalizedQuery || row.gameTitle.toLowerCase().includes(normalizedQuery))
     .filter((row) => {
       if (category === "todas") return true;
+      if (steamCategory(row) === category) return true;
       if (category === "AAA") return row.category === "AAA nuevo" || row.category === "AAA viejo";
       return row.category === category;
     })
@@ -150,6 +151,10 @@ function filterAndSortRows(
       return true;
     })
     .sort((a, b) => compareRows(a, b, analysis, sort));
+}
+
+function steamCategory(row: PriceRow): string {
+  return row.primaryTag?.trim() || row.category;
 }
 
 function compareRows(a: PriceRow, b: PriceRow, analysis: AnalysisSummary, sort: string): number {

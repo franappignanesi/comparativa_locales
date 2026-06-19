@@ -74,6 +74,15 @@ const SIDEBAR_ITEMS = [
   { label: "Bajadas de Precio", icon: TrendingDown, filter: "diferencias" }
 ];
 
+const STEAM_CATEGORY_FILTERS = [
+  { label: "Action", icon: Rocket },
+  { label: "Adventure", icon: History },
+  { label: "RPG", icon: Star },
+  { label: "Strategy", icon: BarChart3 },
+  { label: "Simulation", icon: SlidersHorizontal },
+  { label: "Indie", icon: Leaf }
+];
+
 export default function Home() {
   return (
     <Suspense fallback={<BibliotecaLoading />}>
@@ -252,7 +261,7 @@ function BibliotecaContent() {
       gameId: row.gameId,
       title: row.gameTitle,
       coverUrl: row.coverUrl,
-      category: row.category,
+      category: displayGameCategory(row),
       releaseYear: row.releaseYear
     };
     const nextWishlist = wishlist.some((item) => item.gameId === row.gameId) ? await deleteWishlistItem(user.sub, row.gameId) : await addWishlistItem(user.sub, game);
@@ -324,24 +333,15 @@ function BibliotecaContent() {
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar juego..." />
           </label>
           <div className="categoryToggles" aria-label="Filtros de categoría">
-            <button className={category === "AAA" ? "active" : ""} onClick={() => setCategory(category === "AAA" ? "todas" : "AAA")}>
-              <Rocket size={15} />
-              AAA
-            </button>
-            <button
-              className={category === "indie popular" ? "active" : ""}
-              onClick={() => setCategory(category === "indie popular" ? "todas" : "indie popular")}
-            >
-              <Leaf size={15} />
-              Indie
-            </button>
-            <button
-              className={category === "clásico" ? "active" : ""}
-              onClick={() => setCategory(category === "clásico" ? "todas" : "clásico")}
-            >
-              <History size={15} />
-              Clásicos
-            </button>
+            {STEAM_CATEGORY_FILTERS.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button key={item.label} className={category === item.label ? "active" : ""} onClick={() => setCategory(category === item.label ? "todas" : item.label)}>
+                  <Icon size={15} />
+                  {item.label}
+                </button>
+              );
+            })}
           </div>
           <label className="iconSelect">
             <SlidersHorizontal size={20} />
@@ -522,14 +522,14 @@ function GameCard({
         <div className="gameHeroText">
           <h3>{row.gameTitle}</h3>
           <button
-            className={category === row.category ? "categoryFilter active" : "categoryFilter"}
+            className={category === displayGameCategory(row) ? "categoryFilter active" : "categoryFilter"}
             onClick={(event) => {
               event.stopPropagation();
-              onCategoryClick(row.category);
+              onCategoryClick(displayGameCategory(row));
             }}
             title="Filtrar por categoría"
           >
-            {formatReleaseYear(row.releaseYear)} · {formatCategory(row.category)}
+            {formatReleaseYear(row.releaseYear)} · {formatCategory(displayGameCategory(row))}
           </button>
         </div>
       </div>
@@ -715,7 +715,7 @@ function GameDetailModal({
           <div>
             <h2>{row.gameTitle}</h2>
             <span>
-              {formatReleaseYear(row.releaseYear)} · {formatCategory(row.category)}
+              {formatReleaseYear(row.releaseYear)} · {formatCategory(displayGameCategory(row))}
             </span>
           </div>
         </header>
@@ -1016,6 +1016,10 @@ function formatReleaseYear(year: number): string {
 
 function formatCategory(category: string): string {
   return category;
+}
+
+function displayGameCategory(row: Pick<PriceRow, "primaryTag" | "category">): string {
+  return row.primaryTag?.trim() || row.category;
 }
 
 function formatHistoricalOfficialPrice(
