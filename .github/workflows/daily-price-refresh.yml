@@ -59,7 +59,7 @@ jobs:
     if: always()
     strategy:
       fail-fast: false
-      max-parallel: 2
+      max-parallel: 1
       matrix:
         region: [AR, MX, ES, PE, CL]
     env:
@@ -72,6 +72,9 @@ jobs:
       FULL_REFRESH_MAX_MS: ${{ inputs.max_ms || '19800000' }}
       FULL_REFRESH_RESERVE_MS: "180000"
       FULL_REFRESH_SLEEP_MS: "1000"
+      STEAM_CHUNK_SLEEP_MS: "3500"
+      STEAM_429_RETRIES: "5"
+      STEAM_429_BACKOFF_MS: "20000"
     steps:
       - uses: actions/checkout@v7.0.0
       - uses: actions/download-artifact@v4

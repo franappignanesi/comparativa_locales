@@ -22,6 +22,7 @@ export async function fetchStorePrice(game: SampleGame, region?: RegionConfig): 
 export async function fetchStorePrices(games: SampleGame[], chunkSize = 50, region?: RegionConfig): Promise<Map<string, StorePrice>> {
   const result = new Map<string, StorePrice>();
   const gamesWithAppId = games.filter((game) => Boolean(game.identifiers.steamAppId));
+  const sleepMs = parseNonNegativeInt(process.env.STEAM_CHUNK_SLEEP_MS) ?? 2500;
 
   for (let index = 0; index < gamesWithAppId.length; index += chunkSize) {
     const chunk = gamesWithAppId.slice(index, index + chunkSize);
@@ -29,7 +30,7 @@ export async function fetchStorePrices(games: SampleGame[], chunkSize = 50, regi
     const url = `https://store.steampowered.com/api/appdetails?appids=${appIds}&cc=${region?.steamCc ?? "AR"}&l=spanish&filters=price_overview,basic`;
 
     try {
-      const response = await fetch(url, { next: { revalidate: 3600 } });
+      const response = await fetchSteam(url);
       if (!response.ok) {
         if (chunk.length > 1 && response.status === 400) {
           const fallback = await fetchStorePrices(chunk, 1, region);
@@ -47,6 +48,8 @@ export async function fetchStorePrices(games: SampleGame[], chunkSize = 50, regi
       const message = error instanceof Error ? error.message : "Error desconocido";
       for (const game of chunk) result.set(game.id, unavailable(game.title, message));
     }
+
+    if (sleepMs > 0 && index + chunkSize < gamesWithAppId.length) await sleep(sleepMs);
   }
 
   for (const game of games.filter((item) => !item.identifiers.steamAppId)) {
@@ -54,6 +57,35 @@ export async function fetchStorePrices(games: SampleGame[], chunkSize = 50, regi
   }
 
   return result;
+}
+
+async function fetchSteam(url: string): Promise<Response> {
+  const retries = parseNonNegativeInt(process.env.STEAM_429_RETRIES) ?? 4;
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    const response = await fetch(url, {
+      headers: { accept: "application/json", "user-agent": "GLITCHPRICE price refresh" },
+      next: { revalidate: 3600 }
+    });
+    if (response.status !== 429 || attempt === retries) return response;
+    await sleep(retryDelayMs(response, attempt));
+  }
+  throw new Error("Steam retry loop exhausted");
+}
+
+function retryDelayMs(response: Response, attempt: number): number {
+  const retryAfter = Number(response.headers.get("retry-after"));
+  if (Number.isFinite(retryAfter) && retryAfter > 0) return retryAfter * 1000;
+  const base = parseNonNegativeInt(process.env.STEAM_429_BACKOFF_MS) ?? 15000;
+  return base * (attempt + 1);
+}
+
+function parseNonNegativeInt(value: string | undefined): number | null {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? Math.floor(parsed) : null;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function parseSteamPayload(game: SampleGame, payload: SteamPayload | undefined): StorePrice {
