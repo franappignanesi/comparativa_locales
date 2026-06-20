@@ -73,6 +73,7 @@ jobs:
       FULL_REFRESH_RESERVE_MS: "180000"
       FULL_REFRESH_SLEEP_MS: "1000"
       STEAM_LIVE_FALLBACK: "0"
+      FULL_REFRESH_ITAD: "1"
       STEAM_CHUNK_SLEEP_MS: "3500"
       STEAM_429_RETRIES: "5"
       STEAM_429_BACKOFF_MS: "20000"
@@ -98,9 +99,11 @@ jobs:
           if [ "${PRICE_REGION}" = "AR" ]; then
             cp data/generated/latest-prices.json price-cache/data/generated/latest-prices.json
             cp data/generated/price-history.json price-cache/data/generated/price-history.json
+            cp data/generated/itad-history.json price-cache/data/generated/itad-history.json 2>/dev/null || true
           else
             cp "data/generated/latest-prices-${PRICE_REGION}.json" "price-cache/data/generated/latest-prices-${PRICE_REGION}.json"
             cp "data/generated/price-history-${PRICE_REGION}.json" "price-cache/data/generated/price-history-${PRICE_REGION}.json"
+            cp "data/generated/itad-history-${PRICE_REGION}.json" "price-cache/data/generated/itad-history-${PRICE_REGION}.json" 2>/dev/null || true
           fi
           cp "data/generated/github-full-refresh-status-${PRICE_REGION}.json" "price-cache/data/generated/github-full-refresh-status-${PRICE_REGION}.json" 2>/dev/null || true
       - uses: actions/upload-artifact@v4

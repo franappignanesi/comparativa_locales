@@ -102,23 +102,36 @@ async function getFullItadHistory(latest: LatestPrices, gameIds: Set<string>): P
   const missingGameIds = new Set([...gameIds].filter((gameId) => (cachedCounts[gameId] ?? 0) < MIN_FULL_HISTORY_POINTS));
   if (!missingGameIds.size) return cached;
 
+  let fetched: ItadHistoryFile;
   try {
-    const fetched = await fetchItadFullHistoryForGames(latest, missingGameIds);
-    const merged = {
-      timestamp: fetched.timestamp ?? cached.timestamp,
-      enabled: cached.enabled || fetched.enabled,
-      source: fetched.enabled ? fetched.source : cached.source,
-      matchedGames: Math.max(cached.matchedGames, fetched.matchedGames),
-      errors: [...cached.errors, ...fetched.errors],
-      entries: mergeHistoryEntries(cached.entries, fetched.entries)
-    };
-    await writeJson(filePath, merged);
-    return merged;
+    fetched = await fetchItadFullHistoryForGames(latest, missingGameIds);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Error desconocido al consultar historial completo ITAD";
     return cached.timestamp || cached.entries.length
       ? { ...cached, errors: [...cached.errors, message] }
       : { ...emptyItad, enabled: Boolean(process.env.ITAD_API_KEY), errors: [message] };
+  }
+
+  const merged = {
+    timestamp: fetched.timestamp ?? cached.timestamp,
+    enabled: cached.enabled || fetched.enabled,
+    source: fetched.enabled ? fetched.source : cached.source,
+    matchedGames: Math.max(cached.matchedGames, fetched.matchedGames),
+    errors: [...cached.errors, ...fetched.errors],
+    entries: mergeHistoryEntries(cached.entries, fetched.entries)
+  };
+  await writeHistoryCacheBestEffort(filePath, merged);
+  return merged;
+}
+
+async function writeHistoryCacheBestEffort(filePath: string, data: ItadHistoryFile): Promise<void> {
+  try {
+    await writeJson(filePath, data);
+  } catch (error) {
+    console.error("[history] failed to persist ITAD history cache", {
+      key: filePath,
+      error: error instanceof Error ? error.message : String(error)
+    });
   }
 }
 
@@ -151,7 +164,7 @@ async function getItadHistory(latest: LatestPrices, refresh: boolean): Promise<I
 
   try {
     const result = await fetchItadStoreLows(latest);
-    await writeJson(filePath, result);
+    await writeHistoryCacheBestEffort(filePath, result);
     return result;
   } catch (error) {
     const message = error instanceof Error ? error.message : "Error desconocido al consultar ITAD";

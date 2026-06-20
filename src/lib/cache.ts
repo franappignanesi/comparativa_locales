@@ -61,7 +61,8 @@ function isStaticPublicCache(filePath: string): boolean {
   return (
     key === "generated/game-sample.json" ||
     /^generated\/latest-prices(?:-[A-Z]{2})?\.json$/.test(key) ||
-    /^generated\/price-history(?:-[A-Z]{2})?\.json$/.test(key)
+    /^generated\/price-history(?:-[A-Z]{2})?\.json$/.test(key) ||
+    /^generated\/itad(?:-full)?-history(?:-[A-Z]{2})?\.json$/.test(key)
   );
 }
 
