@@ -66,6 +66,7 @@ export function UserMenu({
 }) {
   const [open, setOpen] = useState(false);
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const [reportNotifications, setReportNotifications] = useState<ReportFeedbackNotification[]>([]);
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -93,8 +94,20 @@ export function UserMenu({
       window.google.accounts.id.initialize({
         client_id: clientId,
         callback: async (response) => {
+          setLoginError(null);
           const nextUser = decodeGoogleCredential(response.credential);
-          if (nextUser && (await createServerSession(response.credential))) onUserChange(nextUser);
+          if (!nextUser) {
+            setLoginError("No pudimos leer la respuesta de Google. Probá otra vez.");
+            return;
+          }
+
+          const session = await createServerSession(response.credential);
+          if (session.ok) {
+            onUserChange(session.user ?? nextUser);
+            setOpen(false);
+            return;
+          }
+          setLoginError(session.message);
         }
       });
       window.google.accounts.id.renderButton(googleButtonRef.current, {
@@ -116,6 +129,7 @@ export function UserMenu({
     script.async = true;
     script.defer = true;
     script.onload = renderButton;
+    script.onerror = () => setLoginError("No pudimos cargar Google Login. Revisá la conexión e intentá de nuevo.");
     document.head.appendChild(script);
   }, [clientId, onUserChange, open, user]);
 
@@ -203,7 +217,10 @@ export function UserMenu({
               <strong>Iniciar sesión</strong>
               <p>Entrá con Google para guardar tu lista de deseados.</p>
               {clientId ? (
-                <div ref={googleButtonRef} className="googleButtonSlot" />
+                <>
+                  <div ref={googleButtonRef} className="googleButtonSlot" />
+                  {loginError ? <span className="loginError">{loginError}</span> : null}
+                </>
               ) : (
                 <span>Falta NEXT_PUBLIC_GOOGLE_CLIENT_ID en .env.local para habilitar Google Login.</span>
               )}
@@ -215,14 +232,18 @@ export function UserMenu({
   );
 }
 
-async function createServerSession(credential: string | undefined): Promise<boolean> {
-  if (!credential) return false;
+async function createServerSession(credential: string | undefined): Promise<{ ok: boolean; user?: GoogleUser; message: string }> {
+  if (!credential) return { ok: false, message: "Google no devolvió credencial. Probá otra vez." };
   const response = await fetch("/api/user/session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
     body: JSON.stringify({ credential })
   }).catch(() => null);
-  return Boolean(response?.ok);
+  if (!response) return { ok: false, message: "No pudimos conectar con el servidor. Probá otra vez." };
+  const payload = (await response.json().catch(() => null)) as { user?: GoogleUser; error?: string } | null;
+  if (response.ok) return { ok: true, user: payload?.user, message: "" };
+  return { ok: false, message: payload?.error === "Invalid credential" ? "Google rechazó la credencial. Probá otra vez." : "No pudimos iniciar sesión. Probá otra vez." };
 }
 
 function filterVisibleReportFeedback(userId: string, notifications: ReportFeedbackNotification[]): ReportFeedbackNotification[] {

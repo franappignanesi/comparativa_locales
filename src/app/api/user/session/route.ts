@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { clearSessionCookie, getCurrentUser, setSessionCookie, verifyGoogleCredential } from "@/lib/auth-session";
-import { upsertUser } from "@/lib/user-store";
+import { DEFAULT_NOTIFICATION_SETTINGS, upsertUser } from "@/lib/user-store";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -12,14 +12,31 @@ export async function POST(request: Request) {
   if (!user) {
     return NextResponse.json({ error: "Invalid credential" }, { status: 401 });
   }
-  const storedUser = await upsertUser({
-    sub: user.sub,
-    email: user.email,
-    name: user.name,
-    picture: user.picture
-  });
-  const response = NextResponse.json({ user: storedUser });
-  setSessionCookie(response, storedUser);
+  const now = new Date().toISOString();
+  let persisted = true;
+  let storedUser = {
+    ...user,
+    createdAt: now,
+    updatedAt: now,
+    notificationSettings: DEFAULT_NOTIFICATION_SETTINGS
+  };
+
+  try {
+    storedUser = await upsertUser({
+      sub: user.sub,
+      email: user.email,
+      name: user.name,
+      picture: user.picture
+    });
+  } catch (error) {
+    persisted = false;
+    console.error("[auth] user persistence failed; issuing session cookie anyway", {
+      error: error instanceof Error ? error.message : String(error)
+    });
+  }
+
+  const response = NextResponse.json({ user: storedUser, persisted });
+  setSessionCookie(response, user);
   return response;
 }
 
