@@ -9,6 +9,6 @@ main().catch((error) => {
 });
 
 async function main(): Promise<void> {
-  await pruneOperationalStore();
-  console.log(JSON.stringify({ ok: true, pruned: true }, null, 2));
+  const storage = await pruneOperationalStore();
+  console.log(JSON.stringify({ ok: true, pruned: true, storage }, null, 2));
 }

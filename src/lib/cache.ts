@@ -29,7 +29,7 @@ export async function readJson<T>(filePath: string, fallback: T): Promise<T> {
 export async function writeJson(filePath: string, data: unknown): Promise<void> {
   if (isStaticPublicCache(filePath)) {
     await writeLocalJson(filePath, data);
-    if (process.env.GLITCHPRICE_MIRROR_PUBLIC_CACHE_TO_OPERATIONAL !== "1") return;
+    if (!shouldMirrorPublicCacheToOperational()) return;
   }
 
   if (hasOperationalStore()) {
@@ -64,6 +64,10 @@ function isStaticPublicCache(filePath: string): boolean {
     /^generated\/price-history(?:-[A-Z]{2})?\.json$/.test(key) ||
     /^generated\/itad(?:-full)?-history(?:-[A-Z]{2})?\.json$/.test(key)
   );
+}
+
+function shouldMirrorPublicCacheToOperational(): boolean {
+  return process.env.GLITCHPRICE_MIRROR_PUBLIC_CACHE_TO_OPERATIONAL === "1" && process.env.GLITCHPRICE_ALLOW_PUBLIC_CACHE_OPERATIONAL_WRITES === "1";
 }
 
 export async function readLatestValid<T extends { timestamp: string | null }>(

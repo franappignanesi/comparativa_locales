@@ -84,16 +84,18 @@ export async function recordRefreshRun(input: { name: string; ok: boolean; statu
   );
 }
 
-export async function pruneOperationalStore(): Promise<void> {
-  if (!hasOperationalStore()) return;
+export async function pruneOperationalStore(): Promise<Record<string, unknown>> {
+  if (!hasOperationalStore()) return {};
   await ensureSchema();
   const sql = getSql();
+  await sql.query("TRUNCATE TABLE app_json_state");
   await sql.query("TRUNCATE TABLE price_snapshots");
   await sql.query("DELETE FROM job_locks WHERE expires_at <= $1", [new Date().toISOString()]);
-  await sql.query("DELETE FROM refresh_runs WHERE created_at < NOW() - INTERVAL '14 days'");
+  await sql.query("DELETE FROM refresh_runs WHERE created_at < NOW() - INTERVAL '3 days'");
   await bestEffortQuery("VACUUM (ANALYZE) app_json_state");
   await bestEffortQuery("VACUUM (ANALYZE) refresh_runs");
   await bestEffortQuery("VACUUM (ANALYZE) price_snapshots");
+  return getStorageMetrics();
 }
 
 async function releaseOperationalLock(name: string, owner: string): Promise<void> {
@@ -203,11 +205,15 @@ async function getStorageMetrics(): Promise<Record<string, unknown>> {
   const metrics: Record<string, unknown> = {};
   for (const table of tables) {
     try {
-      const rows = await queryRows(`SELECT COUNT(*) AS rows, pg_total_relation_size($1::regclass) AS bytes`, [table]);
+      const rows = await queryRows(`SELECT (SELECT COUNT(*) FROM ${quoteIdentifier(table)}) AS rows, pg_total_relation_size($1::regclass) AS bytes`, [table]);
       metrics[table] = { rows: Number(rows[0]?.rows ?? 0), bytes: Number(rows[0]?.bytes ?? 0) };
     } catch {
       metrics[table] = { rows: 0, bytes: 0 };
     }
   }
   return metrics;
+}
+
+function quoteIdentifier(value: string): string {
+  return `"${value.replace(/"/g, '""')}"`;
 }
