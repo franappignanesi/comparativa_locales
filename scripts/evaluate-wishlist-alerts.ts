@@ -13,7 +13,8 @@ async function runOnce() {
         timestamp: report.timestamp,
         usersChecked: report.usersChecked,
         regionsChecked: report.regionsChecked,
-        alerts: report.alerts.length
+        alerts: report.alerts.length,
+        delivered: report.delivered
       },
       null,
       2

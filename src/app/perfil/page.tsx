@@ -39,6 +39,7 @@ export default function ProfilePage() {
   const [wishlistAlerts, setWishlistAlerts] = useState<WishlistAlert[]>([]);
   const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
   const [saved, setSaved] = useState(false);
+  const [pushMessage, setPushMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const savedRegion = window.localStorage.getItem("glitchprice-region") as RegionId | null;
@@ -77,6 +78,16 @@ export default function ProfilePage() {
 
   async function updateSetting(key: keyof NotificationSettings, value: boolean) {
     if (!user) return;
+    if (key === "discord") return;
+    if (key === "webPush" && value) {
+      setPushMessage(null);
+      const pushReady = await enableWebPush();
+      if (!pushReady) {
+        setPushMessage("No pudimos activar push web. Revisá permisos del navegador y la clave VAPID.");
+        return;
+      }
+    }
+    if (key === "webPush" && !value) await disableWebPush();
     const next = { ...settings, [key]: value };
     setSettings(next);
     setSettings(await saveNotificationSettings(user.sub, next));
@@ -194,11 +205,13 @@ export default function ProfilePage() {
                 checked={settings.webPush}
                 onChange={(value) => updateSetting("webPush", value)}
               />
+              {pushMessage ? <p className="settingsHelp">{pushMessage}</p> : null}
               <NotificationToggle
                 icon={<Webhook size={18} />}
                 title="Notificación por Discord"
-                description="Canal pensado para conectar más adelante con usuario, bot o webhook personal."
-                checked={settings.discord}
+                description="¡Próximamente! Canal pensado para conectar más adelante con usuario, bot o webhook personal."
+                checked={false}
+                disabled
                 onChange={(value) => updateSetting("discord", value)}
               />
             </section>
@@ -237,23 +250,68 @@ function NotificationToggle({
   title,
   description,
   checked,
+  disabled = false,
   onChange
 }: {
   icon: React.ReactNode;
   title: string;
   description: string;
   checked: boolean;
+  disabled?: boolean;
   onChange: (value: boolean) => void;
 }) {
   return (
-    <label className="notificationToggle">
+    <label className={disabled ? "notificationToggle disabled" : "notificationToggle"}>
       <span>{icon}</span>
       <div>
         <strong>{title}</strong>
         <small>{description}</small>
       </div>
-      <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />
+      <input type="checkbox" checked={checked} disabled={disabled} onChange={(event) => onChange(event.target.checked)} />
       <em aria-hidden="true" />
     </label>
   );
+}
+
+async function enableWebPush(): Promise<boolean> {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return false;
+  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  if (!publicKey) return false;
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") return false;
+  const registration = await navigator.serviceWorker.register("/sw.js");
+  const existing = await registration.pushManager.getSubscription();
+  const subscription =
+    existing ??
+    (await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicKey)
+    }));
+  const response = await fetch("/api/user/push-subscriptions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ subscription })
+  });
+  return response.ok;
+}
+
+async function disableWebPush(): Promise<void> {
+  if (!("serviceWorker" in navigator)) return;
+  const registration = await navigator.serviceWorker.getRegistration("/sw.js");
+  const subscription = await registration?.pushManager.getSubscription();
+  if (subscription) {
+    await fetch("/api/user/push-subscriptions", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ endpoint: subscription.endpoint })
+    }).catch(() => undefined);
+    await subscription.unsubscribe().catch(() => undefined);
+  }
+}
+
+function urlBase64ToUint8Array(value: string): Uint8Array {
+  const padding = "=".repeat((4 - (value.length % 4)) % 4);
+  const base64 = `${value}${padding}`.replace(/-/g, "+").replace(/_/g, "/");
+  const raw = window.atob(base64);
+  return Uint8Array.from([...raw].map((char) => char.charCodeAt(0)));
 }

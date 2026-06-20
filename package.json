@@ -19,6 +19,7 @@
     "check:runtime": "tsx scripts/check-runtime.ts",
     "prices:compact-cache": "tsx scripts/compact-latest-prices.ts",
     "notifications:evaluate": "tsx scripts/evaluate-wishlist-alerts.ts",
+    "notifications:generate-vapid": "tsx scripts/generate-vapid-keys.ts",
     "notifications:worker": "powershell -ExecutionPolicy Bypass -File scripts/start-wishlist-alert-worker.ps1",
     "db:migrate-json": "tsx scripts/migrate-json-to-mysql.ts",
     "db:migrate-operational-state": "tsx scripts/migrate-operational-state.ts",

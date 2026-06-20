@@ -127,6 +127,11 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       DIGITAL_VAT_RATE: ${{ secrets.DIGITAL_VAT_RATE }}
       POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
+      VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+      VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
     steps:
       - uses: actions/checkout@v7.0.0
       - uses: actions/download-artifact@v4
@@ -148,6 +153,9 @@ jobs:
         run: npm run worker:prune-operational-store
       - name: Repair transient price gaps
         run: npm run worker:restore-current-prices
+      - name: Evaluate wishlist notifications
+        continue-on-error: true
+        run: npm run notifications:evaluate
       - name: Guard private generated data
         shell: bash
         run: |

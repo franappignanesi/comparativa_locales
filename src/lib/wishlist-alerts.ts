@@ -3,6 +3,9 @@ import { getPriceHistoryReport } from "./history";
 import { getLatestPrices } from "./prices";
 import { DEFAULT_REGION, type RegionId } from "./regions";
 import { getAllUsersWithWishlists, getNotificationSettings, getWishlist, type StoredWishlistItem } from "./user-store";
+import type { StoredUser } from "./user-store";
+import { sendEmailAlerts, sendWebPushAlerts } from "./notification-channels";
+import { claimNotificationDelivery } from "./notification-delivery-store";
 import type { LatestPrices, PriceHistoryEntry, StoreId } from "./types";
 import { STORES } from "./types";
 
@@ -29,6 +32,10 @@ export type WishlistAlertReport = {
   alerts: WishlistAlert[];
   usersChecked: number;
   regionsChecked: RegionId[];
+  delivered: {
+    email: number;
+    webPush: number;
+  };
 };
 
 const STORE_LABELS: Record<StoreId, string> = {
@@ -47,16 +54,22 @@ export async function getWishlistAlertsForUser(userId: string, region: RegionId 
 export async function evaluateAllWishlistAlerts(regions: RegionId[] = [DEFAULT_REGION]): Promise<WishlistAlertReport> {
   const users = await getAllUsersWithWishlists();
   const alerts: WishlistAlert[] = [];
+  const delivered = { email: 0, webPush: 0 };
   for (const region of regions) {
     for (const { user, wishlist } of users) {
-      alerts.push(...(await evaluateWishlistAlerts(user.sub, wishlist, region)));
+      const userAlerts = await evaluateWishlistAlerts(user.sub, wishlist, region);
+      alerts.push(...userAlerts);
+      const userDelivered = await deliverAlerts(user, userAlerts);
+      delivered.email += userDelivered.email;
+      delivered.webPush += userDelivered.webPush;
     }
   }
   const report = {
     timestamp: new Date().toISOString(),
     alerts,
     usersChecked: users.length,
-    regionsChecked: regions
+    regionsChecked: regions,
+    delivered
   };
   await writeJson(dataPath("generated", "wishlist-alerts.json"), report);
   return report;
@@ -115,6 +128,39 @@ async function evaluateWishlistAlerts(userId: string, wishlist: StoredWishlistIt
   }
 
   return dedupeAlerts(alerts);
+}
+
+async function deliverAlerts(user: StoredUser, alerts: WishlistAlert[]): Promise<{ email: number; webPush: number }> {
+  if (!alerts.length) return { email: 0, webPush: 0 };
+  const settings = user.notificationSettings ?? (await getNotificationSettings(user.sub));
+  let email = 0;
+  let webPush = 0;
+
+  if (settings.email && process.env.RESEND_API_KEY) {
+    const claimed = await claimAlerts("email", user.sub, alerts);
+    email = await sendEmailAlerts(user, claimed);
+  }
+  if (settings.webPush && process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+    const claimed = await claimAlerts("web_push", user.sub, alerts);
+    webPush = await sendWebPushAlerts(user, claimed);
+  }
+  return { email, webPush };
+}
+
+async function claimAlerts(channel: "email" | "web_push", userSub: string, alerts: WishlistAlert[]): Promise<WishlistAlert[]> {
+  const claimed: WishlistAlert[] = [];
+  for (const alert of alerts) {
+    const ok = await claimNotificationDelivery({
+      channel,
+      userSub,
+      region: alert.region,
+      gameId: alert.gameId,
+      store: alert.store,
+      type: alert.type
+    });
+    if (ok) claimed.push(alert);
+  }
+  return claimed;
 }
 
 function findPreviousSnapshot(entries: PriceHistoryEntry[], store: StoreId, latest: LatestPrices): PriceHistoryEntry | null {

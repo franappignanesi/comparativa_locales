@@ -1702,6 +1702,11 @@ select option {
   cursor: pointer;
 }
 
+.notificationToggle.disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
 .notificationToggle > span {
   width: 34px;
   height: 34px;
