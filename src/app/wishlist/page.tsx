@@ -7,6 +7,7 @@ import { RegionSelector } from "@/app/components/RegionSelector";
 import { GoogleUser, UserMenu, WishlistGame } from "@/app/components/UserMenu";
 import { ProblemReportButton } from "@/app/components/ProblemReportButton";
 import { deleteWishlistItem, fetchWishlist, fetchWishlistAlerts, persistSession, readStoredUser, updateWishlistItem, type WishlistAlert } from "@/app/components/userPersistence";
+import { formatGameCategory } from "@/lib/categories";
 import { DEFAULT_REGION, type RegionId } from "@/lib/regions";
 import { isAdminEmail } from "@/lib/admin";
 
@@ -168,7 +169,7 @@ export default function WishlistPage() {
                     <div>
                       <strong>{game.title}</strong>
                       <small>
-                        {game.releaseYear} · {game.category} · Agregado {formatDate(game.addedAt)}
+                        {game.releaseYear} · {formatGameCategory(game.category)} · Agregado {formatDate(game.addedAt)}
                       </small>
                     </div>
                   </Link>

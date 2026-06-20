@@ -13,6 +13,7 @@ import {
   readStoredUser,
   type WishlistAlert
 } from "@/app/components/userPersistence";
+import { formatGameCategory } from "@/lib/categories";
 import { DEFAULT_REGION, type RegionId } from "@/lib/regions";
 import { isAdminEmail } from "@/lib/admin";
 import type { AnalysisSummary } from "@/lib/analysis";
@@ -320,7 +321,7 @@ export default function ComparativaGeneralPage() {
             <div className="genreBars">
               {categoryEntries.map(([category, value]) => (
                 <div className="genreRow" key={category}>
-                  <span>{category}</span>
+                  <span>{formatGameCategory(category)}</span>
                   <div className="barTrack">
                     <span style={{ width: `${Math.max(4, (value / maxCategory) * 100)}%` }} />
                   </div>

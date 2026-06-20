@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Cpu, Gauge, Trophy } from "lucide-react";
 import { RegionSelector } from "@/app/components/RegionSelector";
 import { fetchNotificationSettings, readStoredUser } from "@/app/components/userPersistence";
+import { formatGameCategory } from "@/lib/categories";
 import { formatArs } from "@/lib/normalize";
 import { DEFAULT_REGION, REGIONS, type RegionId } from "@/lib/regions";
 import type { AnalysisSummary, GameAnalysis } from "@/lib/analysis";
@@ -304,7 +305,8 @@ function compactMarketDistribution(coverage: Partial<Record<string, number>>): [
     .sort(([, a], [, b]) => (b ?? 0) - (a ?? 0));
   const top = sorted.slice(0, 5) as [string, number][];
   const otherTotal = sorted.slice(5).reduce((sum, [, count]) => sum + (count ?? 0), 0);
-  return otherTotal > 0 ? [...top, ["Otros", otherTotal]] : top;
+  const rows: [string, number][] = otherTotal > 0 ? [...top, ["Otros", otherTotal]] : top;
+  return rows.map(([label, count]) => [formatGameCategory(label), count]);
 }
 
 function bestEnabledStore(row: LatestPrices["prices"][number], enabledStores: StoreId[]): StoreId | null {

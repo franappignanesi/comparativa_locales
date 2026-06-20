@@ -34,6 +34,7 @@ import {
 import { DEFAULT_REGION, type RegionId } from "@/lib/regions";
 import { isAdminEmail } from "@/lib/admin";
 import type { AnalysisSummary, GameAnalysis } from "@/lib/analysis";
+import { formatGameCategory } from "@/lib/categories";
 import { FALLBACK_USD_TO_ARS, formatArs } from "@/lib/normalize";
 import { STORE_LOGOS } from "@/lib/store-assets";
 import type { LatestPrices, NormalizedPrice, PriceHistoryReport, StoreId } from "@/lib/types";
@@ -75,12 +76,12 @@ const SIDEBAR_ITEMS = [
 ];
 
 const STEAM_CATEGORY_FILTERS = [
-  { label: "Action", icon: Rocket },
-  { label: "Adventure", icon: History },
-  { label: "RPG", icon: Star },
-  { label: "Strategy", icon: BarChart3 },
-  { label: "Simulation", icon: SlidersHorizontal },
-  { label: "Indie", icon: Leaf }
+  { value: "Action", label: "Acción", icon: Rocket },
+  { value: "Adventure", label: "Aventura", icon: History },
+  { value: "RPG", label: "RPG", icon: Star },
+  { value: "Strategy", label: "Estrategia", icon: BarChart3 },
+  { value: "Simulation", label: "Simulación", icon: SlidersHorizontal },
+  { value: "Indie", label: "Indie", icon: Leaf }
 ];
 
 export default function Home() {
@@ -336,7 +337,7 @@ function BibliotecaContent() {
             {STEAM_CATEGORY_FILTERS.map((item) => {
               const Icon = item.icon;
               return (
-                <button key={item.label} className={category === item.label ? "active" : ""} onClick={() => setCategory(category === item.label ? "todas" : item.label)}>
+                <button key={item.value} className={category === item.value ? "active" : ""} onClick={() => setCategory(category === item.value ? "todas" : item.value)}>
                   <Icon size={15} />
                   {item.label}
                 </button>
@@ -400,7 +401,7 @@ function BibliotecaContent() {
           </span>
           {payload.pagination.hasMore ? (
             <button className="button" onClick={loadMore} disabled={loadingMore}>
-              {loadingMore ? "Cargando..." : "Cargar mas"}
+              {loadingMore ? "Cargando..." : "Cargar más"}
             </button>
           ) : null}
         </div>
@@ -455,7 +456,7 @@ function BibliotecaContent() {
 function BibliotecaLoading() {
   return (
     <main className="loadingPage">
-      <div className="loading">Cargando catalogo y cache de precios...</div>
+      <div className="loading">Cargando catálogo y caché de precios...</div>
     </main>
   );
 }
@@ -1015,7 +1016,7 @@ function formatReleaseYear(year: number): string {
 }
 
 function formatCategory(category: string): string {
-  return category;
+  return formatGameCategory(category);
 }
 
 function displayGameCategory(row: Pick<PriceRow, "primaryTag" | "category">): string {
