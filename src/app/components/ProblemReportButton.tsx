@@ -92,7 +92,7 @@ export function ProblemReportButton({ user }: { user: GoogleUser | null }) {
           ) : loginRequired && !user ? (
             <div className="problemReportLogin">
               <AlertTriangle size={22} />
-              <p>Para reportar problemas tenes que iniciar sesion. Asi evitamos spam y podemos darte una devolucion.</p>
+              <p>Para reportar problemas tenés que iniciar sesión. Así evitamos spam y podemos darte una devolución.</p>
               <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("glitchprice-open-user-menu"))}>
                 Iniciar sesion
               </button>

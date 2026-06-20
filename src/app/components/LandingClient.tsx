@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -100,7 +100,7 @@ export function LandingClient() {
     <main className="landing">
       <nav className="landingNav">
         <Link href="/" className="landingBrand">
-          GlitchPrice
+          BARATEAM
         </Link>
         <div className="landingNavTools">
           <RegionSelector value={region} onChange={setRegion} />
@@ -244,28 +244,28 @@ export function LandingClient() {
       <section className="toolsBlock" id="herramientas">
         <h2>Otras herramientas de Shux</h2>
         <div>
-          <button className="comingSoonTool" type="button" aria-label="Comparador de GPUs, proximamente">
+          <button className="comingSoonTool" type="button" aria-label="Comparador de GPUs, próximamente">
             <Gauge size={15} />
             Comparador de GPUs
-            <span>Proximamente!</span>
+            <span>¡Próximamente!</span>
           </button>
-          <button className="comingSoonTool" type="button" aria-label="Comparador de CPUs, proximamente">
+          <button className="comingSoonTool" type="button" aria-label="Comparador de CPUs, próximamente">
             <Cpu size={15} />
             Comparador de CPUs
-            <span>Proximamente!</span>
+            <span>¡Próximamente!</span>
           </button>
         </div>
       </section>
 
       <footer className="landingFooter">
-        <strong>GlitchPrice</strong>
+        <strong>BARATEAM</strong>
         <div>
           <span>GPU Comparator</span>
           <span>CPU Comparator</span>
           <span>Privacy Policy</span>
           <span>Contact</span>
         </div>
-        <p>© 2026 GlitchPrice by Shux. Precios calculados con datos regionales oficiales y caches auditables.</p>
+        <p>© 2026 BARATEAM by Shux. Precios calculados con datos regionales oficiales y cachés auditables.</p>
       </footer>
     </main>
   );

@@ -8,7 +8,7 @@ self.addEventListener("notificationclick", (event) => {
 });
 
 async function showWishlistNotification() {
-  let title = "GLITCHPRICE";
+  let title = "BARATEAM";
   let body = "Tenés novedades en tu wishlist.";
   try {
     const response = await fetch("/api/user/wishlist-alerts?region=AR", { credentials: "include" });

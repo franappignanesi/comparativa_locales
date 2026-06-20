@@ -72,9 +72,9 @@ jobs:
       FULL_REFRESH_MAX_MS: ${{ inputs.max_ms || '19800000' }}
       FULL_REFRESH_RESERVE_MS: "180000"
       FULL_REFRESH_SLEEP_MS: "1000"
-      STEAM_LIVE_FALLBACK: "0"
+      STEAM_LIVE_FALLBACK: ${{ matrix.region == 'AR' && '1' || '0' }}
       FULL_REFRESH_ITAD: "1"
-      STEAM_CHUNK_SLEEP_MS: "3500"
+      STEAM_CHUNK_SLEEP_MS: ${{ matrix.region == 'AR' && '250' || '3500' }}
       STEAM_429_RETRIES: "5"
       STEAM_429_BACKOFF_MS: "20000"
     steps:

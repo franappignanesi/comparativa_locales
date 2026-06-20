@@ -63,7 +63,7 @@ async function fetchSteam(url: string): Promise<Response> {
   const retries = parseNonNegativeInt(process.env.STEAM_429_RETRIES) ?? 4;
   for (let attempt = 0; attempt <= retries; attempt += 1) {
     const response = await fetch(url, {
-      headers: { accept: "application/json", "user-agent": "GLITCHPRICE price refresh" },
+      headers: { accept: "application/json", "user-agent": "BARATEAM price refresh" },
       next: { revalidate: 3600 }
     });
     if (response.status !== 429 || attempt === retries) return response;

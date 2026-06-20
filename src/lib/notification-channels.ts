@@ -7,8 +7,8 @@ import type { WishlistAlert } from "./wishlist-alerts";
 export async function sendEmailAlerts(user: StoredUser, alerts: WishlistAlert[]): Promise<number> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey || !user.email || !alerts.length) return 0;
-  const from = process.env.EMAIL_FROM || "GLITCHPRICE <onboarding@resend.dev>";
-  const subject = alerts.length === 1 ? `Alerta de precio: ${alerts[0].gameTitle}` : `Tenés ${alerts.length} alertas de precio en GLITCHPRICE`;
+  const from = process.env.EMAIL_FROM || "BARATEAM <barateam@shuxteam.com>";
+  const subject = alerts.length === 1 ? `Alerta de precio: ${alerts[0].gameTitle}` : `Tenés ${alerts.length} alertas de precio en BARATEAM`;
   const html = buildWishlistEmailHtml(user, alerts);
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -70,11 +70,15 @@ function buildWishlistEmailHtml(user: StoredUser, alerts: WishlistAlert[]): stri
     .join("");
   return `
     <div style="font-family:Arial,sans-serif;line-height:1.45;color:#161616">
-      <h1 style="font-size:20px;margin:0 0 12px 0">GLITCHPRICE</h1>
+      <h1 style="font-size:20px;margin:0 0 12px 0">BARATEAM</h1>
       <p>Hola ${escapeHtml(user.name)}, encontramos novedades en tu wishlist.</p>
       <ul style="padding-left:20px">${items}</ul>
-      <p><a href="https://glitchprice.vercel.app/wishlist">Ver mi wishlist</a></p>
+      <p><a href="${escapeHtml(siteUrl())}/wishlist">Ver mi wishlist</a></p>
     </div>`;
+}
+
+function siteUrl(): string {
+  return (process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL || "https://glitchprice.vercel.app").replace(/\/+$/, "");
 }
 
 function getVapidConfig(): { publicKey: string; privateKey: string; subject: string } | null {

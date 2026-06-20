@@ -136,6 +136,7 @@ function filterAndSortRows(
   return rows
     .filter((row) => ids.has(row.gameId))
     .filter((row) => !normalizedQuery || row.gameTitle.toLowerCase().includes(normalizedQuery))
+    .filter((row) => hasAnyCurrentPrice(row))
     .filter((row) => {
       if (category === "todas") return true;
       if (steamCategory(row) === category) return true;
@@ -151,6 +152,13 @@ function filterAndSortRows(
       return true;
     })
     .sort((a, b) => compareRows(a, b, analysis, sort));
+}
+
+function hasAnyCurrentPrice(row: PriceRow): boolean {
+  return STORES.some((store) => {
+    const price = row.prices[store];
+    return Boolean(price?.available && price.arsFinalPrice != null);
+  });
 }
 
 function steamCategory(row: PriceRow): string {

@@ -290,7 +290,7 @@ function BibliotecaContent() {
     <div className="appShell">
       <nav className="brandBar">
         <div className="brandCluster">
-          <div className="brand">GLITCHPRICE</div>
+          <div className="brand">BARATEAM</div>
         </div>
         <div className="navTools">
           <ProblemReportButton user={user} />
@@ -388,7 +388,7 @@ function BibliotecaContent() {
             note="Cantidad de juegos que se consiguen más baratos que en el resto de plataformas."
           />
           <Metric title="Juegos cargados" value={String(payload.sampleMeta.broadTotal)} />
-          <Metric title="Comparables (presentes en 2 o más tiendas)" value={String(summary.gamesAnalyzed)} />
+          <Metric title="Juegos con precio actual" value={String(summary.gamesAnalyzed)} />
         </section>
 
         <section className="gameGrid" aria-label="Comparaciones de precios">
@@ -447,7 +447,7 @@ function BibliotecaContent() {
           <span>Discord</span>
           <span>Contacto</span>
         </div>
-        <p>© 2026 GLITCHPRICE. TODOS LOS PRECIOS ACTUALIZADOS EN TIEMPO REAL.</p>
+        <p>© 2026 BARATEAM. TODOS LOS PRECIOS ACTUALIZADOS EN TIEMPO REAL.</p>
       </footer>
 
       {selectedRow ? (
@@ -846,14 +846,16 @@ function PriceHistoryChart({
   displayCurrency: string;
   displayLocale: string;
 }) {
-  const activeStores = enabledStores.length ? enabledStores : STORES;
+  const historyStores = STORES.filter((store) => entries.some((entry) => entry.store === store && entry.arsFinalPrice != null && entry.arsFinalPrice > 0) || Boolean(lows[store]));
+  const activeStores = [...new Set([...(enabledStores.length ? enabledStores : []), ...historyStores])];
+  const chartStores = activeStores.length ? activeStores : STORES;
   const [tooltip, setTooltip] = useState<{ x: number; y: number; store: StoreId; date: string; price: string } | null>(null);
-  const [focusedStore, setFocusedStore] = useState<StoreId | null>(currentWinner && activeStores.includes(currentWinner) ? currentWinner : activeStores[0] ?? null);
+  const [focusedStore, setFocusedStore] = useState<StoreId | null>(currentWinner && chartStores.includes(currentWinner) ? currentWinner : chartStores[0] ?? null);
   useEffect(() => {
-    setFocusedStore(currentWinner && activeStores.includes(currentWinner) ? currentWinner : activeStores[0] ?? null);
-  }, [currentWinner, enabledStores]);
+    setFocusedStore(currentWinner && chartStores.includes(currentWinner) ? currentWinner : chartStores[0] ?? null);
+  }, [currentWinner, enabledStores, entries]);
   const realChartEntries = dedupeDailyHistoryEntries(
-    entries.filter((entry) => activeStores.includes(entry.store) && entry.arsFinalPrice != null && entry.arsFinalPrice > 0)
+    entries.filter((entry) => chartStores.includes(entry.store) && entry.arsFinalPrice != null && entry.arsFinalPrice > 0)
   );
   const firstEntryDate = realChartEntries.length ? new Date(Math.min(...realChartEntries.map((entry) => Date.parse(entry.timestamp)))) : new Date();
   const endDate = new Date();
@@ -912,7 +914,7 @@ function PriceHistoryChart({
               </g>
             );
           })}
-          {activeStores.map((store) => {
+          {chartStores.map((store) => {
             const points = chartEntries
               .filter((entry) => entry.store === store)
               .sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp))
@@ -972,7 +974,7 @@ function PriceHistoryChart({
         </div>
       ) : null}
       <div className="chartLegend">
-        {activeStores.map((store) => (
+        {chartStores.map((store) => (
           <button
             key={store}
             className={focusedStore === store ? "active" : ""}
@@ -989,7 +991,7 @@ function PriceHistoryChart({
       </small>
       <h4 className="historyLowTitle">MÍNIMOS HISTÓRICOS</h4>
       <div className="historyLowCapsules">
-        {activeStores.map((store) => {
+        {chartStores.map((store) => {
           const low = lows[store];
           const current = currentPrices[store]?.arsFinalPrice ?? null;
           return (
@@ -1213,4 +1215,3 @@ function BarChart({
     </article>
   );
 }
-

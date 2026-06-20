@@ -136,7 +136,7 @@ export default function ComparativaGeneralPage() {
         <nav className="brandBar">
           <div className="brandCluster">
             <Link className="brand" href="/">
-              GLITCHPRICE
+              BARATEAM
             </Link>
           </div>
         </nav>
@@ -165,7 +165,7 @@ export default function ComparativaGeneralPage() {
       <nav className="brandBar">
         <div className="brandCluster">
           <Link className="brand" href="/">
-            GLITCHPRICE
+            BARATEAM
           </Link>
         </div>
         <div className="navTools">
@@ -218,7 +218,7 @@ export default function ComparativaGeneralPage() {
             label="Tienda más barata promedio"
             store={cheapestAverage}
             value={cheapestAverage ? formatArs(summary.averageByStore[cheapestAverage] ?? null) : "Sin datos"}
-            detail="Promedio entre juegos comparables presentes en 2 o más tiendas."
+            detail="Promedio entre juegos con precio actual."
           />
           <ExecutiveCard
             label="Tienda con más victorias"
@@ -235,7 +235,7 @@ export default function ComparativaGeneralPage() {
           <article className="executiveCard compareTotals">
             <span>Catálogo auditable</span>
             <strong>{payload.sampleMeta.broadTotal}</strong>
-            <small>{summary.gamesAnalyzed} comparables presentes en 2 o más tiendas.</small>
+            <small>{summary.gamesAnalyzed} juegos con precio actual.</small>
           </article>
         </section>
 

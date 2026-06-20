@@ -44,30 +44,30 @@ export function analyzePrices(latest: LatestPrices, gameIds?: Set<string>): Anal
   const offersByStore = makeStoreRecord(0);
   const coverageByStore = makeStoreRecord(0);
   const savings: number[] = [];
-  let comparableGames = 0;
+  let pricedGames = 0;
 
   for (const row of rows) {
     const priced = STORES.map((store) => row.prices[store]).filter(hasArsPrice);
     const comparable = priced.length >= 2;
-    if (comparable) comparableGames += 1;
+    if (priced.length > 0) pricedGames += 1;
 
     const priceIndex = makeStoreRecord<number | null>(null);
-    const winnerPrice = comparable ? Math.min(...priced.map((price) => price.arsFinalPrice)) : null;
+    const winnerPrice = priced.length > 0 ? Math.min(...priced.map((price) => price.arsFinalPrice)) : null;
     const winner = winnerPrice == null ? null : priced.find((price) => price.arsFinalPrice === winnerPrice)?.store ?? null;
 
-    if (comparable) {
-      for (const store of STORES) {
-        const price = row.prices[store];
-        if (hasArsPrice(price)) {
-          valuesByStore[store].push(price.arsFinalPrice);
-          coverageByStore[store] += 1;
-        }
-        if (isDiscounted(price)) {
-          offersByStore[store] += 1;
-          discountsByStore[store].push(price.discountPct ?? inferredDiscountPct(price) ?? 0);
-        }
+    for (const store of STORES) {
+      const price = row.prices[store];
+      if (hasArsPrice(price)) {
+        valuesByStore[store].push(price.arsFinalPrice);
+        coverageByStore[store] += 1;
       }
+      if (isDiscounted(price)) {
+        offersByStore[store] += 1;
+        discountsByStore[store].push(price.discountPct ?? inferredDiscountPct(price) ?? 0);
+      }
+    }
 
+    if (comparable) {
       if (winner) winsByStore[winner] += 1;
       if (winner) {
         if (isDiscounted(row.prices[winner])) discountedWinsByStore[winner] += 1;
@@ -115,9 +115,9 @@ export function analyzePrices(latest: LatestPrices, gameIds?: Set<string>): Anal
     cheapestAverageStore,
     mostWinsStore,
     averageSavingsVsSteam: average(savings),
-    gamesAnalyzed: comparableGames,
+    gamesAnalyzed: pricedGames,
     completeDataGames: gameAnalyses.filter((game) => game.coverage === STORES.length).length,
-    missingDataGames: gameAnalyses.filter((game) => game.coverage >= 2 && game.coverage < STORES.length).length,
+    missingDataGames: gameAnalyses.filter((game) => game.coverage >= 1 && game.coverage < STORES.length).length,
     averageByStore,
     medianByStore,
     winsByStore,

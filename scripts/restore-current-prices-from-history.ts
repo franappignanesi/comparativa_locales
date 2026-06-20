@@ -28,17 +28,20 @@ async function main(): Promise<void> {
   console.log(JSON.stringify({ ok: true, maxAgeDays, summaries }, null, 2));
 }
 
-async function restoreRegion(region: RegionId): Promise<{ region: RegionId; restored: number; rows: number }> {
+async function restoreRegion(region: RegionId): Promise<{ region: RegionId; restored: number; sanitized: number; rows: number }> {
   const latestPath = latestPricesPath(region);
   const historyPath = priceHistoryPath(region);
   const latest = await readJson<LatestPrices>(latestPath, emptyLatest);
   const history = await readJson<PriceHistoryFile>(historyPath, emptyHistory);
-  if (!latest.timestamp || !latest.prices.length || !history.entries.length) return { region, restored: 0, rows: latest.prices.length };
+  if (!latest.timestamp || !latest.prices.length || !history.entries.length) return { region, restored: 0, sanitized: 0, rows: latest.prices.length };
 
   const cutoff = Date.now() - maxAgeDays * 24 * 60 * 60 * 1000;
+  const regionConfig = REGIONS.find((item) => item.id === region);
+  const displayCurrency = regionConfig?.currency ?? "ARS";
   const latestHistory = new Map<string, PriceHistoryEntry>();
   for (const entry of history.entries) {
     if (entry.arsFinalPrice == null || entry.arsFinalPrice <= 0) continue;
+    if (!isCompatibleHistoryEntry(entry, displayCurrency)) continue;
     const time = Date.parse(entry.timestamp);
     if (!Number.isFinite(time) || time < cutoff) continue;
     const key = `${entry.gameId}:${entry.store}`;
@@ -48,8 +51,16 @@ async function restoreRegion(region: RegionId): Promise<{ region: RegionId; rest
 
   const exchangeRate = await getExchangeRate(region);
   let restored = 0;
+  let sanitized = 0;
   const prices = latest.prices.map((row) => {
     const nextPrices = { ...row.prices };
+    for (const store of STORES) {
+      const current = nextPrices[store];
+      if (current?.available && current.arsFinalPrice != null && !isCompatibleCurrentPrice(current, displayCurrency)) {
+        delete nextPrices[store];
+        sanitized += 1;
+      }
+    }
     for (const store of STORES) {
       const current = nextPrices[store];
       if (current?.available && current.arsFinalPrice != null) continue;
@@ -66,8 +77,8 @@ async function restoreRegion(region: RegionId): Promise<{ region: RegionId; rest
     prices,
     errors: latest.errors.filter((error) => !(prices.find((row) => row.gameId === error.gameId)?.prices[error.store]?.available))
   };
-  if (restored > 0) await writeJson(latestPath, repaired);
-  return { region, restored, rows: latest.prices.length };
+  if (restored > 0 || sanitized > 0) await writeJson(latestPath, repaired);
+  return { region, restored, sanitized, rows: latest.prices.length };
 }
 
 function restoredPrice(
@@ -107,6 +118,28 @@ function latestPricesPath(region: RegionId): string {
 
 function priceHistoryPath(region: RegionId): string {
   return dataPath("generated", region === "AR" ? "price-history.json" : `price-history-${region}.json`);
+}
+
+function isCompatibleHistoryEntry(entry: PriceHistoryEntry, displayCurrency: string): boolean {
+  const currency = normalizeCurrencyCode(entry.originalCurrency);
+  if (!currency) return false;
+  if (entry.store === "microsoft") return currency === displayCurrency;
+  return currency === displayCurrency || currency === "USD";
+}
+
+function isCompatibleCurrentPrice(price: NormalizedPrice, displayCurrency: string): boolean {
+  const currency = normalizeCurrencyCode(price.originalCurrency ?? price.currency);
+  if (!currency) return false;
+  if (price.store === "microsoft") return currency === displayCurrency;
+  return currency === displayCurrency || currency === "USD";
+}
+
+function normalizeCurrencyCode(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const code = value.trim().toUpperCase();
+  if (code === "US$") return "USD";
+  if (code === "AR$" || code === "$") return "ARS";
+  return code;
 }
 
 function parsePositiveInt(value: string | undefined): number | null {

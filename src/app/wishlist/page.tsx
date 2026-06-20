@@ -93,7 +93,7 @@ export default function WishlistPage() {
     <div className="appShell">
       <nav className="brandBar">
         <div className="brandCluster">
-          <div className="brand">GLITCHPRICE</div>
+          <div className="brand">BARATEAM</div>
         </div>
         <div className="navTools">
           <ProblemReportButton user={user} />

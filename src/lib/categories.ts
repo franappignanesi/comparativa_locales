@@ -16,7 +16,8 @@ const CATEGORY_LABELS: Record<string, string> = {
   "AAA viejo": "AAA clásico",
   "indie popular": "Indie popular",
   AA: "AA",
-  "clásico": "Clásico",
+  clásico: "Clásico",
+  "clÃ¡sico": "Clásico",
   "Microsoft/Xbox": "Microsoft/Xbox",
   "multiplayer pago": "Multijugador pago"
 };
