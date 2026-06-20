@@ -45,28 +45,39 @@ export async function persistSession(user: GoogleUser): Promise<void> {
 }
 
 export async function fetchWishlist(userId: string): Promise<WishlistGame[]> {
-  const response = await fetch("/api/user/wishlist");
+  const localWishlist = readLocalWishlist(userId);
+  const response = await fetch("/api/user/wishlist").catch(() => null);
+  if (!response) return localWishlist;
   if (response.status === 401) {
     handleExpiredSession();
     return [];
   }
-  if (!response.ok) return [];
+  if (!response.ok) return localWishlist;
   const payload = (await response.json()) as { wishlist?: WishlistGame[] };
   const wishlist = payload.wishlist ?? [];
-  if (wishlist.length) return wishlist;
+  if (wishlist.length) {
+    writeLocalWishlist(userId, wishlist);
+    return wishlist;
+  }
 
-  const legacyWishlist = readLegacyWishlist(userId);
-  if (!legacyWishlist.length) return wishlist;
+  if (!localWishlist.length) return wishlist;
   let migrated = wishlist;
-  for (const item of legacyWishlist) {
+  let migrationFailed = false;
+  for (const item of localWishlist) {
     const addResponse = await fetch("/api/user/wishlist", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ item })
     });
+    if (!addResponse.ok) {
+      migrationFailed = true;
+      break;
+    }
     const addPayload = (await addResponse.json()) as { wishlist?: WishlistGame[] };
     migrated = addPayload.wishlist ?? migrated;
   }
+  if (migrationFailed) return localWishlist;
+  writeLocalWishlist(userId, migrated);
   markLegacyWishlistMigrated(userId);
   return migrated;
 }
@@ -76,10 +87,14 @@ export async function addWishlistItem(userId: string, item: WishlistGame): Promi
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ item })
-  });
+  }).catch(() => null);
+  if (!response) return addLocalWishlistItem(userId, item);
   await assertAuthenticated(response);
+  if (!response.ok) return addLocalWishlistItem(userId, item);
   const payload = (await response.json()) as { wishlist?: WishlistGame[] };
-  return payload.wishlist ?? [];
+  const wishlist = payload.wishlist ?? addLocalWishlistItem(userId, item);
+  writeLocalWishlist(userId, wishlist);
+  return wishlist;
 }
 
 export async function updateWishlistItem(userId: string, gameId: string, updates: Partial<WishlistGame>): Promise<WishlistGame[]> {
@@ -91,20 +106,27 @@ export async function updateWishlistItem(userId: string, gameId: string, updates
       notificationEnabled: updates.notificationEnabled,
       notificationPreferences: updates.notificationPreferences
     })
-  });
+  }).catch(() => null);
+  if (!response) return updateLocalWishlistItem(userId, gameId, updates);
   await assertAuthenticated(response);
+  if (!response.ok) return updateLocalWishlistItem(userId, gameId, updates);
   const payload = (await response.json()) as { wishlist?: WishlistGame[] };
-  return payload.wishlist ?? [];
+  const wishlist = payload.wishlist ?? updateLocalWishlistItem(userId, gameId, updates);
+  writeLocalWishlist(userId, wishlist);
+  return wishlist;
 }
 
 export async function deleteWishlistItem(userId: string, gameId: string): Promise<WishlistGame[]> {
   const response = await fetch(`/api/user/wishlist?gameId=${encodeURIComponent(gameId)}`, {
     method: "DELETE"
-  });
+  }).catch(() => null);
+  if (!response) return removeLocalWishlistItem(userId, gameId);
   await assertAuthenticated(response);
+  if (!response.ok) return removeLocalWishlistItem(userId, gameId);
   const payload = (await response.json()) as { wishlist?: WishlistGame[] };
-  removeLegacyWishlistItem(userId, gameId);
-  return payload.wishlist ?? [];
+  const wishlist = payload.wishlist ?? removeLocalWishlistItem(userId, gameId);
+  writeLocalWishlist(userId, wishlist);
+  return wishlist;
 }
 
 export async function fetchWishlistAlerts(userId: string, region: string): Promise<WishlistAlert[]> {
@@ -152,8 +174,7 @@ function handleExpiredSession(): void {
   window.dispatchEvent(new CustomEvent("glitchprice-open-user-menu"));
 }
 
-function readLegacyWishlist(userId: string): WishlistGame[] {
-  if (window.localStorage.getItem(`glitchprice-wishlist-migrated:${userId}`) === "1") return [];
+function readLocalWishlist(userId: string): WishlistGame[] {
   try {
     return JSON.parse(window.localStorage.getItem(`glitchprice-wishlist:${userId}`) ?? "[]") as WishlistGame[];
   } catch {
@@ -163,15 +184,40 @@ function readLegacyWishlist(userId: string): WishlistGame[] {
 
 function markLegacyWishlistMigrated(userId: string): void {
   window.localStorage.setItem(`glitchprice-wishlist-migrated:${userId}`, "1");
-  window.localStorage.removeItem(`glitchprice-wishlist:${userId}`);
 }
 
-function removeLegacyWishlistItem(userId: string, gameId: string): void {
+function writeLocalWishlist(userId: string, wishlist: WishlistGame[]): void {
+  window.localStorage.setItem(`glitchprice-wishlist:${userId}`, JSON.stringify(wishlist));
+}
+
+function addLocalWishlistItem(userId: string, item: WishlistGame): WishlistGame[] {
+  const current = readLocalWishlist(userId);
+  const existing = current.find((entry) => entry.gameId === item.gameId);
+  const nextItem: WishlistGame = {
+    ...existing,
+    ...item,
+    addedAt: existing?.addedAt ?? new Date().toISOString(),
+    notificationEnabled: existing?.notificationEnabled ?? true,
+    notificationPreferences: existing?.notificationPreferences
+  };
+  const wishlist = [nextItem, ...current.filter((entry) => entry.gameId !== item.gameId)];
+  writeLocalWishlist(userId, wishlist);
+  return wishlist;
+}
+
+function updateLocalWishlistItem(userId: string, gameId: string, updates: Partial<WishlistGame>): WishlistGame[] {
+  const wishlist = readLocalWishlist(userId).map((item) => (item.gameId === gameId ? { ...item, ...updates } : item));
+  writeLocalWishlist(userId, wishlist);
+  return wishlist;
+}
+
+function removeLocalWishlistItem(userId: string, gameId: string): WishlistGame[] {
   try {
-    const key = `glitchprice-wishlist:${userId}`;
-    const current = JSON.parse(window.localStorage.getItem(key) ?? "[]") as WishlistGame[];
-    window.localStorage.setItem(key, JSON.stringify(current.filter((item) => item.gameId !== gameId)));
+    const wishlist = readLocalWishlist(userId).filter((item) => item.gameId !== gameId);
+    writeLocalWishlist(userId, wishlist);
+    return wishlist;
   } catch {
     window.localStorage.removeItem(`glitchprice-wishlist:${userId}`);
+    return [];
   }
 }
