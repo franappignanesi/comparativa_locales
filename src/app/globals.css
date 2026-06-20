@@ -1851,6 +1851,13 @@ select option {
   fill: currentColor;
 }
 
+.modalWishlistStar {
+  position: static;
+  opacity: 1;
+  transform: scale(1);
+  flex: 0 0 auto;
+}
+
 .clickableHero {
   cursor: pointer;
 }

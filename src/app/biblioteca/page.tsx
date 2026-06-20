@@ -157,7 +157,10 @@ function BibliotecaContent() {
     const controller = new AbortController();
     setLoadingGameHistoryId(selectedGameId);
     fetch(`/api/history?region=${region}&gameId=${selectedGameId}&full=1`, { signal: controller.signal })
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`history_${res.status}`);
+        return res.json();
+      })
       .then((history: PriceHistoryReport) => {
         setPayload((current) =>
           current
@@ -173,7 +176,10 @@ function BibliotecaContent() {
         );
       })
       .catch((error) => {
-        if (error?.name !== "AbortError") console.error(error);
+        if (error?.name !== "AbortError") {
+          historyAttemptsRef.current.delete(attemptKey);
+          console.error(error);
+        }
       })
       .finally(() => {
         if (!controller.signal.aborted) setLoadingGameHistoryId(null);
@@ -265,9 +271,19 @@ function BibliotecaContent() {
       category: displayGameCategory(row),
       releaseYear: row.releaseYear
     };
-    const nextWishlist = wishlist.some((item) => item.gameId === row.gameId) ? await deleteWishlistItem(user.sub, row.gameId) : await addWishlistItem(user.sub, game);
-    setWishlist(nextWishlist);
-    setWishlistAlerts(await fetchWishlistAlerts(user.sub, region));
+    try {
+      const nextWishlist = wishlist.some((item) => item.gameId === row.gameId) ? await deleteWishlistItem(user.sub, row.gameId) : await addWishlistItem(user.sub, game);
+      setWishlist(nextWishlist);
+      setWishlistAlerts(await fetchWishlistAlerts(user.sub, region));
+    } catch (error) {
+      if ((error as Error)?.message === "session_expired") {
+        setUser(null);
+        setWishlist([]);
+        setWishlistAlerts([]);
+        return;
+      }
+      console.error(error);
+    }
   }
 
   return (
@@ -446,6 +462,8 @@ function BibliotecaContent() {
           displayCurrency={payload.latest.currency ?? "ARS"}
           displayLocale={payload.latest.locale ?? "es-AR"}
           user={user}
+          wishlisted={wishlist.some((item) => item.gameId === selectedRow.gameId)}
+          onToggleWishlist={() => toggleWishlist(selectedRow)}
           onClose={() => setSelectedGameId(null)}
         />
       ) : null}
@@ -686,6 +704,8 @@ function GameDetailModal({
   displayCurrency,
   displayLocale,
   user,
+  wishlisted,
+  onToggleWishlist,
   onClose
 }: {
   row: PriceRow;
@@ -698,6 +718,8 @@ function GameDetailModal({
   displayCurrency: string;
   displayLocale: string;
   user: GoogleUser | null;
+  wishlisted: boolean;
+  onToggleWishlist: () => void;
   onClose: () => void;
 }) {
   const activeStores = enabledStores.length ? enabledStores : STORES;
@@ -705,6 +727,14 @@ function GameDetailModal({
     <div className="modalBackdrop" role="presentation" onClick={onClose}>
       <section className="gameModal" role="dialog" aria-modal="true" aria-label={row.gameTitle} onClick={(event) => event.stopPropagation()}>
         <div className="modalActions">
+          <button
+            className={wishlisted ? "wishlistStar modalWishlistStar active" : "wishlistStar modalWishlistStar"}
+            type="button"
+            aria-label={wishlisted ? "Quitar de deseados" : "Guardar en deseados"}
+            onClick={onToggleWishlist}
+          >
+            <Star size={18} />
+          </button>
           <ProblemReportButton user={user} />
           <button className="modalClose" onClick={onClose} aria-label="Cerrar">
             <X size={18} />

@@ -102,17 +102,24 @@ async function getFullItadHistory(latest: LatestPrices, gameIds: Set<string>): P
   const missingGameIds = new Set([...gameIds].filter((gameId) => (cachedCounts[gameId] ?? 0) < MIN_FULL_HISTORY_POINTS));
   if (!missingGameIds.size) return cached;
 
-  const fetched = await fetchItadFullHistoryForGames(latest, missingGameIds);
-  const merged = {
-    timestamp: fetched.timestamp ?? cached.timestamp,
-    enabled: cached.enabled || fetched.enabled,
-    source: fetched.enabled ? fetched.source : cached.source,
-    matchedGames: Math.max(cached.matchedGames, fetched.matchedGames),
-    errors: [...cached.errors, ...fetched.errors],
-    entries: mergeHistoryEntries(cached.entries, fetched.entries)
-  };
-  await writeJson(filePath, merged);
-  return merged;
+  try {
+    const fetched = await fetchItadFullHistoryForGames(latest, missingGameIds);
+    const merged = {
+      timestamp: fetched.timestamp ?? cached.timestamp,
+      enabled: cached.enabled || fetched.enabled,
+      source: fetched.enabled ? fetched.source : cached.source,
+      matchedGames: Math.max(cached.matchedGames, fetched.matchedGames),
+      errors: [...cached.errors, ...fetched.errors],
+      entries: mergeHistoryEntries(cached.entries, fetched.entries)
+    };
+    await writeJson(filePath, merged);
+    return merged;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Error desconocido al consultar historial completo ITAD";
+    return cached.timestamp || cached.entries.length
+      ? { ...cached, errors: [...cached.errors, message] }
+      : { ...emptyItad, enabled: Boolean(process.env.ITAD_API_KEY), errors: [message] };
+  }
 }
 
 function filterEntriesByGameIds(entries: PriceHistoryEntry[], gameIds: Set<string> | undefined): PriceHistoryEntry[] {

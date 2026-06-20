@@ -46,6 +46,10 @@ export async function persistSession(user: GoogleUser): Promise<void> {
 
 export async function fetchWishlist(userId: string): Promise<WishlistGame[]> {
   const response = await fetch("/api/user/wishlist");
+  if (response.status === 401) {
+    handleExpiredSession();
+    return [];
+  }
   if (!response.ok) return [];
   const payload = (await response.json()) as { wishlist?: WishlistGame[] };
   const wishlist = payload.wishlist ?? [];
@@ -73,6 +77,7 @@ export async function addWishlistItem(userId: string, item: WishlistGame): Promi
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ item })
   });
+  await assertAuthenticated(response);
   const payload = (await response.json()) as { wishlist?: WishlistGame[] };
   return payload.wishlist ?? [];
 }
@@ -87,6 +92,7 @@ export async function updateWishlistItem(userId: string, gameId: string, updates
       notificationPreferences: updates.notificationPreferences
     })
   });
+  await assertAuthenticated(response);
   const payload = (await response.json()) as { wishlist?: WishlistGame[] };
   return payload.wishlist ?? [];
 }
@@ -95,6 +101,7 @@ export async function deleteWishlistItem(userId: string, gameId: string): Promis
   const response = await fetch(`/api/user/wishlist?gameId=${encodeURIComponent(gameId)}`, {
     method: "DELETE"
   });
+  await assertAuthenticated(response);
   const payload = (await response.json()) as { wishlist?: WishlistGame[] };
   removeLegacyWishlistItem(userId, gameId);
   return payload.wishlist ?? [];
@@ -132,6 +139,17 @@ export function normalizeNotificationSettings(settings: Partial<NotificationSett
     discord: Boolean(settings?.discord),
     enabledStores: enabledStores?.length ? enabledStores : [...STORES]
   };
+}
+
+async function assertAuthenticated(response: Response): Promise<void> {
+  if (response.status !== 401) return;
+  handleExpiredSession();
+  throw new Error("session_expired");
+}
+
+function handleExpiredSession(): void {
+  window.localStorage.removeItem("glitchprice-user");
+  window.dispatchEvent(new CustomEvent("glitchprice-open-user-menu"));
 }
 
 function readLegacyWishlist(userId: string): WishlistGame[] {

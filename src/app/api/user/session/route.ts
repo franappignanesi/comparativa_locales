@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { clearSessionCookie, setSessionCookie, verifyGoogleCredential } from "@/lib/auth-session";
+import { clearSessionCookie, getCurrentUser, setSessionCookie, verifyGoogleCredential } from "@/lib/auth-session";
 import { upsertUser } from "@/lib/user-store";
 
 export async function POST(request: Request) {
@@ -21,6 +21,11 @@ export async function POST(request: Request) {
   const response = NextResponse.json({ user: storedUser });
   setSessionCookie(response, storedUser);
   return response;
+}
+
+export async function GET(request: Request) {
+  const user = getCurrentUser(request);
+  return user ? NextResponse.json({ user }) : NextResponse.json({ user: null }, { status: 401 });
 }
 
 export async function DELETE() {
