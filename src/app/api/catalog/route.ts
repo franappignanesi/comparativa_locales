@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
 
   try {
-    return NextResponse.json(
+    const response = NextResponse.json(
       await getCatalogPage({
         mode: parseMode(params.get("mode")),
         query: params.get("query") ?? "",
@@ -19,6 +19,8 @@ export async function GET(request: NextRequest) {
         refresh: false
       })
     );
+    response.headers.set("Cache-Control", "public, s-maxage=120, stale-while-revalidate=600");
+    return response;
   } catch (error) {
     console.error("[api/catalog] failed", error);
     return NextResponse.json({ error: "catalog_failed", message: errorMessage(error) }, { status: 500 });

@@ -83,6 +83,8 @@ const STEAM_CATEGORY_FILTERS = [
   { value: "Simulation", label: "Simulación", icon: SlidersHorizontal },
   { value: "Indie", label: "Indie", icon: Leaf }
 ];
+const CATALOG_PAGE_SIZE = 30;
+const SEARCH_DEBOUNCE_MS = 250;
 
 export default function Home() {
   return (
@@ -96,6 +98,7 @@ function BibliotecaContent() {
   const searchParams = useSearchParams();
   const [payload, setPayload] = useState<ApiPayload | null>(null);
   const [query, setQuery] = useState(searchParams.get("query") ?? "");
+  const [debouncedQuery, setDebouncedQuery] = useState(searchParams.get("query") ?? "");
   const [category, setCategory] = useState("todas");
   const [filter, setFilter] = useState(searchParams.get("filter") ?? "todos");
   const [sort, setSort] = useState("diferencia");
@@ -132,11 +135,16 @@ function BibliotecaContent() {
   }, [user, region]);
 
   useEffect(() => {
+    const timeout = window.setTimeout(() => setDebouncedQuery(query), SEARCH_DEBOUNCE_MS);
+    return () => window.clearTimeout(timeout);
+  }, [query]);
+
+  useEffect(() => {
     setLoading(true);
     fetchCatalog({ offset: 0 })
       .then(setPayload)
       .finally(() => setLoading(false));
-  }, [query, category, filter, sort, region]);
+  }, [debouncedQuery, category, filter, sort, region]);
 
   useEffect(() => {
     const selectedFromUrl = searchParams.get("game");
@@ -197,12 +205,12 @@ function BibliotecaContent() {
   async function fetchCatalog(options: { offset: number; refresh?: boolean }): Promise<ApiPayload> {
     const params = new URLSearchParams({
       mode: "broad",
-      query,
+      query: debouncedQuery,
       category,
       filter,
       sort,
       region,
-      limit: "60",
+      limit: String(CATALOG_PAGE_SIZE),
       offset: String(options.offset)
     });
     if (options.refresh) params.set("refresh", "1");

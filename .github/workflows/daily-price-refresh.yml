@@ -155,6 +155,8 @@ jobs:
         run: npm run worker:restore-current-prices
       - name: Evaluate wishlist notifications
         continue-on-error: true
+        env:
+          PRICE_REGIONS: AR,MX,ES,PE,CL
         run: npm run notifications:evaluate
       - name: Guard private generated data
         shell: bash

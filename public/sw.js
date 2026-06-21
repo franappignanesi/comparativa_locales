@@ -11,14 +11,11 @@ async function showWishlistNotification() {
   let title = "BARATEAM";
   let body = "Tenés novedades en tu wishlist.";
   try {
-    const response = await fetch("/api/user/wishlist-alerts?region=AR", { credentials: "include" });
-    if (response.ok) {
-      const payload = await response.json();
-      const alert = payload.alerts?.[0];
-      if (alert) {
-        title = alert.gameTitle ?? title;
-        body = alert.message ?? body;
-      }
+    const alerts = await fetchAlerts();
+    const firstAlert = alerts[0];
+    if (firstAlert) {
+      title = firstAlert.gameTitle ?? title;
+      body = alerts.length === 1 ? firstAlert.message ?? body : `Tenés ${alerts.length} alertas de precio en tu wishlist.`;
     }
   } catch {
     // A generic notification is still useful if the app cannot fetch alert details.
@@ -29,4 +26,16 @@ async function showWishlistNotification() {
     badge: "/store-logos/steam.png",
     data: { url: "/wishlist" }
   });
+}
+
+async function fetchAlerts() {
+  const regions = ["AR", "MX", "ES", "PE", "CL"];
+  const responses = await Promise.all(
+    regions.map((region) =>
+      fetch(`/api/user/wishlist-alerts?region=${region}`, { credentials: "include" })
+        .then((response) => (response.ok ? response.json() : null))
+        .catch(() => null)
+    )
+  );
+  return responses.flatMap((payload) => (Array.isArray(payload?.alerts) ? payload.alerts : []));
 }
