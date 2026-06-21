@@ -299,6 +299,7 @@ function BibliotecaContent() {
       <nav className="brandBar">
         <div className="brandCluster">
           <div className="brand">BARATEAM</div>
+          <span className="betaBadge">BETA</span>
         </div>
         <div className="navTools">
           <ProblemReportButton user={user} />
@@ -448,14 +449,7 @@ function BibliotecaContent() {
       </main>
 
       <footer className="footer">
-        <div>
-          <span>API de Tienda</span>
-          <span>Política de Privacidad</span>
-          <span>Términos de Servicio</span>
-          <span>Discord</span>
-          <span>Contacto</span>
-        </div>
-        <p>© 2026 BARATEAM. TODOS LOS PRECIOS ACTUALIZADOS EN TIEMPO REAL.</p>
+        <p>© 2026 BARATEAM. CREADO POR SHUX. PARA CONSULTAS ESCRIBIR A SHUXTEAM@GMAIL.COM O @SHUXTEAM EN INSTAGRAM</p>
       </footer>
 
       {selectedRow ? (

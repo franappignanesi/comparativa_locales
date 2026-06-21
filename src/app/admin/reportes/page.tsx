@@ -119,6 +119,7 @@ export default function AdminReportsPage() {
       <nav className="brandBar">
         <div className="brandCluster">
           <div className="brand">BARATEAM</div>
+          <span className="betaBadge">BETA</span>
         </div>
         <div className="navTools">
           <ProblemReportButton user={user} />

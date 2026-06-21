@@ -138,6 +138,7 @@ export default function ComparativaGeneralPage() {
             <Link className="brand" href="/">
               BARATEAM
             </Link>
+            <span className="betaBadge">BETA</span>
           </div>
         </nav>
         <main className="page">
@@ -167,6 +168,7 @@ export default function ComparativaGeneralPage() {
           <Link className="brand" href="/">
             BARATEAM
           </Link>
+          <span className="betaBadge">BETA</span>
         </div>
         <div className="navTools">
           <ProblemReportButton user={user} />

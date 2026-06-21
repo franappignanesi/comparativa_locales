@@ -84,6 +84,20 @@ select {
   text-decoration: none;
 }
 
+.betaBadge {
+  min-height: 20px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(248, 200, 19, 0.58);
+  border-radius: 999px;
+  background: rgba(248, 200, 19, 0.12);
+  color: var(--primary-soft);
+  padding: 0 8px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
 .storeTabs {
   gap: 24px;
   color: var(--muted);
@@ -3206,6 +3220,12 @@ select option {
   gap: 12px;
 }
 
+.landingBrandCluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .landingBrand {
   color: var(--primary-soft);
   text-decoration: none;
@@ -3741,6 +3761,55 @@ select option {
 .comingSoonTool:focus-visible span {
   opacity: 1;
   transform: translate(-50%, 0);
+}
+
+.shuxBlock {
+  max-width: 920px;
+  margin: -28px auto 72px;
+  padding: 0 24px;
+  display: grid;
+  place-items: center;
+  gap: 24px;
+  text-align: center;
+}
+
+.shuxBlock p {
+  max-width: 620px;
+  margin: 0;
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1.35;
+  font-weight: 800;
+}
+
+.shuxBlock div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.shuxBlock a {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-warm);
+  border-radius: 6px;
+  background: rgba(17, 14, 5, 0.62);
+  color: var(--primary-soft);
+  padding: 0 14px;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.shuxBlock a:hover,
+.shuxBlock a:focus-visible {
+  border-color: rgba(248, 200, 19, 0.58);
+  background: rgba(248, 200, 19, 0.1);
 }
 
 .landingFooter {

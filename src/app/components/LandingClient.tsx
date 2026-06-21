@@ -99,9 +99,12 @@ export function LandingClient() {
   return (
     <main className="landing">
       <nav className="landingNav">
-        <Link href="/" className="landingBrand">
-          BARATEAM
-        </Link>
+        <div className="landingBrandCluster">
+          <Link href="/" className="landingBrand">
+            BARATEAM
+          </Link>
+          <span className="betaBadge">BETA</span>
+        </div>
         <div className="landingNavTools">
           <RegionSelector value={region} onChange={setRegion} />
           <Link href="/biblioteca" className="landingNavButton">
@@ -112,7 +115,7 @@ export function LandingClient() {
 
       <section className="landingHero">
         <span className="heroPill">Actualización diaria</span>
-        <h1>Dónde conviene comprar juegos digitales en {currentRegion.label}</h1>
+        <h1>Dónde conviene comprar juegos en {currentRegion.label}</h1>
         <p>
           Compará precios de juegos en distintas tiendas oficiales, buscá ofertas y analizá datos regionales en{" "}
           {currentRegion.currency}.
@@ -128,7 +131,7 @@ export function LandingClient() {
       </section>
 
       <section className="landingSection" aria-busy={loading}>
-        <SectionTitle>Data Dashboard</SectionTitle>
+        <SectionTitle>Datita</SectionTitle>
         <div className="dashboardGrid">
           <article className="landingPanel indexPanel">
             <div className="panelHeader">
@@ -187,7 +190,7 @@ export function LandingClient() {
       <section className="landingSection">
         <div className="sectionSplit">
           <div>
-            <SectionTitle>Arbitraje de precios</SectionTitle>
+            <SectionTitle>Ojo a estos</SectionTitle>
             <p>Top 5 mayores diferencias de precio detectadas contra Steam.</p>
           </div>
           <Link href="/biblioteca?sort=diferencia" className="completeLink">
@@ -257,15 +260,27 @@ export function LandingClient() {
         </div>
       </section>
 
+      <section className="shuxBlock">
+        <p>Esta plataforma está siendo desarrollada por Shux, medio argentino de hardware y gaming</p>
+        <div>
+          <a href="https://www.youtube.com/@ShuxTeam" target="_blank" rel="noreferrer">
+            MIRANOS EN YOUTUBE
+          </a>
+          <a href="https://www.instagram.com/shuxteam/?hl=es" target="_blank" rel="noreferrer">
+            SEGUINOS EN INSTAGRAM
+          </a>
+          <a href="https://discord.com/invite/6y7Fh8x" target="_blank" rel="noreferrer">
+            GRUPO DE DISCORD
+          </a>
+          <a href="https://steamcommunity.com/groups/ShuxTeam" target="_blank" rel="noreferrer">
+            GRUPO DE STEAM
+          </a>
+        </div>
+      </section>
+
       <footer className="landingFooter">
         <strong>BARATEAM</strong>
-        <div>
-          <span>GPU Comparator</span>
-          <span>CPU Comparator</span>
-          <span>Privacy Policy</span>
-          <span>Contact</span>
-        </div>
-        <p>© 2026 BARATEAM by Shux. Precios calculados con datos regionales oficiales y cachés auditables.</p>
+        <p>© 2026 BARATEAM. CREADO POR SHUX. PARA CONSULTAS ESCRIBIR A SHUXTEAM@GMAIL.COM O @SHUXTEAM EN INSTAGRAM</p>
       </footer>
     </main>
   );
