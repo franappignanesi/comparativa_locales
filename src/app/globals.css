@@ -1841,6 +1841,46 @@ select option {
   transition: opacity 140ms ease, transform 140ms ease, background 140ms ease, color 140ms ease;
 }
 
+.discountRibbon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  min-width: 54px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 10px;
+  border-bottom-right-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.discountRibbon-steam {
+  background: #2a8cff;
+}
+
+.discountRibbon-epic {
+  background: #f7f1e6;
+  color: #151515;
+}
+
+.discountRibbon-gog {
+  background: #a970ff;
+}
+
+.discountRibbon-humble {
+  background: #df2f32;
+}
+
+.discountRibbon-microsoft {
+  background: #37c86a;
+  color: #07170d;
+}
+
 .gameCard:hover .wishlistStar,
 .wishlistStar:focus-visible,
 .wishlistStar.active {

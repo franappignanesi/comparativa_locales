@@ -3,7 +3,7 @@ import { getPriceHistoryReport } from "./history";
 import { getLatestPrices } from "./prices";
 import { DEFAULT_REGION, type RegionId } from "./regions";
 import { getGameSample } from "./sample-builder";
-import type { GameSample, LatestPrices, NormalizedPrice, PriceHistoryReport } from "./types";
+import type { GameSample, LatestPrices, NormalizedPrice, PriceHistoryReport, StoreId } from "./types";
 import { STORES } from "./types";
 
 export type CatalogMode = "strict" | "broad";
@@ -151,7 +151,7 @@ function filterAndSortRows(
       if (filter === "completos") return gameAnalysis?.coverage === STORES.length;
       return true;
     })
-    .sort((a, b) => compareRows(a, b, analysis, sort));
+    .sort((a, b) => (filter === "ofertas" ? maxDiscountPct(b) - maxDiscountPct(a) : compareRows(a, b, analysis, sort)));
 }
 
 function hasAnyCurrentPrice(row: PriceRow): boolean {
@@ -159,6 +159,21 @@ function hasAnyCurrentPrice(row: PriceRow): boolean {
     const price = row.prices[store];
     return Boolean(price?.available && price.arsFinalPrice != null);
   });
+}
+
+function maxDiscountPct(row: PriceRow): number {
+  return Math.max(0, ...STORES.map((store) => discountPct(row.prices[store]) ?? 0));
+}
+
+function discountPct(price: PriceRow["prices"][StoreId]): number | null {
+  if (!price?.available) return null;
+  if (typeof price.discountPct === "number" && Number.isFinite(price.discountPct) && price.discountPct > 0) {
+    return Math.round(price.discountPct);
+  }
+  if (price.arsBasePrice != null && price.arsFinalPrice != null && price.arsBasePrice > price.arsFinalPrice) {
+    return Math.round((1 - price.arsFinalPrice / price.arsBasePrice) * 100);
+  }
+  return null;
 }
 
 function steamCategory(row: PriceRow): string {

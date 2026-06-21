@@ -72,7 +72,7 @@ const STORE_LABELS: Record<StoreId, string> = {
 
 const SIDEBAR_ITEMS = [
   { label: "Ofertas", icon: Flame, filter: "ofertas" },
-  { label: "Bajadas de Precio", icon: TrendingDown, filter: "diferencias" }
+  { label: "Más baratos que en Steam", icon: TrendingDown, filter: "diferencias" }
 ];
 
 const STEAM_CATEGORY_FILTERS = [
@@ -373,7 +373,7 @@ function BibliotecaContent() {
             <select value={filter} onChange={(event) => setFilter(event.target.value)} aria-label="Filtro">
               <option value="todos">Todos</option>
               <option value="ofertas">Ofertas</option>
-              <option value="diferencias">Bajadas vs Steam</option>
+              <option value="diferencias">Más baratos que en Steam</option>
               <option value="completos">Completos</option>
             </select>
           </label>
@@ -521,6 +521,7 @@ function GameCard({
   const visibleStores = activeWinner
     ? Array.from(new Set(["steam" as StoreId, activeWinner, ...pricedStores.filter((store) => store !== "steam" && store !== activeWinner)])).filter((store) => activeStores.includes(store)).slice(0, 5)
     : pricedStores.slice(0, 5);
+  const bestDiscount = bestDiscountOffer(row, activeStores);
 
   return (
     <article className="gameCard">
@@ -534,6 +535,11 @@ function GameCard({
         }}
       >
         {row.coverUrl ? <img src={row.coverUrl} alt="" loading="lazy" /> : <div className="coverFallback" />}
+        {bestDiscount ? (
+          <span className={`discountRibbon discountRibbon-${bestDiscount.store}`} aria-label={`Descuento ${bestDiscount.discountPct}%`}>
+            -{bestDiscount.discountPct}%
+          </span>
+        ) : null}
         <button
           className={wishlisted ? "wishlistStar active" : "wishlistStar"}
           type="button"
@@ -585,6 +591,24 @@ function GameCard({
       </div>
     </article>
   );
+}
+
+function bestDiscountOffer(row: PriceRow, stores: StoreId[]): { store: StoreId; discountPct: number } | null {
+  return stores
+    .map((store) => ({ store, discountPct: discountPct(row.prices[store]) }))
+    .filter((offer): offer is { store: StoreId; discountPct: number } => offer.discountPct != null && offer.discountPct > 0)
+    .sort((a, b) => b.discountPct - a.discountPct)[0] ?? null;
+}
+
+function discountPct(price: NormalizedPrice | undefined): number | null {
+  if (!price?.available) return null;
+  if (typeof price.discountPct === "number" && Number.isFinite(price.discountPct) && price.discountPct > 0) {
+    return Math.round(price.discountPct);
+  }
+  if (price.arsBasePrice != null && price.arsFinalPrice != null && price.arsBasePrice > price.arsFinalPrice) {
+    return Math.round((1 - price.arsFinalPrice / price.arsBasePrice) * 100);
+  }
+  return null;
 }
 
 function StorePriceTile({
