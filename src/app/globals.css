@@ -3813,23 +3813,70 @@ select option {
 
 @media (max-width: 680px) {
   .brandBar {
-    padding: 0 16px;
+    height: auto;
+    min-height: 64px;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    padding: 10px 12px;
   }
 
   .brandCluster {
+    min-width: 0;
     gap: 14px;
   }
 
   .brand {
+    max-width: 124px;
     font-size: 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .navTools {
+    max-width: 100%;
+    flex: 1 1 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 2px;
     gap: 8px;
+    scrollbar-width: none;
   }
 
-  .wishlistNavButton {
+  .navTools::-webkit-scrollbar {
+    display: none;
+  }
+
+  .wishlistNavButton,
+  .problemReportButton {
+    min-height: 32px;
     padding: 0 10px;
+    white-space: nowrap;
+    font-size: 11px;
+  }
+
+  .regionButton,
+  .userButton {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+  }
+
+  .problemReportPanel,
+  .userDropdown,
+  .regionMenu {
+    position: fixed;
+    top: 72px;
+    right: 10px;
+    left: 10px;
+    width: auto;
+    max-height: calc(100dvh - 88px);
+    overflow: auto;
+  }
+
+  .page {
+    padding-top: 120px;
   }
 
   .actions {
@@ -3922,16 +3969,32 @@ select option {
   }
 
   .priceTiles {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 10px;
   }
 
   .priceTile {
-    min-height: 112px;
+    min-height: 92px;
+    padding: 12px;
+  }
+
+  .gameCardBody {
+    padding: 14px;
+  }
+
+  .gameHeroText {
+    left: 12px;
+    right: 12px;
+  }
+
+  .gameHeroText h3 {
+    font-size: 17px;
+    line-height: 1.12;
   }
 
   .modalBackdrop {
     padding: 12px;
+    align-items: stretch;
   }
 
   .modalPriceGrid {
@@ -3945,6 +4008,11 @@ select option {
   .modalHero {
     min-height: 180px;
     padding: 20px;
+  }
+
+  .gameModal {
+    max-height: calc(100dvh - 24px);
+    overflow: auto;
   }
 
   .modalContent {
