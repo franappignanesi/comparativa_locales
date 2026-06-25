@@ -18,6 +18,7 @@ export type CatalogParams = {
   offset?: number;
   refresh?: boolean;
   region?: RegionId;
+  useCachedExchangeRate?: boolean;
 };
 
 export type CatalogResponse = {
@@ -47,7 +48,7 @@ const MAX_LIMIT = 120;
 
 export async function getCatalogPage(params: CatalogParams = {}): Promise<CatalogResponse> {
   const region = params.region ?? DEFAULT_REGION;
-  const [sample, latest] = await Promise.all([getGameSample(), getLatestPrices({ refresh: params.refresh, region })]);
+  const [sample, latest] = await Promise.all([getGameSample(), getLatestPrices({ refresh: params.refresh, region, useCachedExchangeRate: params.useCachedExchangeRate })]);
   const strictIds = new Set(sample.strictSample.map((game) => game.id));
   const broadIds = new Set(sample.broadSample.map((game) => game.id));
   const expandedLatest = expandLatestWithSample(latest, sample);

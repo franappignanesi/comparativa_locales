@@ -3198,6 +3198,91 @@ select option {
   font-weight: 800;
 }
 
+.catalogSkeleton {
+  width: min(1120px, calc(100vw - 32px));
+  display: grid;
+  gap: 18px;
+}
+
+.skeletonTop,
+.skeletonMetrics,
+.skeletonGrid {
+  display: grid;
+  gap: 12px;
+}
+
+.skeletonTop {
+  grid-template-columns: 1fr 220px;
+}
+
+.skeletonMetrics {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.skeletonGrid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.skeletonTop span,
+.skeletonMetrics span,
+.skeletonGrid article {
+  border: 1px solid var(--line-warm);
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.035), rgba(248, 200, 19, 0.08), rgba(255, 255, 255, 0.035));
+  background-size: 220% 100%;
+  animation: skeletonPulse 1.35s ease-in-out infinite;
+}
+
+.skeletonTop span {
+  height: 44px;
+}
+
+.skeletonMetrics span {
+  height: 84px;
+}
+
+.skeletonGrid article {
+  min-height: 270px;
+  padding: 14px;
+  display: grid;
+  grid-template-rows: 120px 1fr;
+  gap: 14px;
+}
+
+.skeletonGrid article > span,
+.skeletonGrid i {
+  display: block;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.skeletonGrid div {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.skeletonGrid i {
+  height: 16px;
+}
+
+.skeletonGrid i:nth-child(2) {
+  width: 74%;
+}
+
+.skeletonGrid i:nth-child(3) {
+  width: 52%;
+}
+
+@keyframes skeletonPulse {
+  0% {
+    background-position: 120% 0;
+  }
+  100% {
+    background-position: -120% 0;
+  }
+}
+
 .landing {
   min-height: 100vh;
   background: var(--surface-lowest);
@@ -4007,7 +4092,10 @@ select option {
   .chartsGrid,
   .featuredCharts,
   .comparisonBands,
-  .wishlistSectionGrid {
+  .wishlistSectionGrid,
+  .skeletonTop,
+  .skeletonMetrics,
+  .skeletonGrid {
     grid-template-columns: 1fr;
   }
 

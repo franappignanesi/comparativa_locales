@@ -25,12 +25,15 @@ const emptyLatest: LatestPrices = {
 const DEFAULT_REFRESH_CONCURRENCY = 8;
 const DEFAULT_STALE_HOURS = 96;
 
-export async function getLatestPrices(options: { refresh?: boolean; region?: RegionId } = {}): Promise<LatestPrices> {
+export async function getLatestPrices(options: { refresh?: boolean; region?: RegionId; useCachedExchangeRate?: boolean } = {}): Promise<LatestPrices> {
   const region = getRegion(options.region);
   const cachePath = latestPricesPath(region.id);
   const cached = await readJson<LatestPrices>(cachePath, emptyLatest);
 
-  if (!options.refresh && cached.timestamp) return withRegionMetadata(cached, region, await getExchangeRate(region.id));
+  if (!options.refresh && cached.timestamp) {
+    if (options.useCachedExchangeRate) return withCachedRegionMetadata(cached, region);
+    return withRegionMetadata(cached, region, await getExchangeRate(region.id));
+  }
 
   try {
     const refreshed = await refreshPrices(region.id);
@@ -221,6 +224,16 @@ async function buildPriceRows(
   });
 
   return { prices, errors };
+}
+
+function withCachedRegionMetadata(latest: LatestPrices, region: RegionConfig): LatestPrices {
+  return {
+    ...latest,
+    region: latest.region ?? region.id,
+    currency: latest.currency ?? region.currency,
+    locale: latest.locale ?? region.locale,
+    digitalVatRate: latest.digitalVatRate ?? getDigitalTaxRate(region.id)
+  };
 }
 
 function mergeTransientSafe(

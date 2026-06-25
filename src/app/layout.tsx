@@ -3,8 +3,11 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Comparador de precios de juegos en Argentina",
-  description: "MVP auditable para comparar precios digitales entre tiendas."
+  title: {
+    default: "BARATEAM",
+    template: "%s"
+  },
+  description: "BARATEAM compara precios regionales de juegos entre tiendas oficiales."
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

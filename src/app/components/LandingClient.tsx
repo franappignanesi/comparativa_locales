@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, Cpu, Gauge, Trophy } from "lucide-react";
 import { RegionSelector } from "@/app/components/RegionSelector";
 import { fetchNotificationSettings, readStoredUser } from "@/app/components/userPersistence";
@@ -45,12 +45,19 @@ const STORE_LABELS: Record<StoreId, string> = {
   microsoft: "Microsoft Store"
 };
 
-export function LandingClient() {
+export function LandingClient({
+  initialStats,
+  initialCatalog
+}: {
+  initialStats: StatsPayload | null;
+  initialCatalog: CatalogPayload | null;
+}) {
   const [region, setRegion] = useState<RegionId>(DEFAULT_REGION);
-  const [stats, setStats] = useState<StatsPayload | null>(null);
-  const [catalog, setCatalog] = useState<CatalogPayload | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<StatsPayload | null>(initialStats);
+  const [catalog, setCatalog] = useState<CatalogPayload | null>(initialCatalog);
+  const [loading, setLoading] = useState(!initialStats || !initialCatalog);
   const [enabledStores, setEnabledStores] = useState<StoreId[]>([...STORES]);
+  const initialDataRef = useRef(Boolean(initialStats && initialCatalog));
 
   useEffect(() => {
     const saved = window.localStorage.getItem("glitchprice-region") as RegionId | null;
@@ -60,6 +67,10 @@ export function LandingClient() {
   }, []);
 
   useEffect(() => {
+    if (initialDataRef.current) {
+      initialDataRef.current = false;
+      return;
+    }
     const controller = new AbortController();
     setLoading(true);
     Promise.all([
