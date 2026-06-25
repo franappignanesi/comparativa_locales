@@ -15,10 +15,10 @@ on:
         description: "Max batches per region"
         required: false
         default: ""
-      regions_json:
-        description: "JSON array of regions to refresh"
+      regions:
+        description: "Comma-separated regions to refresh"
         required: false
-        default: '["AR","MX","ES","PE","CL"]'
+        default: "AR,MX,ES,PE,CL"
       publish:
         description: "Deploy refreshed data to production"
         required: false
@@ -73,7 +73,7 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix:
-        region: ${{ fromJSON(github.event.inputs.regions_json || '["AR","MX","ES","PE","CL"]') }}
+        region: [AR, MX, ES, PE, CL]
     env:
       GLITCHPRICE_PUBLIC_CACHE_SOURCE: file
       ITAD_API_KEY: ${{ secrets.ITAD_API_KEY }}
@@ -94,19 +94,24 @@ jobs:
       STEAM_REQUEST_TIMEOUT_MS: "12000"
     steps:
       - uses: actions/checkout@v7.0.0
+        if: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
       - uses: actions/download-artifact@v4
+        if: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
         continue-on-error: true
         with:
           name: catalog-state
           path: .
       - uses: actions/setup-node@v6.4.0
+        if: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
         with:
           node-version: 24
           cache: npm
       - run: npm ci
+        if: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
       - run: npm run worker:full-refresh
+        if: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
       - name: Collect region cache
-        if: always()
+        if: ${{ always() && contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
         shell: bash
         run: |
           set -euo pipefail
@@ -122,7 +127,7 @@ jobs:
           fi
           cp "data/generated/github-full-refresh-status-${PRICE_REGION}.json" "price-cache/data/generated/github-full-refresh-status-${PRICE_REGION}.json" 2>/dev/null || true
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: ${{ always() && contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
         with:
           name: price-cache-${{ matrix.region }}
           if-no-files-found: error
