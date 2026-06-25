@@ -35,7 +35,7 @@ export async function fetchStorePrices(games: SampleGame[], chunkSize = 50, regi
       if (!response.ok) {
         logSteamChunk(`http_${response.status}`, region, index, chunk.length);
         if (chunk.length > 1 && response.status === 400) {
-          const fallback = await fetchStorePrices(chunk, 1, region);
+          const fallback = await fetchStorePrices(chunk, Math.ceil(chunk.length / 2), region);
           for (const [gameId, price] of fallback) result.set(gameId, price);
           continue;
         }
