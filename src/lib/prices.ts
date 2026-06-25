@@ -166,7 +166,7 @@ async function buildPriceRows(
   const steamChunkSize = 50;
   const useSteamLiveFallback = process.env.STEAM_LIVE_FALLBACK !== "0";
   const steamPrices = useSteamLiveFallback
-    ? await fetchSteamPrices(games.filter((game) => game.availableStores.includes("steam") && !itadCurrent.prices.get(game.id)?.steam), steamChunkSize, region)
+    ? await fetchSteamPrices(games.filter((game) => game.availableStores.includes("steam")), steamChunkSize, region)
     : new Map<string, StorePrice>();
 
   const prices = await mapWithConcurrency(games, getRefreshConcurrency(), async (game) => {
@@ -175,6 +175,16 @@ async function buildPriceRows(
     await Promise.all(
       STORES.map(async (store) => {
         const itadPrice = store === "microsoft" ? undefined : itadCurrent.prices.get(game.id)?.[store];
+
+        if (store === "steam" && useSteamLiveFallback) {
+          const steamPrice = steamPrices.get(game.id) ?? (await fetchSteamPrice(game, region));
+          if (steamPrice.available && steamPrice.finalPrice != null) {
+            storePrices[store] = withFreshness(normalizePrice({ ...steamPrice, fetchedAt: steamPrice.fetchedAt ?? fetchedAt }, exchangeRate));
+            return;
+          }
+          if (!itadPrice && steamPrice.error) errors.push({ gameId: game.id, store, error: steamPrice.error });
+        }
+
         if (itadPrice) {
           storePrices[store] = withFreshness({ ...itadPrice, fetchedAt: itadPrice.fetchedAt ?? fetchedAt });
           return;
