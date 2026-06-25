@@ -740,6 +740,19 @@ select {
   box-shadow: 0 0 18px rgba(248, 200, 19, 0.16);
 }
 
+.sideLink.featuredSideLink {
+  border: 1px solid rgba(248, 200, 19, 0.45);
+  background: rgba(248, 200, 19, 0.1);
+  color: var(--primary-soft);
+}
+
+.sideLink.featuredSideLink:hover,
+.sideLink.featuredSideLink.active {
+  background: var(--primary);
+  color: var(--primary-ink);
+  box-shadow: 0 0 18px rgba(248, 200, 19, 0.18);
+}
+
 .sideLink.adminSideLink {
   margin-top: auto;
   border-top: 1px solid rgba(255, 232, 172, 0.12);

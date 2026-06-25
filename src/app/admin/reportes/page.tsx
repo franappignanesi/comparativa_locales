@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, Bell, CheckCircle2, ChevronDown, Circle, ExternalLink, History, Library, ShieldAlert } from "lucide-react";
+import { BarChart3, Bell, CheckCircle2, ChevronDown, Circle, ExternalLink, Flame, History, Library, ShieldAlert, TrendingDown } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ProblemReportButton } from "@/app/components/ProblemReportButton";
@@ -150,6 +150,22 @@ export default function AdminReportsPage() {
           <Link href="/comparativa-general" className="sideLink">
             <BarChart3 size={20} />
             Comparativa general
+          </Link>
+          <Link href="/biblioteca?filter=steam-ofertas&sort=relevancia" className="sideLink featuredSideLink">
+            <Flame size={20} />
+            Ofertas de Steam
+          </Link>
+          <Link href="/biblioteca?filter=ofertas&sort=descuento" className="sideLink">
+            <Flame size={20} />
+            Ofertas
+          </Link>
+          <Link href="/biblioteca?filter=diferencias&sort=diferencia" className="sideLink">
+            <TrendingDown size={20} />
+            Más baratos que en Steam
+          </Link>
+          <Link href="/biblioteca?filter=historicos" className="sideLink">
+            <History size={20} />
+            Mínimos históricos
           </Link>
           {isAdmin ? (
             <Link href="/admin/reportes" className="sideLink adminSideLink active">

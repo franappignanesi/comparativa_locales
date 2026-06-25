@@ -147,12 +147,19 @@ function filterAndSortRows(
     .filter((row) => {
       const gameAnalysis = analysis.games[row.gameId];
       if (filter === "ofertas") return Object.values(row.prices).some((price) => (price?.discountPct ?? 0) > 0);
+      if (filter === "steam-ofertas") return (discountPct(row.prices.steam) ?? 0) > 0;
       if (filter === "diferencias") return (gameAnalysis?.differenceVsSteam ?? 0) < -1000;
+      if (filter === "historicos") return true;
       if (filter === "revision") return Boolean(gameAnalysis?.needsReview);
       if (filter === "completos") return gameAnalysis?.coverage === STORES.length;
       return true;
     })
-    .sort((a, b) => (filter === "ofertas" ? maxDiscountPct(b) - maxDiscountPct(a) : compareRows(a, b, analysis, sort)));
+    .sort((a, b) => {
+      if (sort === "descuento") return maxDiscountPct(b) - maxDiscountPct(a);
+      if (filter === "steam-ofertas" && sort === "relevancia") return compareSteamOfferRelevance(a, b, analysis);
+      if (filter === "ofertas" && sort === "relevancia") return maxDiscountPct(b) - maxDiscountPct(a);
+      return compareRows(a, b, analysis, sort);
+    });
 }
 
 function hasAnyCurrentPrice(row: PriceRow): boolean {
@@ -190,6 +197,16 @@ function compareRows(a: PriceRow, b: PriceRow, analysis: AnalysisSummary, sort: 
   if (sort === "cobertura") return (analysisB?.coverage ?? 0) - (analysisA?.coverage ?? 0);
   if (sort === "nombre") return a.gameTitle.localeCompare(b.gameTitle);
   return (analysisA?.differenceVsSteam ?? Number.MAX_SAFE_INTEGER) - (analysisB?.differenceVsSteam ?? Number.MAX_SAFE_INTEGER);
+}
+
+function compareSteamOfferRelevance(a: PriceRow, b: PriceRow, analysis: AnalysisSummary): number {
+  const discountDiff = (discountPct(b.prices.steam) ?? 0) - (discountPct(a.prices.steam) ?? 0);
+  if (discountDiff !== 0) return discountDiff;
+  const coverageDiff = (analysis.games[b.gameId]?.coverage ?? 0) - (analysis.games[a.gameId]?.coverage ?? 0);
+  if (coverageDiff !== 0) return coverageDiff;
+  const priceDiff = (a.prices.steam?.arsFinalPrice ?? Number.MAX_SAFE_INTEGER) - (b.prices.steam?.arsFinalPrice ?? Number.MAX_SAFE_INTEGER);
+  if (priceDiff !== 0) return priceDiff;
+  return a.gameTitle.localeCompare(b.gameTitle);
 }
 
 function sliceHistory(history: PriceHistoryReport, gameIds: Set<string>): PriceHistoryReport {

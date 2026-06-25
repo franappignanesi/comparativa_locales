@@ -5,6 +5,7 @@ import {
   BarChart3,
   Flame,
   History,
+  Library,
   Rocket,
   Search,
   SlidersHorizontal,
@@ -14,6 +15,7 @@ import {
   ShieldAlert,
   X
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -62,6 +64,14 @@ type ApiPayload = {
 
 type PriceRow = LatestPrices["prices"][number];
 
+type SidebarItem = {
+  label: string;
+  icon: LucideIcon;
+  filter: string;
+  sort: string;
+  featured?: boolean;
+};
+
 const STORE_LABELS: Record<StoreId, string> = {
   steam: "Steam",
   epic: "Epic",
@@ -70,9 +80,11 @@ const STORE_LABELS: Record<StoreId, string> = {
   microsoft: "Microsoft"
 };
 
-const SIDEBAR_ITEMS = [
-  { label: "Ofertas", icon: Flame, filter: "ofertas" },
-  { label: "Más baratos que en Steam", icon: TrendingDown, filter: "diferencias" }
+const SIDEBAR_ITEMS: SidebarItem[] = [
+  { label: "Ofertas de Steam", icon: Flame, filter: "steam-ofertas", sort: "relevancia", featured: true },
+  { label: "Ofertas", icon: Flame, filter: "ofertas", sort: "descuento" },
+  { label: "Más baratos que en Steam", icon: TrendingDown, filter: "diferencias", sort: "diferencia" },
+  { label: "Mínimos históricos", icon: History, filter: "historicos", sort: "diferencia" }
 ];
 
 const STEAM_CATEGORY_FILTERS = [
@@ -101,7 +113,7 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
   const [debouncedQuery, setDebouncedQuery] = useState(searchParams.get("query") ?? "");
   const [category, setCategory] = useState("todas");
   const [filter, setFilter] = useState(searchParams.get("filter") ?? "todos");
-  const [sort, setSort] = useState("diferencia");
+  const [sort, setSort] = useState(searchParams.get("sort") ?? "diferencia");
   const [region, setRegion] = useState<RegionId>(DEFAULT_REGION);
   const [loading, setLoading] = useState(!initialPayload);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -251,7 +263,8 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
   }
 
   function activateSidebar(item: (typeof SIDEBAR_ITEMS)[number]) {
-    setFilter(filter === item.filter ? "todos" : item.filter);
+    setFilter(filter === item.filter && sort === item.sort ? "todos" : item.filter);
+    setSort(item.sort);
     setCategory("todas");
   }
 
@@ -325,8 +338,12 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
         </div>
         <div className="sideLinks">
           <Link href="/" className="sideLink">
-            <History size={20} />
+            <Library size={20} />
             Inicio
+          </Link>
+          <Link href="/biblioteca" className="sideLink active">
+            <Library size={20} />
+            Biblioteca
           </Link>
           <Link href="/comparativa-general" className="sideLink">
             <BarChart3 size={20} />
@@ -334,9 +351,9 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
           </Link>
           {SIDEBAR_ITEMS.map((item) => {
             const Icon = item.icon;
-            const active = filter === item.filter;
+            const active = filter === item.filter && sort === item.sort;
             return (
-              <button key={item.label} className={active ? "sideLink active" : "sideLink"} onClick={() => activateSidebar(item)}>
+              <button key={item.label} className={`${active ? "sideLink active" : "sideLink"} ${item.featured ? "featuredSideLink" : ""}`} onClick={() => activateSidebar(item)}>
                 <Icon size={20} />
                 {item.label}
               </button>
@@ -378,14 +395,18 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
             <SlidersHorizontal size={20} />
             <select value={filter} onChange={(event) => setFilter(event.target.value)} aria-label="Filtro">
               <option value="todos">Todos</option>
+              <option value="steam-ofertas">Ofertas de Steam</option>
               <option value="ofertas">Ofertas</option>
               <option value="diferencias">Más baratos que en Steam</option>
+              <option value="historicos">Mínimos históricos</option>
               <option value="completos">Completos</option>
             </select>
           </label>
           <label className="iconSelect">
             <ArrowDownUp size={20} />
             <select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Orden">
+              <option value="relevancia">Relevancia</option>
+              <option value="descuento">Mayor oferta</option>
               <option value="diferencia">Diferencia</option>
               <option value="precio">Precio</option>
               <option value="cobertura">Cobertura</option>

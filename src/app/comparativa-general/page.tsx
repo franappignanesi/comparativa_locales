@@ -1,6 +1,7 @@
 "use client";
 
 import { BarChart3, Flame, History, Library, ShieldAlert, Star, TrendingDown } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { RegionSelector } from "@/app/components/RegionSelector";
@@ -40,6 +41,13 @@ type StatsPayload = {
   };
 };
 
+type SidebarItem = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  featured?: boolean;
+};
+
 const STORE_LABELS: Record<StoreId, string> = {
   steam: "Steam",
   epic: "Epic",
@@ -48,13 +56,14 @@ const STORE_LABELS: Record<StoreId, string> = {
   microsoft: "Microsoft"
 };
 
-const SIDEBAR_ITEMS = [
+const SIDEBAR_ITEMS: SidebarItem[] = [
   { href: "/", label: "Inicio", icon: Library },
   { href: "/biblioteca", label: "Biblioteca", icon: Library },
   { href: "/comparativa-general", label: "Comparativa general", icon: BarChart3 },
-  { href: "/biblioteca?filter=ofertas", label: "Ofertas", icon: Flame },
-  { href: "/biblioteca?filter=diferencias", label: "Bajadas de precio", icon: TrendingDown },
-  { href: "/biblioteca", label: "Mínimos históricos", icon: History }
+  { href: "/biblioteca?filter=steam-ofertas&sort=relevancia", label: "Ofertas de Steam", icon: Flame, featured: true },
+  { href: "/biblioteca?filter=ofertas&sort=descuento", label: "Ofertas", icon: Flame },
+  { href: "/biblioteca?filter=diferencias&sort=diferencia", label: "Más baratos que en Steam", icon: TrendingDown },
+  { href: "/biblioteca?filter=historicos", label: "Mínimos históricos", icon: History }
 ];
 
 export default function ComparativaGeneralPage() {
@@ -192,7 +201,7 @@ export default function ComparativaGeneralPage() {
             const Icon = item.icon;
             const active = item.href === "/comparativa-general";
             return (
-              <Link key={item.href} className={active ? "sideLink active" : "sideLink"} href={item.href}>
+              <Link key={item.href} className={`${active ? "sideLink active" : "sideLink"} ${item.featured ? "featuredSideLink" : ""}`} href={item.href}>
                 <Icon size={20} />
                 {item.label}
               </Link>

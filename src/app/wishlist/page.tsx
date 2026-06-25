@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, Bell, BellOff, Gamepad2, History, Library, ShieldAlert, X } from "lucide-react";
+import { BarChart3, Bell, BellOff, Flame, Gamepad2, History, Library, ShieldAlert, TrendingDown, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { RegionSelector } from "@/app/components/RegionSelector";
@@ -125,6 +125,22 @@ export default function WishlistPage() {
           <Link href="/comparativa-general" className="sideLink">
             <BarChart3 size={20} />
             Comparativa general
+          </Link>
+          <Link href="/biblioteca?filter=steam-ofertas&sort=relevancia" className="sideLink featuredSideLink">
+            <Flame size={20} />
+            Ofertas de Steam
+          </Link>
+          <Link href="/biblioteca?filter=ofertas&sort=descuento" className="sideLink">
+            <Flame size={20} />
+            Ofertas
+          </Link>
+          <Link href="/biblioteca?filter=diferencias&sort=diferencia" className="sideLink">
+            <TrendingDown size={20} />
+            Más baratos que en Steam
+          </Link>
+          <Link href="/biblioteca?filter=historicos" className="sideLink">
+            <History size={20} />
+            Mínimos históricos
           </Link>
           {isAdminEmail(user?.email) ? (
             <Link href="/admin/reportes" className="sideLink adminSideLink">

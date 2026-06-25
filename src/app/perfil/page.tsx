@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, Bell, History, Library, Mail, MonitorSmartphone, Settings, ShieldAlert, Webhook } from "lucide-react";
+import { BarChart3, Bell, Flame, History, Library, Mail, MonitorSmartphone, Settings, ShieldAlert, TrendingDown, Webhook } from "lucide-react";
 import Link from "next/link";
 import type React from "react";
 import { useEffect, useState } from "react";
@@ -142,6 +142,22 @@ export default function ProfilePage() {
           <Link href="/comparativa-general" className="sideLink">
             <BarChart3 size={20} />
             Comparativa general
+          </Link>
+          <Link href="/biblioteca?filter=steam-ofertas&sort=relevancia" className="sideLink featuredSideLink">
+            <Flame size={20} />
+            Ofertas de Steam
+          </Link>
+          <Link href="/biblioteca?filter=ofertas&sort=descuento" className="sideLink">
+            <Flame size={20} />
+            Ofertas
+          </Link>
+          <Link href="/biblioteca?filter=diferencias&sort=diferencia" className="sideLink">
+            <TrendingDown size={20} />
+            Más baratos que en Steam
+          </Link>
+          <Link href="/biblioteca?filter=historicos" className="sideLink">
+            <History size={20} />
+            Mínimos históricos
           </Link>
           <Link href="/perfil#notificaciones" className="sideLink active">
             <Settings size={20} />
