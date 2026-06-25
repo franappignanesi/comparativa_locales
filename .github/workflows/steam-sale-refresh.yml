@@ -1,0 +1,152 @@
+name: Steam sale refresh
+
+on:
+  workflow_dispatch:
+    inputs:
+      regions:
+        description: "Comma-separated regions to refresh"
+        required: false
+        default: "AR,MX,ES,PE,CL"
+      batch_size:
+        description: "Steam games per region batch"
+        required: false
+        default: "120"
+      max_batches:
+        description: "Max batches per region"
+        required: false
+        default: "2"
+      max_ms:
+        description: "Per-region max runtime in ms"
+        required: false
+        default: "1080000"
+      force:
+        description: "Run even outside configured sale windows"
+        required: false
+        default: "false"
+      publish:
+        description: "Deploy refreshed data to production"
+        required: false
+        default: "true"
+  schedule:
+    # Steam sales start at 10:00 Pacific, normally 17:00 UTC / 14:00 Argentina.
+    # Multiple small runs absorb GitHub schedule delays during the traffic spike.
+    - cron: "5,20,35,50 17-23 * * *"
+
+concurrency:
+  group: steam-sale-refresh
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  refresh-steam-sale:
+    name: Refresh Steam sale prices
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      GLITCHPRICE_PUBLIC_CACHE_SOURCE: file
+      PRICE_REGIONS: ${{ github.event.inputs.regions || 'AR,MX,ES,PE,CL' }}
+      STEAM_SALE_BATCH_SIZE: ${{ github.event.inputs.batch_size || '120' }}
+      STEAM_SALE_MAX_BATCHES: ${{ github.event.inputs.max_batches || '2' }}
+      STEAM_SALE_MAX_MS: ${{ github.event.inputs.max_ms || '1080000' }}
+      FORCE_STEAM_SALE_REFRESH: ${{ github.event.inputs.force == 'true' && '1' || '0' }}
+      STEAM_CHUNK_SIZE: "25"
+      STEAM_CHUNK_SLEEP_MS: "250"
+      STEAM_429_RETRIES: "4"
+      STEAM_429_BACKOFF_MS: "15000"
+      STEAM_REQUEST_TIMEOUT_MS: "12000"
+      DIGITAL_VAT_RATE: ${{ secrets.DIGITAL_VAT_RATE }}
+    steps:
+      - uses: actions/checkout@v7.0.0
+      - uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run worker:steam-sale-refresh
+      - name: Collect steam sale cache
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p steam-sale-cache/data/generated
+          cp data/generated/latest-prices.json steam-sale-cache/data/generated/latest-prices.json 2>/dev/null || true
+          cp data/generated/price-history.json steam-sale-cache/data/generated/price-history.json 2>/dev/null || true
+          cp data/generated/steam-sale-refresh-cursor.json steam-sale-cache/data/generated/steam-sale-refresh-cursor.json 2>/dev/null || true
+          for region in MX ES PE CL; do
+            cp "data/generated/latest-prices-${region}.json" "steam-sale-cache/data/generated/latest-prices-${region}.json" 2>/dev/null || true
+            cp "data/generated/price-history-${region}.json" "steam-sale-cache/data/generated/price-history-${region}.json" 2>/dev/null || true
+          done
+          cp data/generated/steam-sale-refresh-status-*.json steam-sale-cache/data/generated/ 2>/dev/null || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: steam-sale-cache
+          if-no-files-found: warn
+          retention-days: 2
+          path: steam-sale-cache/
+
+  publish-production:
+    name: Deploy Steam sale data
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: refresh-steam-sale
+    if: ${{ !cancelled() && needs.refresh-steam-sale.result == 'success' && (github.event.inputs.publish || 'true') != 'false' }}
+    env:
+      GLITCHPRICE_PUBLIC_CACHE_SOURCE: file
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      DIGITAL_VAT_RATE: ${{ secrets.DIGITAL_VAT_RATE }}
+      POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
+      VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+      VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
+    steps:
+      - uses: actions/checkout@v7.0.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: steam-sale-cache
+          path: .
+      - uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Repair transient price gaps
+        run: npm run worker:restore-current-prices
+      - name: Evaluate wishlist notifications
+        continue-on-error: true
+        env:
+          PRICE_REGIONS: AR,MX,ES,PE,CL
+        run: npm run notifications:evaluate
+      - name: Guard private generated data
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in data/generated/users.json data/generated/problem-reports.json; do
+            if [ -e "$file" ]; then
+              echo "Private generated file would be included: $file" >&2
+              exit 1
+            fi
+          done
+      - name: Link Vercel project
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$VERCEL_TOKEN"
+          test -n "$VERCEL_ORG_ID"
+          test -n "$VERCEL_PROJECT_ID"
+          mkdir -p .vercel
+          node -e "const fs=require('fs'); fs.writeFileSync('.vercel/project.json', JSON.stringify({ orgId: process.env.VERCEL_ORG_ID, projectId: process.env.VERCEL_PROJECT_ID }) + '\n')"
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+      - name: Pull Vercel production env
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+      - name: Build Vercel artifact
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+      - name: Deploy refreshed production artifact
+        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"

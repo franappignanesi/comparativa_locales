@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Summer Sale 2026",
+    "startsAt": "2026-06-25T17:00:00Z",
+    "endsAt": "2026-07-09T17:00:00Z"
+  },
+  {
+    "name": "Autumn Sale 2026",
+    "startsAt": "2026-10-01T17:00:00Z",
+    "endsAt": "2026-10-08T17:00:00Z"
+  },
+  {
+    "name": "Winter Sale 2026",
+    "startsAt": "2026-12-17T18:00:00Z",
+    "endsAt": "2027-01-04T18:00:00Z"
+  }
+]

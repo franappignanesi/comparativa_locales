@@ -24,6 +24,7 @@
     "db:migrate-json": "tsx scripts/migrate-json-to-mysql.ts",
     "db:migrate-operational-state": "tsx scripts/migrate-operational-state.ts",
     "worker:full-refresh": "tsx scripts/full-price-refresh-worker.ts",
+    "worker:steam-sale-refresh": "tsx scripts/steam-sale-refresh-worker.ts",
     "worker:release-automation": "tsx scripts/run-release-automation.ts",
     "worker:prune-operational-store": "tsx scripts/prune-operational-store.ts",
     "worker:restore-current-prices": "tsx scripts/restore-current-prices-from-history.ts",
