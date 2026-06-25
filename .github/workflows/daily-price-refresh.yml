@@ -23,6 +23,10 @@ on:
         description: "Deploy refreshed data to production"
         required: false
         default: "true"
+      steam_live_regions:
+        description: "Comma-separated regions where Steam live should override ITAD"
+        required: false
+        default: ""
   schedule:
     # 05:00 UTC = 02:00 Argentina. Long refresh finishes before daytime traffic.
     - cron: "0 5 * * *"
@@ -85,7 +89,7 @@ jobs:
       FULL_REFRESH_MAX_BATCHES: ${{ github.event.inputs.max_batches || '' }}
       FULL_REFRESH_RESERVE_MS: "180000"
       FULL_REFRESH_SLEEP_MS: "1000"
-      STEAM_LIVE_FALLBACK: ${{ matrix.region == 'AR' && '1' || '0' }}
+      STEAM_LIVE_FALLBACK: ${{ contains(format(',{0},', github.event.inputs.steam_live_regions || ''), format(',{0},', matrix.region)) && '1' || '0' }}
       FULL_REFRESH_ITAD: "1"
       STEAM_CHUNK_SIZE: ${{ matrix.region == 'AR' && '25' || '50' }}
       STEAM_CHUNK_SLEEP_MS: ${{ matrix.region == 'AR' && '250' || '3500' }}
