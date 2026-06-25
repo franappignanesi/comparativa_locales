@@ -30,8 +30,10 @@ export async function fetchStorePrices(games: SampleGame[], chunkSize = 50, regi
     const url = `https://store.steampowered.com/api/appdetails?appids=${appIds}&cc=${region?.steamCc ?? "AR"}&l=spanish&filters=price_overview,basic`;
 
     try {
+      logSteamChunk("start", region, index, chunk.length);
       const response = await fetchSteam(url);
       if (!response.ok) {
+        logSteamChunk(`http_${response.status}`, region, index, chunk.length);
         if (chunk.length > 1 && response.status === 400) {
           const fallback = await fetchStorePrices(chunk, 1, region);
           for (const [gameId, price] of fallback) result.set(gameId, price);
@@ -44,8 +46,10 @@ export async function fetchStorePrices(games: SampleGame[], chunkSize = 50, regi
       for (const game of chunk) {
         result.set(game.id, parseSteamPayload(game, json[String(game.identifiers.steamAppId)]));
       }
+      logSteamChunk("done", region, index, chunk.length);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Error desconocido";
+      logSteamChunk(`error:${message}`, region, index, chunk.length);
       for (const game of chunk) result.set(game.id, unavailable(game.title, message));
     }
 
@@ -62,8 +66,10 @@ export async function fetchStorePrices(games: SampleGame[], chunkSize = 50, regi
 async function fetchSteam(url: string): Promise<Response> {
   const retries = parseNonNegativeInt(process.env.STEAM_429_RETRIES) ?? 4;
   for (let attempt = 0; attempt <= retries; attempt += 1) {
+    const timeoutMs = parseNonNegativeInt(process.env.STEAM_REQUEST_TIMEOUT_MS) ?? 12000;
     const response = await fetch(url, {
       headers: { accept: "application/json", "user-agent": "BARATEAM price refresh" },
+      signal: timeoutMs > 0 ? AbortSignal.timeout(timeoutMs) : undefined,
       next: { revalidate: 3600 }
     });
     if (response.status !== 429 || attempt === retries) return response;
@@ -86,6 +92,19 @@ function parseNonNegativeInt(value: string | undefined): number | null {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function logSteamChunk(event: string, region: RegionConfig | undefined, index: number, size: number): void {
+  if (process.env.GITHUB_ACTIONS !== "true" && process.env.GLITCHPRICE_LOG_STEAM_CHUNKS !== "1") return;
+  console.log(
+    JSON.stringify({
+      event: "steam_chunk",
+      status: event,
+      region: region?.id ?? "AR",
+      offset: index,
+      size
+    })
+  );
 }
 
 function parseSteamPayload(game: SampleGame, payload: SteamPayload | undefined): StorePrice {

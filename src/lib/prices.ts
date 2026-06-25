@@ -163,7 +163,7 @@ async function buildPriceRows(
     );
   }
 
-  const steamChunkSize = 50;
+  const steamChunkSize = Math.max(1, Math.floor(parsePositiveNumber(process.env.STEAM_CHUNK_SIZE) ?? 50));
   const useSteamLiveFallback = process.env.STEAM_LIVE_FALLBACK !== "0";
   const steamPrices = useSteamLiveFallback
     ? await fetchSteamPrices(games.filter((game) => game.availableStores.includes("steam")), steamChunkSize, region)
