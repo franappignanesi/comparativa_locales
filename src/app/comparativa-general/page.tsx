@@ -1,7 +1,6 @@
 "use client";
 
-import { BarChart3, Flame, History, Library, ShieldAlert, Star, TrendingDown } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { BarChart3, ChevronDown, History, Library, ShieldAlert, Star } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { RegionSelector } from "@/app/components/RegionSelector";
@@ -41,13 +40,6 @@ type StatsPayload = {
   };
 };
 
-type SidebarItem = {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-  featured?: boolean;
-};
-
 const STORE_LABELS: Record<StoreId, string> = {
   steam: "Steam",
   epic: "Epic",
@@ -56,22 +48,13 @@ const STORE_LABELS: Record<StoreId, string> = {
   microsoft: "Microsoft"
 };
 
-const SIDEBAR_ITEMS: SidebarItem[] = [
-  { href: "/", label: "Inicio", icon: Library },
-  { href: "/biblioteca", label: "Biblioteca", icon: Library },
-  { href: "/comparativa-general", label: "Comparativa general", icon: BarChart3 },
-  { href: "/biblioteca?filter=steam-ofertas&sort=relevancia", label: "Ofertas de Steam", icon: Flame, featured: true },
-  { href: "/biblioteca?filter=ofertas&sort=descuento", label: "Ofertas", icon: Flame },
-  { href: "/biblioteca?filter=diferencias&sort=diferencia", label: "Más baratos que en Steam", icon: TrendingDown },
-  { href: "/biblioteca?filter=historicos", label: "Mínimos históricos", icon: History }
-];
-
 export default function ComparativaGeneralPage() {
   const [payload, setPayload] = useState<StatsPayload | null>(null);
   const [region, setRegion] = useState<RegionId>(DEFAULT_REGION);
   const [user, setUser] = useState<GoogleUser | null>(null);
   const [wishlist, setWishlist] = useState<WishlistGame[]>([]);
   const [alerts, setAlerts] = useState<WishlistAlert[]>([]);
+  const [libraryMenuOpen, setLibraryMenuOpen] = useState(false);
 
   useEffect(() => {
     setUser(readStoredUser());
@@ -197,16 +180,30 @@ export default function ComparativaGeneralPage() {
           <p>Mercado regional</p>
         </div>
         <div className="sideLinks">
-          {SIDEBAR_ITEMS.map((item) => {
-            const Icon = item.icon;
-            const active = item.href === "/comparativa-general";
-            return (
-              <Link key={item.href} className={`${active ? "sideLink active" : "sideLink"} ${item.featured ? "featuredSideLink" : ""}`} href={item.href}>
-                <Icon size={20} />
-                {item.label}
-              </Link>
-            );
-          })}
+          <Link href="/" className="sideLink">
+            <History size={20} />
+            Inicio
+          </Link>
+          <div className={`sideGroup ${libraryMenuOpen ? "open" : ""}`}>
+            <button className="sideLink sideGroupToggle" type="button" onClick={() => setLibraryMenuOpen((current) => !current)} aria-expanded={libraryMenuOpen}>
+              <span>
+                <Library size={20} />
+                Biblioteca
+              </span>
+              <ChevronDown size={17} />
+            </button>
+            <div className="sideSubLinks">
+              <Link href="/biblioteca" className="sideSubLink">Todo el catálogo</Link>
+              <Link href="/biblioteca?filter=steam-ofertas&sort=relevancia" className="sideSubLink featuredSideLink">Ofertas de Steam</Link>
+              <Link href="/biblioteca?filter=ofertas&sort=descuento" className="sideSubLink">Ofertas</Link>
+              <Link href="/biblioteca?filter=diferencias&sort=diferencia" className="sideSubLink">Más baratos que en Steam</Link>
+              <Link href="/biblioteca?filter=historicos" className="sideSubLink">Mínimos históricos</Link>
+            </div>
+          </div>
+          <Link href="/comparativa-general" className="sideLink active">
+            <BarChart3 size={20} />
+            Comparativa general
+          </Link>
           {isAdminEmail(user?.email) ? (
             <Link className="sideLink adminSideLink" href="/admin/reportes">
               <ShieldAlert size={20} />

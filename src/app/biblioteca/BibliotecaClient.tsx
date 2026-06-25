@@ -3,6 +3,7 @@
 import {
   ArrowDownUp,
   BarChart3,
+  ChevronDown,
   Flame,
   History,
   Library,
@@ -114,6 +115,7 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
   const [category, setCategory] = useState("todas");
   const [filter, setFilter] = useState(searchParams.get("filter") ?? "todos");
   const [sort, setSort] = useState(searchParams.get("sort") ?? "diferencia");
+  const [libraryMenuOpen, setLibraryMenuOpen] = useState(true);
   const [region, setRegion] = useState<RegionId>(DEFAULT_REGION);
   const [loading, setLoading] = useState(!initialPayload);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -338,27 +340,35 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
         </div>
         <div className="sideLinks">
           <Link href="/" className="sideLink">
-            <Library size={20} />
+            <History size={20} />
             Inicio
           </Link>
-          <Link href="/biblioteca" className="sideLink active">
-            <Library size={20} />
-            Biblioteca
-          </Link>
+          <div className={`sideGroup ${libraryMenuOpen ? "open" : ""}`}>
+            <button className="sideLink sideGroupToggle active" type="button" onClick={() => setLibraryMenuOpen((current) => !current)} aria-expanded={libraryMenuOpen}>
+              <span>
+                <Library size={20} />
+                Biblioteca
+              </span>
+              <ChevronDown size={17} />
+            </button>
+            <div className="sideSubLinks">
+              <button className={filter === "todos" ? "sideSubLink active" : "sideSubLink"} type="button" onClick={() => activateSidebar({ label: "Biblioteca completa", icon: Library, filter: "todos", sort: "diferencia" })}>
+                Todo el catálogo
+              </button>
+              {SIDEBAR_ITEMS.map((item) => {
+                const active = filter === item.filter && sort === item.sort;
+                return (
+                  <button key={item.label} className={`${active ? "sideSubLink active" : "sideSubLink"} ${item.featured ? "featuredSideLink" : ""}`} type="button" onClick={() => activateSidebar(item)}>
+                    {item.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <Link href="/comparativa-general" className="sideLink">
             <BarChart3 size={20} />
             Comparativa general
           </Link>
-          {SIDEBAR_ITEMS.map((item) => {
-            const Icon = item.icon;
-            const active = filter === item.filter && sort === item.sort;
-            return (
-              <button key={item.label} className={`${active ? "sideLink active" : "sideLink"} ${item.featured ? "featuredSideLink" : ""}`} onClick={() => activateSidebar(item)}>
-                <Icon size={20} />
-                {item.label}
-              </button>
-            );
-          })}
           {isAdminEmail(user?.email) ? (
             <Link href="/admin/reportes" className="sideLink adminSideLink">
               <ShieldAlert size={20} />
@@ -427,6 +437,12 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
         </section>
 
         <section className="gameGrid" aria-label="Comparaciones de precios">
+          {loading ? (
+            <div className="catalogRefreshIndicator" role="status" aria-live="polite">
+              <span />
+              Actualizando resultados...
+            </div>
+          ) : null}
           {games.map((row) => (
             <GameCard
               key={row.gameId}

@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, Bell, BellOff, Flame, Gamepad2, History, Library, ShieldAlert, TrendingDown, X } from "lucide-react";
+import { BarChart3, Bell, BellOff, ChevronDown, Gamepad2, History, Library, ShieldAlert, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { RegionSelector } from "@/app/components/RegionSelector";
@@ -30,6 +30,7 @@ export default function WishlistPage() {
   const [wishlist, setWishlist] = useState<WishlistGame[]>([]);
   const [wishlistAlerts, setWishlistAlerts] = useState<WishlistAlert[]>([]);
   const [bellMenu, setBellMenu] = useState<BellMenuState>(null);
+  const [libraryMenuOpen, setLibraryMenuOpen] = useState(false);
 
   useEffect(() => {
     const saved = window.localStorage.getItem("glitchprice-region") as RegionId | null;
@@ -118,29 +119,25 @@ export default function WishlistPage() {
             <History size={20} />
             Inicio
           </Link>
-          <Link href="/biblioteca" className="sideLink">
-            <Library size={20} />
-            Biblioteca
-          </Link>
+          <div className={`sideGroup ${libraryMenuOpen ? "open" : ""}`}>
+            <button className="sideLink sideGroupToggle" type="button" onClick={() => setLibraryMenuOpen((current) => !current)} aria-expanded={libraryMenuOpen}>
+              <span>
+                <Library size={20} />
+                Biblioteca
+              </span>
+              <ChevronDown size={17} />
+            </button>
+            <div className="sideSubLinks">
+              <Link href="/biblioteca" className="sideSubLink">Todo el catálogo</Link>
+              <Link href="/biblioteca?filter=steam-ofertas&sort=relevancia" className="sideSubLink featuredSideLink">Ofertas de Steam</Link>
+              <Link href="/biblioteca?filter=ofertas&sort=descuento" className="sideSubLink">Ofertas</Link>
+              <Link href="/biblioteca?filter=diferencias&sort=diferencia" className="sideSubLink">Más baratos que en Steam</Link>
+              <Link href="/biblioteca?filter=historicos" className="sideSubLink">Mínimos históricos</Link>
+            </div>
+          </div>
           <Link href="/comparativa-general" className="sideLink">
             <BarChart3 size={20} />
             Comparativa general
-          </Link>
-          <Link href="/biblioteca?filter=steam-ofertas&sort=relevancia" className="sideLink featuredSideLink">
-            <Flame size={20} />
-            Ofertas de Steam
-          </Link>
-          <Link href="/biblioteca?filter=ofertas&sort=descuento" className="sideLink">
-            <Flame size={20} />
-            Ofertas
-          </Link>
-          <Link href="/biblioteca?filter=diferencias&sort=diferencia" className="sideLink">
-            <TrendingDown size={20} />
-            Más baratos que en Steam
-          </Link>
-          <Link href="/biblioteca?filter=historicos" className="sideLink">
-            <History size={20} />
-            Mínimos históricos
           </Link>
           {isAdminEmail(user?.email) ? (
             <Link href="/admin/reportes" className="sideLink adminSideLink">
