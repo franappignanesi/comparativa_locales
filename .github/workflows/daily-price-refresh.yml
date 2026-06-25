@@ -15,10 +15,10 @@ on:
         description: "Max batches per region"
         required: false
         default: ""
-      regions:
-        description: "Comma-separated regions to refresh"
+      regions_json:
+        description: "JSON array of regions to refresh"
         required: false
-        default: "AR,MX,ES,PE,CL"
+        default: '["AR","MX","ES","PE","CL"]'
       publish:
         description: "Deploy refreshed data to production"
         required: false
@@ -68,12 +68,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 355
     needs: release-automation
-    if: ${{ always() && contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
+    if: always()
     strategy:
       fail-fast: false
       max-parallel: 1
       matrix:
-        region: [AR, MX, ES, PE, CL]
+        region: ${{ fromJSON(github.event.inputs.regions_json || '["AR","MX","ES","PE","CL"]') }}
     env:
       GLITCHPRICE_PUBLIC_CACHE_SOURCE: file
       ITAD_API_KEY: ${{ secrets.ITAD_API_KEY }}
