@@ -33,6 +33,7 @@ export type GameCandidate = {
   category: GameCategory;
   primaryTag?: string | null;
   steamTags?: string[];
+  coverUrl?: string | null;
   releaseYear: number;
   notes: string;
   expectedStores: StoreId[];

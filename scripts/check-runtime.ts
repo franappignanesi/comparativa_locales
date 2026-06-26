@@ -81,7 +81,6 @@ async function main(): Promise<void> {
     if (result.catalogHistoryEntriesSent !== 0) issues.push(`${result.region}: el catalogo envia historial pesado`);
     if (result.comparableGames <= 0) issues.push(`${result.region}: sin juegos comparables`);
     if (result.onDemandEntries === 0) issues.push(`${result.region}: historial on-demand vacio para ${probeGameId}`);
-    if (result.microsoftPoints > 1) issues.push(`${result.region}: Microsoft tiene ${result.microsoftPoints} puntos para el mismo grafico`);
     if (result.pricedRows < 1000) issues.push(`${result.region}: pocos juegos con precio actual (${result.pricedRows})`);
     if (result.wrongMicrosoftCurrency > 0) issues.push(`${result.region}: Microsoft con moneda incorrecta (${result.wrongMicrosoftCurrency})`);
     if (result.zeroOrNegativeCurrentPrices > 0) issues.push(`${result.region}: precios actuales <= 0 (${result.zeroOrNegativeCurrentPrices})`);

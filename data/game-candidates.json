@@ -81728,7 +81728,7 @@
     "edition": "standard",
     "category": "AAA viejo",
     "releaseYear": 0,
-    "notes": "Steam discovery intake. Reviews: 714114. Positive: 59%. Owners: 50,000,000 .. 100,000,000. Aprobable en masa por umbrales de popularidad. Promovido automaticamente 2026-05-31T03:00:53.652Z.",
+    "notes": "Steam discovery intake. Reviews: 714114. Positive: 59%. Owners: 50,000,000 .. 100,000,000. Aprobable en masa por umbrales de popularidad. Promovido automaticamente 2026-05-31T03:00:53.652Z. Cover override: Steam app 1938090 is Call of Duty HQ and may show newer franchise art; use MWII app 1962660 header.",
     "expectedStores": [
       "steam"
     ],
@@ -81759,7 +81759,8 @@
       "Story Rich",
       "Atmospheric",
       "Mature"
-    ]
+    ],
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1962660/header.jpg"
   },
   {
     "title": "Battlefield 2042",
@@ -152769,5 +152770,61 @@
       "Tactical",
       "Sexual Content"
     ]
+  },
+  {
+    "title": "ARC Raiders",
+    "edition": "standard",
+    "category": "AAA nuevo",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Extraction Shooter",
+      "PvE",
+      "PvP",
+      "Third-Person Shooter",
+      "Post-apocalyptic",
+      "Action",
+      "Multiplayer"
+    ],
+    "releaseYear": 2025,
+    "notes": "Agregado por reporte de usuario #87241535. Steam AppID confirmado en SteamDB/Steam.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1808500,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Warfare Legacy Collection",
+    "edition": "standard",
+    "category": "indie popular",
+    "primaryTag": "Strategy",
+    "steamTags": [
+      "Strategy",
+      "Side Scroller",
+      "World War I",
+      "Action",
+      "World War II"
+    ],
+    "releaseYear": 2025,
+    "notes": "Agregado por reporte de usuario #87241536. Steam AppID confirmado en SteamDB/Steam.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2745870,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
   }
 ]

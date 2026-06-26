@@ -246,11 +246,20 @@ function mergeTransientSafe(
   for (const store of STORES) {
     const next = refreshed.prices[store];
     const previous = cached.prices[store];
-    if (isUsableRegionalPrice(previous, regionId) && next?.error) {
+    if (isUsableRegionalPrice(previous, regionId) && next?.error && shouldPreserveCachedPrice(next.error)) {
       prices[store] = markPreservedPrice(previous, next.error);
     }
   }
   return { ...refreshed, prices };
+}
+
+function shouldPreserveCachedPrice(error: string): boolean {
+  const normalized = error.toLowerCase();
+  if (normalized.includes("no esperado en la muestra")) return false;
+  if (normalized.includes("sin microsoftproductid")) return false;
+  if (normalized.includes("catalog devolvio")) return false;
+  if (normalized.includes("edition mismatch")) return false;
+  return true;
 }
 
 function markPreservedPrice(price: NormalizedPrice, error: string): NormalizedPrice {

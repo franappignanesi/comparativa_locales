@@ -82,14 +82,15 @@ export async function getGameSample(): Promise<GameSample> {
 }
 
 function toSampleGame(candidate: GameCandidate, manualMatches: ManualStoreMatch[]): SampleGame {
-  const availableStores = STORES.filter((store) => hasStoreMatch(candidate, store, manualMatches));
+  const enrichedCandidate = applyManualIdentifiers(candidate, manualMatches);
+  const availableStores = STORES.filter((store) => hasStoreMatch(enrichedCandidate, store, manualMatches));
   const missingStores = STORES.filter((store) => !availableStores.includes(store));
-  const comparisonStatus = getComparisonStatus(candidate, availableStores, manualMatches);
+  const comparisonStatus = getComparisonStatus(enrichedCandidate, availableStores, manualMatches);
 
   return {
-    ...candidate,
-    id: slugifyTitle(candidate.title),
-    coverUrl: getCoverUrl(candidate),
+    ...enrichedCandidate,
+    id: slugifyTitle(enrichedCandidate.title),
+    coverUrl: getCoverUrl(enrichedCandidate),
     availableStores,
     missingStores,
     comparisonStatus
@@ -97,9 +98,36 @@ function toSampleGame(candidate: GameCandidate, manualMatches: ManualStoreMatch[
 }
 
 function getCoverUrl(candidate: GameCandidate): string | null {
+  if (candidate.coverUrl !== undefined) return candidate.coverUrl;
   const appId = candidate.identifiers.steamAppId;
   if (!appId) return null;
   return `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appId}/header.jpg`;
+}
+
+function applyManualIdentifiers(candidate: GameCandidate, manualMatches: ManualStoreMatch[]): GameCandidate {
+  const matches = manualMatches.filter((match) => match.gameTitle.toLowerCase() === candidate.title.toLowerCase());
+  if (!matches.length) return candidate;
+
+  const identifiers = { ...candidate.identifiers };
+  const expectedStores = new Set(candidate.expectedStores);
+
+  for (const match of matches) {
+    expectedStores.add(match.store);
+    if (match.store === "steam") identifiers.steamAppId = Number(match.identifier) || identifiers.steamAppId;
+    if (match.store === "epic") identifiers.epicSlug = match.identifier;
+    if (match.store === "gog") identifiers.gogSlug = match.identifier;
+    if (match.store === "humble") identifiers.humbleSlug = match.identifier;
+    if (match.store === "microsoft") {
+      if (/^https?:\/\//i.test(match.identifier)) identifiers.microsoftUrl = match.identifier;
+      else identifiers.microsoftProductId = match.identifier;
+    }
+  }
+
+  return {
+    ...candidate,
+    expectedStores: [...expectedStores],
+    identifiers
+  };
 }
 
 function hasStoreMatch(candidate: GameCandidate, store: StoreId, manualMatches: ManualStoreMatch[]): boolean {

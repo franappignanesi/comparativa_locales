@@ -1,6 +1,6 @@
 import type { SampleGame, StorePrice } from "../types";
 import type { RegionConfig } from "../regions";
-import { comparableTitle, numberFromPrice } from "./utils";
+import { numberFromPrice } from "./utils";
 
 const MICROSOFT_SEARCH_VERSION = "22203.1401.0.0";
 
@@ -83,6 +83,9 @@ async function fetchDisplayCatalogPrice(game: SampleGame, productId: string, reg
     const price = findMicrosoftPrice(product);
 
     if (!price) return unavailable(title, `Microsoft catalog sin precio de compra para ${market}`, url, product);
+    if (!isMicrosoftTitleCompatible(game.title, title)) {
+      return unavailable(game.title, `Microsoft catalog devolvio "${title}" para "${game.title}"`, url, { productId, title });
+    }
 
     return {
       store: "microsoft",
@@ -219,8 +222,21 @@ function selectMicrosoftSearchResult(game: SampleGame, results: MicrosoftSearchR
   return scored[0]?.result ?? null;
 }
 
+function isMicrosoftTitleCompatible(candidateTitle: string, resultTitle: string): boolean {
+  const expected = cleanMicrosoftTitle(candidateTitle);
+  const title = cleanMicrosoftTitle(resultTitle);
+  if (title === expected) return true;
+  if (title.replace(/\sfor windows$/, "") === expected) return true;
+  return title.startsWith(expected) && !hasEditionMismatch(candidateTitle, resultTitle);
+}
+
 function cleanMicrosoftTitle(value: string): string {
-  return comparableTitle(value)
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\b(the|edition|standard|pc|game)\b/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
     .replace(/\b(windows|xbox|one|series|xs)\b/g, "")
     .replace(/\s+/g, " ")
     .trim();
