@@ -1834,10 +1834,9 @@
     "edition": "standard",
     "category": "AAA viejo",
     "releaseYear": 2021,
-    "notes": "Remaster, no confundir con original.",
+    "notes": "Remaster, no confundir con original. Microsoft queda excluida hasta tener productId correcto; la busqueda devuelve Alan Wake original.",
     "expectedStores": [
-      "epic",
-      "microsoft"
+      "epic"
     ],
     "identifiers": {
       "steamAppId": null,

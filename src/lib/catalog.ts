@@ -91,7 +91,7 @@ export async function getCatalogPage(params: CatalogParams = {}): Promise<Catalo
 
 export function expandLatestWithSample(latest: LatestPrices, sample: GameSample): LatestPrices {
   const rowsById = new Map(latest.prices.map((row) => [row.gameId, row]));
-  const prices = sample.broadSample.map((game) => {
+  const prices = uniqueRowsByGameId(sample.broadSample).map((game) => {
     const existing = rowsById.get(game.id);
     if (existing) {
       return {
@@ -119,6 +119,10 @@ export function expandLatestWithSample(latest: LatestPrices, sample: GameSample)
     ...latest,
     prices
   };
+}
+
+function uniqueRowsByGameId<T extends { id: string }>(rows: T[]): T[] {
+  return [...new Map(rows.map((row) => [row.id, row])).values()];
 }
 
 function filterAndSortRows(

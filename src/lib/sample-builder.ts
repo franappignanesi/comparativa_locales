@@ -37,7 +37,7 @@ export async function buildGameSample(): Promise<GameSample> {
   const manual = await readJson<ManualMatchesFile>(dataPath("manual-store-matches.json"), { matches: [] });
   const rejected: GameSample["rejected"] = [];
 
-  const games = candidates
+  const games = dedupeSampleGamesById(candidates
     .filter((candidate) => {
       const badEdition = candidate.edition !== "standard";
       const noStore = candidate.expectedStores.length === 0;
@@ -47,7 +47,7 @@ export async function buildGameSample(): Promise<GameSample> {
       }
       return true;
     })
-    .map((candidate) => toSampleGame(candidate, manual.matches));
+    .map((candidate) => toSampleGame(candidate, manual.matches)));
 
   const strictSample = games.filter((game) => game.availableStores.length === STORES.length);
   const broadSample = games.filter((game) => game.availableStores.length > 0);
@@ -95,6 +95,19 @@ function toSampleGame(candidate: GameCandidate, manualMatches: ManualStoreMatch[
     missingStores,
     comparisonStatus
   };
+}
+
+function dedupeSampleGamesById(games: SampleGame[]): SampleGame[] {
+  const byId = new Map<string, SampleGame>();
+  for (const game of games) {
+    const current = byId.get(game.id);
+    if (!current || scoreSampleGame(game) > scoreSampleGame(current)) byId.set(game.id, game);
+  }
+  return [...byId.values()];
+}
+
+function scoreSampleGame(game: SampleGame): number {
+  return game.availableStores.length * 100 + (game.confidence === "high" ? 20 : game.confidence === "medium" ? 10 : 0);
 }
 
 function getCoverUrl(candidate: GameCandidate): string | null {
