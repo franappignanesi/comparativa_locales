@@ -1918,6 +1918,54 @@ select option {
   background: var(--primary);
 }
 
+.regionPreferenceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.regionPreference {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  border: 1px solid rgba(255, 232, 172, 0.12);
+  border-radius: 8px;
+  background: rgba(17, 14, 5, 0.58);
+  color: var(--text);
+  padding: 10px;
+  cursor: pointer;
+}
+
+.regionPreference.active {
+  border-color: rgba(248, 200, 19, 0.72);
+  background: rgba(248, 200, 19, 0.14);
+}
+
+.regionPreference img {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.regionPreference span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.regionPreference em {
+  color: var(--muted);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+}
+
 .metric,
 .gameCard,
 .wishlistRow,

@@ -18,7 +18,7 @@ import {
   saveNotificationSettings,
   type WishlistAlert
 } from "@/app/components/userPersistence";
-import { DEFAULT_REGION, type RegionId } from "@/lib/regions";
+import { DEFAULT_REGION, REGIONS, type RegionId } from "@/lib/regions";
 import { isAdminEmail } from "@/lib/admin";
 import { STORE_LOGOS } from "@/lib/store-assets";
 import type { StoreId } from "@/lib/types";
@@ -77,7 +77,7 @@ export default function ProfilePage() {
     window.localStorage.removeItem("glitchprice-user");
   }
 
-  async function updateSetting(key: keyof NotificationSettings, value: boolean) {
+  async function updateSetting(key: "email" | "webPush" | "discord", value: boolean) {
     if (!user) return;
     if (key === "discord") return;
     if (key === "webPush" && value) {
@@ -103,6 +103,17 @@ export default function ProfilePage() {
     const next = { ...settings, enabledStores: nextStores.length ? nextStores : [...STORES] };
     setSettings(next);
     setSettings(await saveNotificationSettings(user.sub, next));
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 1400);
+  }
+
+  async function updatePreferredRegion(nextRegion: RegionId) {
+    if (!user) return;
+    setRegion(nextRegion);
+    const next = { ...settings, preferredRegion: nextRegion };
+    setSettings(next);
+    setSettings(await saveNotificationSettings(user.sub, next));
+    setWishlistAlerts(await fetchWishlistAlerts(user.sub, nextRegion));
     setSaved(true);
     window.setTimeout(() => setSaved(false), 1400);
   }
@@ -228,6 +239,33 @@ export default function ProfilePage() {
                 disabled
                 onChange={(value) => updateSetting("discord", value)}
               />
+            </section>
+
+            <section className="profilePanel notificationSettings">
+              <div className="profilePanelHeader">
+                <div>
+                  <span>Region</span>
+                  <h2>Moneda para alertas</h2>
+                </div>
+                {saved ? <strong>Guardado</strong> : null}
+              </div>
+              <p className="settingsHelp">
+                Las rebajas de wishlist se evaluan solo en esta region para evitar avisos duplicados en distintas monedas.
+              </p>
+              <div className="regionPreferenceGrid">
+                {REGIONS.map((item) => (
+                  <button
+                    key={item.id}
+                    className={item.id === settings.preferredRegion ? "regionPreference active" : "regionPreference"}
+                    type="button"
+                    onClick={() => updatePreferredRegion(item.id)}
+                  >
+                    <img src={item.flagSrc} alt="" />
+                    <span>{item.label}</span>
+                    <em>{item.currency}</em>
+                  </button>
+                ))}
+              </div>
             </section>
 
             <section className="profilePanel notificationSettings">

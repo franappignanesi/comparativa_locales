@@ -4,6 +4,7 @@ import { neon } from "@neondatabase/serverless";
 import mysql from "mysql2/promise";
 import type { GameCategory, StoreId } from "./types";
 import { STORES } from "./types";
+import { DEFAULT_REGION, REGIONS, type RegionId } from "./regions";
 
 export type StoredUser = {
   sub: string;
@@ -20,6 +21,7 @@ export type NotificationSettings = {
   webPush: boolean;
   discord: boolean;
   enabledStores: StoreId[];
+  preferredRegion: RegionId;
 };
 
 export type WishlistNotificationPreferences = {
@@ -69,7 +71,8 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   email: false,
   webPush: false,
   discord: false,
-  enabledStores: [...STORES]
+  enabledStores: [...STORES],
+  preferredRegion: DEFAULT_REGION
 };
 
 export const DEFAULT_WISHLIST_PREFERENCES: WishlistNotificationPreferences = {
@@ -701,8 +704,13 @@ function normalizeNotificationSettings(settings: Partial<NotificationSettings>):
     email: Boolean(settings.email),
     webPush: Boolean(settings.webPush),
     discord: false,
-    enabledStores: enabledStores?.length ? enabledStores : [...STORES]
+    enabledStores: enabledStores?.length ? enabledStores : [...STORES],
+    preferredRegion: normalizePreferredRegion(settings.preferredRegion)
   };
+}
+
+function normalizePreferredRegion(value: unknown): RegionId {
+  return REGIONS.some((region) => region.id === value) ? (value as RegionId) : DEFAULT_REGION;
 }
 
 function normalizeWishlistPreferences(settings: Partial<WishlistNotificationPreferences>): WishlistNotificationPreferences {

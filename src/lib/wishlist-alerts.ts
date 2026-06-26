@@ -1,8 +1,8 @@
 import { dataPath, writeJson } from "./cache";
 import { getPriceHistoryReport } from "./history";
 import { getLatestPrices } from "./prices";
-import { DEFAULT_REGION, type RegionId } from "./regions";
-import { getAllUsersWithWishlists, getNotificationSettings, getWishlist, type StoredWishlistItem } from "./user-store";
+import { DEFAULT_REGION, REGIONS, type RegionId } from "./regions";
+import { getAllUsersWithWishlists, getNotificationSettings, getWishlist, type NotificationSettings, type StoredWishlistItem } from "./user-store";
 import type { StoredUser } from "./user-store";
 import { sendEmailAlerts, sendWebPushAlerts } from "./notification-channels";
 import { claimNotificationDelivery } from "./notification-delivery-store";
@@ -51,35 +51,45 @@ export async function getWishlistAlertsForUser(userId: string, region: RegionId 
   return evaluateWishlistAlerts(userId, wishlist, region);
 }
 
-export async function evaluateAllWishlistAlerts(regions: RegionId[] = [DEFAULT_REGION]): Promise<WishlistAlertReport> {
+export async function evaluateAllWishlistAlerts(regions: RegionId[] = REGIONS.map((region) => region.id)): Promise<WishlistAlertReport> {
   const users = await getAllUsersWithWishlists();
   const alerts: WishlistAlert[] = [];
   const delivered = { email: 0, webPush: 0 };
-  for (const region of regions) {
-    for (const { user, wishlist } of users) {
-      const userAlerts = await evaluateWishlistAlerts(user.sub, wishlist, region);
-      alerts.push(...userAlerts);
-      const userDelivered = await deliverAlerts(user, userAlerts);
-      delivered.email += userDelivered.email;
-      delivered.webPush += userDelivered.webPush;
-    }
+  const allowedRegions = new Set(regions.length ? regions : [DEFAULT_REGION]);
+  const regionsChecked = new Set<RegionId>();
+
+  for (const { user, wishlist } of users) {
+    const settings = user.notificationSettings ?? (await getNotificationSettings(user.sub));
+    const region = settings.preferredRegion;
+    if (!allowedRegions.has(region)) continue;
+    regionsChecked.add(region);
+    const userAlerts = await evaluateWishlistAlerts(user.sub, wishlist, region, settings);
+    alerts.push(...userAlerts);
+    const userDelivered = await deliverAlerts(user, userAlerts, settings);
+    delivered.email += userDelivered.email;
+    delivered.webPush += userDelivered.webPush;
   }
   const report = {
     timestamp: new Date().toISOString(),
     alerts,
     usersChecked: users.length,
-    regionsChecked: regions,
+    regionsChecked: [...regionsChecked],
     delivered
   };
   await writeJson(dataPath("generated", "wishlist-alerts.json"), report);
   return report;
 }
 
-async function evaluateWishlistAlerts(userId: string, wishlist: StoredWishlistItem[], region: RegionId): Promise<WishlistAlert[]> {
+async function evaluateWishlistAlerts(
+  userId: string,
+  wishlist: StoredWishlistItem[],
+  region: RegionId,
+  notificationSettings?: NotificationSettings
+): Promise<WishlistAlert[]> {
   const enabledWishlist = wishlist.filter((item) => item.notificationEnabled);
   if (!enabledWishlist.length) return [];
-  const notificationSettings = await getNotificationSettings(userId);
-  const enabledStores = new Set(notificationSettings.enabledStores?.length ? notificationSettings.enabledStores : STORES);
+  const settings = notificationSettings ?? (await getNotificationSettings(userId));
+  const enabledStores = new Set(settings.enabledStores?.length ? settings.enabledStores : STORES);
 
   const latest = await getLatestPrices({ region });
   const gameIds = new Set(enabledWishlist.map((item) => item.gameId));
@@ -130,9 +140,9 @@ async function evaluateWishlistAlerts(userId: string, wishlist: StoredWishlistIt
   return dedupeAlerts(alerts);
 }
 
-async function deliverAlerts(user: StoredUser, alerts: WishlistAlert[]): Promise<{ email: number; webPush: number }> {
+async function deliverAlerts(user: StoredUser, alerts: WishlistAlert[], notificationSettings?: NotificationSettings): Promise<{ email: number; webPush: number }> {
   if (!alerts.length) return { email: 0, webPush: 0 };
-  const settings = user.notificationSettings ?? (await getNotificationSettings(user.sub));
+  const settings = notificationSettings ?? user.notificationSettings ?? (await getNotificationSettings(user.sub));
   let email = 0;
   let webPush = 0;
 

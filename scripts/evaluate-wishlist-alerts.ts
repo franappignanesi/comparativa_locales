@@ -1,5 +1,5 @@
 import { evaluateAllWishlistAlerts } from "../src/lib/wishlist-alerts";
-import { DEFAULT_REGION, REGIONS, type RegionId } from "../src/lib/regions";
+import { REGIONS, type RegionId } from "../src/lib/regions";
 
 const validRegions = new Set(REGIONS.map((region) => region.id));
 
@@ -34,12 +34,13 @@ async function main() {
 }
 
 function parseRegions(): RegionId[] {
-  const raw = process.env.PRICE_REGIONS ?? DEFAULT_REGION;
+  const raw = process.env.PRICE_REGIONS;
+  if (!raw) return REGIONS.map((region) => region.id);
   const regions = raw
     .split(",")
     .map((region) => region.trim().toUpperCase())
     .filter((region): region is RegionId => validRegions.has(region as RegionId));
-  return regions.length ? regions : [DEFAULT_REGION];
+  return regions.length ? regions : REGIONS.map((region) => region.id);
 }
 
 main().catch((error) => {

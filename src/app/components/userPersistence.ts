@@ -1,6 +1,7 @@
 "use client";
 
 import type { GoogleUser, WishlistGame } from "@/app/components/UserMenu";
+import { DEFAULT_REGION, REGIONS, type RegionId } from "@/lib/regions";
 import type { StoreId } from "@/lib/types";
 import { STORES } from "@/lib/types";
 
@@ -9,6 +10,7 @@ export type NotificationSettings = {
   webPush: boolean;
   discord: boolean;
   enabledStores: StoreId[];
+  preferredRegion: RegionId;
 };
 
 export type WishlistAlert = {
@@ -26,7 +28,8 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   email: false,
   webPush: false,
   discord: false,
-  enabledStores: [...STORES]
+  enabledStores: [...STORES],
+  preferredRegion: DEFAULT_REGION
 };
 
 export function readStoredUser(): GoogleUser | null {
@@ -159,8 +162,13 @@ export function normalizeNotificationSettings(settings: Partial<NotificationSett
     email: Boolean(settings?.email),
     webPush: Boolean(settings?.webPush),
     discord: Boolean(settings?.discord),
-    enabledStores: enabledStores?.length ? enabledStores : [...STORES]
+    enabledStores: enabledStores?.length ? enabledStores : [...STORES],
+    preferredRegion: normalizePreferredRegion(settings?.preferredRegion)
   };
+}
+
+function normalizePreferredRegion(value: unknown): RegionId {
+  return REGIONS.some((region) => region.id === value) ? (value as RegionId) : DEFAULT_REGION;
 }
 
 async function assertAuthenticated(response: Response): Promise<void> {
