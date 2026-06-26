@@ -2242,20 +2242,6 @@
       "originalFinalPrice": 29.99
     },
     {
-      "url": "https://www.xbox.com/es-ES/games/store/alan-wake/9NKV44QF1R68",
-      "store": "microsoft",
-      "gameId": "alan-wake-remastered",
-      "source": "snapshot",
-      "gameTitle": "Alan Wake Remastered",
-      "timestamp": "2026-05-26T01:13:14.913Z",
-      "discountPct": 85,
-      "arsBasePrice": 12,
-      "arsFinalPrice": 2,
-      "originalCurrency": "EUR",
-      "originalBasePrice": 12.49,
-      "originalFinalPrice": 1.87
-    },
-    {
       "url": "https://store.steampowered.com/app/412020",
       "store": "steam",
       "gameId": "metro-exodus",
@@ -8302,20 +8288,6 @@
       "originalCurrency": "EUR",
       "originalBasePrice": 29.99,
       "originalFinalPrice": 29.99
-    },
-    {
-      "url": "https://www.xbox.com/es-ES/games/store/alan-wake/9NKV44QF1R68",
-      "store": "microsoft",
-      "gameId": "alan-wake-remastered",
-      "source": "snapshot",
-      "gameTitle": "Alan Wake Remastered",
-      "timestamp": "2026-05-26T01:13:15.017Z",
-      "discountPct": 85,
-      "arsBasePrice": 12,
-      "arsFinalPrice": 2,
-      "originalCurrency": "EUR",
-      "originalBasePrice": 12.49,
-      "originalFinalPrice": 1.87
     },
     {
       "url": "https://store.steampowered.com/app/412020",
@@ -14464,20 +14436,6 @@
       "originalFinalPrice": 10520
     },
     {
-      "url": "https://www.xbox.com/es-CL/games/store/alan-wake/9NKV44QF1R68",
-      "store": "microsoft",
-      "gameId": "alan-wake-remastered",
-      "source": "snapshot",
-      "gameTitle": "Alan Wake Remastered",
-      "timestamp": "2026-05-26T01:13:25.276Z",
-      "discountPct": 85,
-      "arsBasePrice": 10113,
-      "arsFinalPrice": 1516,
-      "originalCurrency": "CLP",
-      "originalBasePrice": 10113,
-      "originalFinalPrice": 1516
-    },
-    {
       "url": "https://store.epicgames.com/es-CL/p/metro-exodus",
       "store": "epic",
       "gameId": "metro-exodus",
@@ -19698,20 +19656,6 @@
       "originalCurrency": "MXN",
       "originalBasePrice": 242.99,
       "originalFinalPrice": 36.44
-    },
-    {
-      "url": "https://www.xbox.com/es-MX/games/store/alan-wake/9NKV44QF1R68",
-      "store": "microsoft",
-      "gameId": "alan-wake-remastered",
-      "source": "snapshot",
-      "gameTitle": "Alan Wake Remastered",
-      "timestamp": "2026-05-26T16:00:55.600Z",
-      "discountPct": 85,
-      "arsBasePrice": 254,
-      "arsFinalPrice": 38,
-      "originalCurrency": "MXN",
-      "originalBasePrice": 254.03,
-      "originalFinalPrice": 38.1
     },
     {
       "url": "https://store.steampowered.com/app/412020",
@@ -28716,20 +28660,6 @@
       "originalFinalPrice": 4.49
     },
     {
-      "url": "https://www.xbox.com/es-ES/games/store/alan-wake/9NKV44QF1R68",
-      "store": "microsoft",
-      "gameId": "alan-wake-remastered",
-      "source": "snapshot",
-      "gameTitle": "Alan Wake Remastered",
-      "timestamp": "2026-05-26T16:07:47.189Z",
-      "discountPct": 85,
-      "arsBasePrice": 12,
-      "arsFinalPrice": 2,
-      "originalCurrency": "EUR",
-      "originalBasePrice": 12.49,
-      "originalFinalPrice": 1.87
-    },
-    {
       "url": "https://store.epicgames.com/es-ES/p/metro-exodus",
       "store": "epic",
       "gameId": "metro-exodus",
@@ -37142,20 +37072,6 @@
       "originalCurrency": "PEN",
       "originalBasePrice": 58.99,
       "originalFinalPrice": 8.84
-    },
-    {
-      "url": "https://www.xbox.com/es-PE/games/store/alan-wake/9NKV44QF1R68",
-      "store": "microsoft",
-      "gameId": "alan-wake-remastered",
-      "source": "snapshot",
-      "gameTitle": "Alan Wake Remastered",
-      "timestamp": "2026-05-26T16:18:45.665Z",
-      "discountPct": 85,
-      "arsBasePrice": 42,
-      "arsFinalPrice": 6,
-      "originalCurrency": "PEN",
-      "originalBasePrice": 41.5,
-      "originalFinalPrice": 6.22
     },
     {
       "url": "https://store.epicgames.com/es-PE/p/metro-exodus",
@@ -45810,20 +45726,6 @@
       "originalFinalPrice": 1578
     },
     {
-      "url": "https://www.xbox.com/es-CL/games/store/alan-wake/9NKV44QF1R68",
-      "store": "microsoft",
-      "gameId": "alan-wake-remastered",
-      "source": "snapshot",
-      "gameTitle": "Alan Wake Remastered",
-      "timestamp": "2026-05-26T16:27:42.982Z",
-      "discountPct": 85,
-      "arsBasePrice": 10113,
-      "arsFinalPrice": 1516,
-      "originalCurrency": "CLP",
-      "originalBasePrice": 10113,
-      "originalFinalPrice": 1516
-    },
-    {
       "url": "https://store.steampowered.com/app/412020",
       "store": "steam",
       "gameId": "metro-exodus",
@@ -49786,20 +49688,6 @@
       "originalFinalPrice": 42299.1
     },
     {
-      "url": "https://www.xbox.com/es-AR/games/store/alan-wake/9NKV44QF1R68",
-      "store": "microsoft",
-      "gameId": "alan-wake-remastered",
-      "source": "snapshot",
-      "gameTitle": "Alan Wake Remastered",
-      "timestamp": "2026-06-03T12:31:06.277Z",
-      "discountPct": 85,
-      "arsBasePrice": 215,
-      "arsFinalPrice": 33,
-      "originalCurrency": "ARS",
-      "originalBasePrice": 178,
-      "originalFinalPrice": 26.7
-    },
-    {
       "url": "https://itad.link/018d9386-5633-7086-a2fa-f903c6afc45b/",
       "store": "steam",
       "gameId": "elden-ring",
@@ -53340,20 +53228,6 @@
       "originalCurrency": "ARS",
       "originalBasePrice": 42299.1,
       "originalFinalPrice": 42299.1
-    },
-    {
-      "url": "https://www.xbox.com/es-AR/games/store/alan-wake/9NKV44QF1R68",
-      "store": "microsoft",
-      "gameId": "alan-wake-remastered",
-      "source": "snapshot",
-      "gameTitle": "Alan Wake Remastered",
-      "timestamp": "2026-06-03T17:37:07.188Z",
-      "discountPct": 85,
-      "arsBasePrice": 215,
-      "arsFinalPrice": 33,
-      "originalCurrency": "ARS",
-      "originalBasePrice": 178,
-      "originalFinalPrice": 26.7
     },
     {
       "url": "https://itad.link/018d9386-5633-7086-a2fa-f903c6afc45b/",
@@ -57708,20 +57582,6 @@
       "originalCurrency": "ARS",
       "originalBasePrice": 42299.1,
       "originalFinalPrice": 42299.1
-    },
-    {
-      "url": "https://www.xbox.com/es-AR/games/store/alan-wake/9NKV44QF1R68",
-      "store": "microsoft",
-      "gameId": "alan-wake-remastered",
-      "source": "snapshot",
-      "gameTitle": "Alan Wake Remastered",
-      "timestamp": "2026-06-03T17:39:39.482Z",
-      "discountPct": 85,
-      "arsBasePrice": 215,
-      "arsFinalPrice": 33,
-      "originalCurrency": "ARS",
-      "originalBasePrice": 178,
-      "originalFinalPrice": 26.7
     },
     {
       "url": "https://itad.link/018d9386-96bd-72f1-8c75-148179f27bea/",

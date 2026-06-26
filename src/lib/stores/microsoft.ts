@@ -108,7 +108,7 @@ function findMicrosoftPrice(product: unknown): { basePrice: number; finalPrice: 
   const candidates = collectAvailabilities(product)
     .filter((availability) => {
       const actions = availability?.Actions;
-      return Array.isArray(actions) && actions.includes("Purchase") && isAvailabilityActive(availability);
+      return Array.isArray(actions) && actions.includes("Purchase") && isAvailabilityActive(availability) && !isLegacyGoldDiscount(availability);
     })
     .map((availability) => availability?.OrderManagementData?.Price)
     .filter(Boolean);
@@ -128,6 +128,11 @@ function findMicrosoftPrice(product: unknown): { basePrice: number; finalPrice: 
     finalPrice: cheapest.finalPrice ?? 0,
     basePrice: cheapest.basePrice && cheapest.basePrice > 0 ? cheapest.basePrice : cheapest.finalPrice ?? 0
   };
+}
+
+function isLegacyGoldDiscount(availability: Record<string, any>): boolean {
+  const tags = availability?.Properties?.MerchandisingTags;
+  return Array.isArray(tags) && tags.some((tag) => String(tag).toLowerCase() === "legacydiscountgold");
 }
 
 function collectAvailabilities(node: unknown): Array<Record<string, any>> {

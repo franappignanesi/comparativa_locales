@@ -4132,20 +4132,6 @@
       "source": "snapshot"
     },
     {
-      "gameId": "alan-wake-remastered",
-      "gameTitle": "Alan Wake Remastered",
-      "store": "microsoft",
-      "timestamp": "2026-06-03T18:49:04.461Z",
-      "originalCurrency": "CLP",
-      "originalFinalPrice": 10113,
-      "originalBasePrice": 10113,
-      "arsFinalPrice": 10113,
-      "arsBasePrice": 10113,
-      "discountPct": 0,
-      "url": "https://www.xbox.com/es-CL/games/store/alan-wake/9NKV44QF1R68",
-      "source": "snapshot"
-    },
-    {
       "gameId": "metro-exodus",
       "gameTitle": "Metro Exodus",
       "store": "steam",
@@ -6565,20 +6551,6 @@
       "arsBasePrice": 27891,
       "discountPct": 0,
       "url": "https://itad.link/018d9386-1f06-70ad-ac3a-befb3fe86a85/",
-      "source": "snapshot"
-    },
-    {
-      "gameId": "alan-wake-remastered",
-      "gameTitle": "Alan Wake Remastered",
-      "store": "microsoft",
-      "timestamp": "2026-06-03T18:50:41.342Z",
-      "originalCurrency": "CLP",
-      "originalFinalPrice": 10113,
-      "originalBasePrice": 10113,
-      "arsFinalPrice": 10113,
-      "arsBasePrice": 10113,
-      "discountPct": 0,
-      "url": "https://www.xbox.com/es-CL/games/store/alan-wake/9NKV44QF1R68",
       "source": "snapshot"
     },
     {

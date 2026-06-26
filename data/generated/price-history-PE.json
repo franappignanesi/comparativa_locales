@@ -4132,20 +4132,6 @@
       "source": "snapshot"
     },
     {
-      "gameId": "alan-wake-remastered",
-      "gameTitle": "Alan Wake Remastered",
-      "store": "microsoft",
-      "timestamp": "2026-06-03T18:45:01.513Z",
-      "originalCurrency": "PEN",
-      "originalFinalPrice": 41.5,
-      "originalBasePrice": 41.5,
-      "arsFinalPrice": 41.5,
-      "arsBasePrice": 41.5,
-      "discountPct": 0,
-      "url": "https://www.xbox.com/es-PE/games/store/alan-wake/9NKV44QF1R68",
-      "source": "snapshot"
-    },
-    {
       "gameId": "metro-exodus",
       "gameTitle": "Metro Exodus",
       "store": "steam",

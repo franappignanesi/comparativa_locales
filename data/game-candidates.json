@@ -1836,13 +1836,14 @@
     "releaseYear": 2021,
     "notes": "Remaster, no confundir con original. Microsoft queda excluida hasta tener productId correcto; la busqueda devuelve Alan Wake original.",
     "expectedStores": [
-      "epic"
+      "epic",
+      "humble"
     ],
     "identifiers": {
       "steamAppId": null,
       "epicSlug": "alan-wake-remastered",
       "gogSlug": null,
-      "humbleSlug": null,
+      "humbleSlug": "alan-wake-remastered",
       "microsoftUrl": null
     },
     "confidence": "medium"
