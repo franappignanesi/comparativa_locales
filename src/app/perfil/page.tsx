@@ -252,19 +252,12 @@ export default function ProfilePage() {
               <p className="settingsHelp">
                 Las rebajas de wishlist se evaluan solo en esta region para evitar avisos duplicados en distintas monedas.
               </p>
-              <div className="regionPreferenceGrid">
-                {REGIONS.map((item) => (
-                  <button
-                    key={item.id}
-                    className={item.id === settings.preferredRegion ? "regionPreference active" : "regionPreference"}
-                    type="button"
-                    onClick={() => updatePreferredRegion(item.id)}
-                  >
-                    <img src={item.flagSrc} alt="" />
-                    <span>{item.label}</span>
-                    <em>{item.currency}</em>
-                  </button>
-                ))}
+              <div className="profileRegionSelector">
+                <div>
+                  <strong>Region de notificaciones</strong>
+                  <span>{REGIONS.find((item) => item.id === settings.preferredRegion)?.currency ?? "ARS"}</span>
+                </div>
+                <RegionSelector value={settings.preferredRegion} onChange={updatePreferredRegion} />
               </div>
             </section>
 
