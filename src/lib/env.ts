@@ -26,12 +26,6 @@ const checks: Array<Omit<EnvCheck, "present">> = [
     note: "Firma la cookie HttpOnly de sesion."
   },
   {
-    name: "NEXT_PUBLIC_GOOGLE_CLIENT_ID",
-    required: true,
-    scope: "public",
-    note: "Habilita login con Google en el cliente."
-  },
-  {
     name: "DATABASE_URL",
     required: false,
     scope: "server",
