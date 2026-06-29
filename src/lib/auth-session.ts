@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
+import { getGoogleClientId } from "@/lib/google-auth-config";
 
 export type AuthSession = {
   sub: string;
@@ -26,7 +27,7 @@ const DEV_SESSION_SECRET = "dev-session-secret-for-local-glitchprice-only-please
 
 export async function verifyGoogleCredential(credential: string): Promise<Omit<AuthSession, "iat" | "exp"> | null> {
   if (!credential) return null;
-  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  const clientId = getGoogleClientId();
   if (!clientId) throw new Error("Missing NEXT_PUBLIC_GOOGLE_CLIENT_ID");
 
   const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`, {

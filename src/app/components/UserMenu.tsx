@@ -41,6 +41,8 @@ type ReportFeedbackNotification = {
 };
 
 const REPORT_FEEDBACK_TTL_MS = 24 * 60 * 60 * 1000;
+const GOOGLE_SCRIPT_ID = "google-identity-services";
+const GOOGLE_UNAVAILABLE_MESSAGE = "Estamos reconectando los servicios de Google. Aguardá unos minutos o contactanos por Discord o Instagram.";
 
 declare global {
   interface Window {
@@ -67,9 +69,10 @@ export function UserMenu({
   const [open, setOpen] = useState(false);
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [clientId, setClientId] = useState<string | null>(null);
+  const [googleConfigLoading, setGoogleConfigLoading] = useState(false);
   const [reportNotifications, setReportNotifications] = useState<ReportFeedbackNotification[]>([]);
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
-  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
   useEffect(() => {
     const openMenu = () => setOpen(true);
@@ -84,6 +87,32 @@ export function UserMenu({
       window.removeEventListener("glitchprice-close-user-menu", closeMenu);
     };
   }, []);
+
+  useEffect(() => {
+    if (user || !open) return;
+
+    let active = true;
+    setGoogleConfigLoading(true);
+    setLoginError(null);
+    fetch("/api/auth/google-config", { cache: "no-store", credentials: "same-origin" })
+      .then(async (response) => {
+        const payload = (await response.json().catch(() => null)) as { clientId?: string } | null;
+        if (!response.ok || !payload?.clientId) throw new Error("Google config unavailable");
+        if (active) setClientId(payload.clientId);
+      })
+      .catch(() => {
+        if (!active) return;
+        setClientId(null);
+        setLoginError(GOOGLE_UNAVAILABLE_MESSAGE);
+      })
+      .finally(() => {
+        if (active) setGoogleConfigLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [open, user]);
 
   useEffect(() => {
     if (user || !clientId || !open) return;
@@ -124,13 +153,28 @@ export function UserMenu({
       return;
     }
 
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    script.onload = renderButton;
-    script.onerror = () => setLoginError("No pudimos cargar Google Login. Revisá la conexión e intentá de nuevo.");
-    document.head.appendChild(script);
+    let script = document.getElementById(GOOGLE_SCRIPT_ID) as HTMLScriptElement | null;
+    const handleScriptError = () => {
+      script?.remove();
+      setLoginError(GOOGLE_UNAVAILABLE_MESSAGE);
+    };
+    let shouldAppend = false;
+    if (!script) {
+      script = document.createElement("script");
+      script.id = GOOGLE_SCRIPT_ID;
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      shouldAppend = true;
+    }
+    script.addEventListener("load", renderButton, { once: true });
+    script.addEventListener("error", handleScriptError, { once: true });
+    if (shouldAppend) document.head.appendChild(script);
+
+    return () => {
+      script?.removeEventListener("load", renderButton);
+      script?.removeEventListener("error", handleScriptError);
+    };
   }, [clientId, onUserChange, open, user]);
 
   useEffect(() => {
@@ -221,8 +265,10 @@ export function UserMenu({
                   <div ref={googleButtonRef} className="googleButtonSlot" />
                   {loginError ? <span className="loginError">{loginError}</span> : null}
                 </>
+              ) : googleConfigLoading ? (
+                <span>Conectando con Google...</span>
               ) : (
-                <span>Falta NEXT_PUBLIC_GOOGLE_CLIENT_ID en .env.local para habilitar Google Login.</span>
+                <span className="loginError">{loginError ?? GOOGLE_UNAVAILABLE_MESSAGE}</span>
               )}
             </div>
           )}

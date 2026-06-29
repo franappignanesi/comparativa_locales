@@ -205,6 +205,10 @@ jobs:
         run: npm install -g vercel@latest
       - name: Pull Vercel production env
         run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+      - name: Guard Google Login configuration
+        shell: bash
+        run: |
+          node -e "const fs=require('fs'); const p='.vercel/.env.production.local'; const s=fs.existsSync(p)?fs.readFileSync(p,'utf8'):''; const m=s.match(/^NEXT_PUBLIC_GOOGLE_CLIENT_ID=(.*)$/m); const v=m?.[1]?.trim(); if(!v || v.length < 10){console.error('Google Login configuration is missing from the pulled Vercel environment'); process.exit(1)}"
       - name: Build Vercel artifact
         run: vercel build --prod --token="$VERCEL_TOKEN"
       - name: Deploy refreshed production artifact
