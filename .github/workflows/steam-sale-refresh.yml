@@ -107,6 +107,8 @@ jobs:
       VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
     steps:
       - uses: actions/checkout@v7.0.0
+        with:
+          ref: main
       - uses: actions/download-artifact@v4
         with:
           name: steam-sale-cache
@@ -146,11 +148,18 @@ jobs:
         run: npm install -g vercel@latest
       - name: Pull Vercel production env
         run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
-      - name: Guard Google Login configuration
-        shell: bash
-        run: |
-          node -e "const fs=require('fs'); const p='.vercel/.env.production.local'; const s=fs.existsSync(p)?fs.readFileSync(p,'utf8'):''; const m=s.match(/^NEXT_PUBLIC_GOOGLE_CLIENT_ID=(.*)$/m); const v=m?.[1]?.trim(); if(!v || v.length < 10){console.error('Google Login configuration is missing from the pulled Vercel environment'); process.exit(1)}"
       - name: Build Vercel artifact
         run: vercel build --prod --token="$VERCEL_TOKEN"
+      - name: Ensure deployment still uses latest main
+        shell: bash
+        run: |
+          set -euo pipefail
+          current_sha="$(git rev-parse HEAD)"
+          latest_sha="$(git ls-remote origin refs/heads/main | cut -f1)"
+          test -n "$latest_sha"
+          if [ "$current_sha" != "$latest_sha" ]; then
+            echo "main advanced while this deployment was building; refusing to roll production back" >&2
+            exit 1
+          fi
       - name: Deploy refreshed production artifact
         run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
