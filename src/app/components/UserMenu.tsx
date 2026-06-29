@@ -3,6 +3,7 @@
 import { LogOut, MessageSquareText, Settings, UserCircle } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { PUBLIC_GOOGLE_CLIENT_ID } from "@/lib/google-auth-public";
 
 export type GoogleUser = {
   sub: string;
@@ -69,8 +70,6 @@ export function UserMenu({
   const [open, setOpen] = useState(false);
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const [clientId, setClientId] = useState<string | null>(null);
-  const [googleConfigLoading, setGoogleConfigLoading] = useState(false);
   const [reportNotifications, setReportNotifications] = useState<ReportFeedbackNotification[]>([]);
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
 
@@ -91,37 +90,11 @@ export function UserMenu({
   useEffect(() => {
     if (user || !open) return;
 
-    let active = true;
-    setGoogleConfigLoading(true);
-    setLoginError(null);
-    fetch("/api/auth/google-config", { cache: "no-store", credentials: "same-origin" })
-      .then(async (response) => {
-        const payload = (await response.json().catch(() => null)) as { clientId?: string } | null;
-        if (!response.ok || !payload?.clientId) throw new Error("Google config unavailable");
-        if (active) setClientId(payload.clientId);
-      })
-      .catch(() => {
-        if (!active) return;
-        setClientId(null);
-        setLoginError(GOOGLE_UNAVAILABLE_MESSAGE);
-      })
-      .finally(() => {
-        if (active) setGoogleConfigLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [open, user]);
-
-  useEffect(() => {
-    if (user || !clientId || !open) return;
-
     const renderButton = () => {
       if (!window.google?.accounts?.id || !googleButtonRef.current) return;
       googleButtonRef.current.innerHTML = "";
       window.google.accounts.id.initialize({
-        client_id: clientId,
+        client_id: PUBLIC_GOOGLE_CLIENT_ID,
         callback: async (response) => {
           setLoginError(null);
           const nextUser = decodeGoogleCredential(response.credential);
@@ -175,7 +148,7 @@ export function UserMenu({
       script?.removeEventListener("load", renderButton);
       script?.removeEventListener("error", handleScriptError);
     };
-  }, [clientId, onUserChange, open, user]);
+  }, [onUserChange, open, user]);
 
   useEffect(() => {
     if (!open || !user) {
@@ -260,16 +233,8 @@ export function UserMenu({
             <div className="loginPanel">
               <strong>Iniciar sesión</strong>
               <p>Entrá con Google para guardar tu lista de deseados.</p>
-              {clientId ? (
-                <>
-                  <div ref={googleButtonRef} className="googleButtonSlot" />
-                  {loginError ? <span className="loginError">{loginError}</span> : null}
-                </>
-              ) : googleConfigLoading ? (
-                <span>Conectando con Google...</span>
-              ) : (
-                <span className="loginError">{loginError ?? GOOGLE_UNAVAILABLE_MESSAGE}</span>
-              )}
+              <div ref={googleButtonRef} className="googleButtonSlot" />
+              {loginError ? <span className="loginError">{loginError}</span> : null}
             </div>
           )}
         </div>
