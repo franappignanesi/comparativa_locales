@@ -27,6 +27,11 @@ on:
         description: "Comma-separated regions where Steam live should override ITAD"
         required: false
         default: ""
+      top_sellers_backfill:
+        description: "Force Steam top 100 catalog backfill"
+        required: false
+        type: boolean
+        default: false
   schedule:
     # 05:00 UTC = 02:00 Argentina. Long refresh finishes before daytime traffic.
     - cron: "0 5 * * *"
@@ -55,6 +60,18 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Configure fortnightly Steam top sellers backfill
+        shell: bash
+        env:
+          FORCE_TOP_SELLERS_BACKFILL: ${{ github.event.inputs.top_sellers_backfill || 'false' }}
+        run: |
+          set -euo pipefail
+          day="$(date -u +%d)"
+          if [ "$FORCE_TOP_SELLERS_BACKFILL" = "true" ] || [ "$day" = "01" ] || [ "$day" = "16" ]; then
+            echo "RELEASE_TOP_SELLERS_BACKFILL=true" >> "$GITHUB_ENV"
+            echo "RELEASE_TOP_SELLERS_COUNT=100" >> "$GITHUB_ENV"
+            echo "Steam top sellers backfill enabled"
+          fi
       - run: npm run worker:release-automation
       - uses: actions/upload-artifact@v4
         if: always()
