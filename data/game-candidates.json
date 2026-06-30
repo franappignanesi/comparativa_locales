@@ -152826,5 +152826,398 @@
       "microsoftUrl": null
     },
     "confidence": "high"
+  },
+  {
+    "title": "SAND: Raiders of Sophie",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "Early Access"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 12; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-06-30T02:12:40.847Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1431300,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "MECCHA CHAMELEON",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Casual",
+    "steamTags": [
+      "Casual"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 1; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-06-30T02:12:40.847Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 4704690,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Paralives",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Simulation",
+    "steamTags": [
+      "Simulation",
+      "Early Access"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 38; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-06-30T02:12:40.847Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1118520,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "007 First Light",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 91; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-06-30T02:12:40.847Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3768760,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Forza Horizon 6",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Simulation",
+    "steamTags": [
+      "Racing",
+      "Simulation",
+      "Sports"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 16; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-06-30T02:12:40.847Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2483190,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Subnautica 2",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "Early Access"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 78; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-06-30T02:12:40.847Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1962700,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Gamble With Your Friends",
+    "edition": "standard",
+    "category": "indie popular",
+    "primaryTag": "Adventure",
+    "steamTags": [
+      "Adventure",
+      "Indie",
+      "Simulation"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 65; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-06-30T02:12:40.847Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3892270,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "EA SPORTS FC™ 26",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Simulation",
+    "steamTags": [
+      "Simulation",
+      "Sports"
+    ],
+    "releaseYear": 2025,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 10; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-06-30T02:12:40.847Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3405690,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Stellar Blade™",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "RPG"
+    ],
+    "releaseYear": 2025,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 25; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-06-30T02:12:40.847Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3489700,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "NBA 2K26",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Sports",
+    "steamTags": [
+      "Sports"
+    ],
+    "releaseYear": 2025,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 33; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-06-30T02:12:40.847Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3472040,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Battlefield™ 6",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action"
+    ],
+    "releaseYear": 2025,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 34; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-06-30T02:12:40.847Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2807960,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Escape from Tarkov",
+    "edition": "standard",
+    "category": "multiplayer pago",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Massively Multiplayer",
+      "RPG",
+      "Simulation"
+    ],
+    "releaseYear": 2025,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 35; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-06-30T02:12:40.847Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3932890,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Borderlands 4",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "RPG"
+    ],
+    "releaseYear": 2025,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 43; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-06-30T02:12:40.847Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1285190,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Resident Evil Requiem",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 73; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-06-30T02:12:40.847Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3764200,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "PEAK",
+    "edition": "standard",
+    "category": "indie popular",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "Indie"
+    ],
+    "releaseYear": 2025,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 98; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-06-30T02:12:40.847Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3527290,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Dispatch",
+    "edition": "standard",
+    "category": "indie popular",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "Casual",
+      "Indie",
+      "Strategy"
+    ],
+    "releaseYear": 2025,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 99; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-06-30T02:12:40.847Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2592160,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
   }
 ]
