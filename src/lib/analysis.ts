@@ -32,7 +32,7 @@ export type AnalysisSummary = {
   games: Record<string, GameAnalysis>;
 };
 
-export function analyzePrices(latest: LatestPrices, gameIds?: Set<string>): AnalysisSummary {
+export function analyzePrices(latest: LatestPrices, gameIds?: Set<string>, stores: StoreId[] = STORES): AnalysisSummary {
   const rows = gameIds ? latest.prices.filter((row) => gameIds.has(row.gameId)) : latest.prices;
   const games: Record<string, GameAnalysis> = {};
   const winsByStore = makeStoreRecord(0);
@@ -47,7 +47,7 @@ export function analyzePrices(latest: LatestPrices, gameIds?: Set<string>): Anal
   let pricedGames = 0;
 
   for (const row of rows) {
-    const priced = STORES.map((store) => row.prices[store]).filter(hasArsPrice);
+    const priced = stores.map((store) => row.prices[store]).filter(hasArsPrice);
     const comparable = priced.length >= 2;
     if (priced.length > 0) pricedGames += 1;
 
@@ -55,7 +55,7 @@ export function analyzePrices(latest: LatestPrices, gameIds?: Set<string>): Anal
     const winnerPrice = priced.length > 0 ? Math.min(...priced.map((price) => price.arsFinalPrice)) : null;
     const winner = winnerPrice == null ? null : priced.find((price) => price.arsFinalPrice === winnerPrice)?.store ?? null;
 
-    for (const store of STORES) {
+    for (const store of stores) {
       const price = row.prices[store];
       if (hasArsPrice(price)) {
         valuesByStore[store].push(price.arsFinalPrice);
@@ -83,7 +83,7 @@ export function analyzePrices(latest: LatestPrices, gameIds?: Set<string>): Anal
       }
     }
 
-    const steam = row.prices.steam;
+    const steam = stores.includes("steam") ? row.prices.steam : undefined;
     const differenceVsSteam =
       winnerPrice != null && hasArsPrice(steam) ? winnerPrice - steam.arsFinalPrice : null;
     if (differenceVsSteam != null && differenceVsSteam < 0) savings.push(Math.abs(differenceVsSteam));
@@ -107,8 +107,8 @@ export function analyzePrices(latest: LatestPrices, gameIds?: Set<string>): Anal
   const medianByStore = mapStoreNumbers(valuesByStore, median);
   const priceIndexByStore = normalizeStoreIndex(mapStoreNumbers(indexValuesByStore, average));
   const averageDiscountByStore = mapStoreNumbers(discountsByStore, average);
-  const cheapestAverageStore = minStore(averageByStore);
-  const mostWinsStore = maxStore(winsByStore);
+  const cheapestAverageStore = minStore(averageByStore, stores);
+  const mostWinsStore = maxStore(winsByStore, stores);
   const gameAnalyses = Object.values(games);
 
   return {
@@ -116,8 +116,8 @@ export function analyzePrices(latest: LatestPrices, gameIds?: Set<string>): Anal
     mostWinsStore,
     averageSavingsVsSteam: average(savings),
     gamesAnalyzed: pricedGames,
-    completeDataGames: gameAnalyses.filter((game) => game.coverage === STORES.length).length,
-    missingDataGames: gameAnalyses.filter((game) => game.coverage >= 1 && game.coverage < STORES.length).length,
+    completeDataGames: gameAnalyses.filter((game) => game.coverage === stores.length).length,
+    missingDataGames: gameAnalyses.filter((game) => game.coverage >= 1 && game.coverage < stores.length).length,
     averageByStore,
     medianByStore,
     winsByStore,
@@ -195,11 +195,11 @@ function normalizeStoreIndex(values: Partial<Record<StoreId, number | null>>): P
   );
 }
 
-function minStore(values: Partial<Record<StoreId, number | null>>): StoreId | null {
-  return [...STORES].filter((store) => values[store] != null).sort((a, b) => (values[a] ?? 0) - (values[b] ?? 0))[0] ?? null;
+function minStore(values: Partial<Record<StoreId, number | null>>, stores: StoreId[]): StoreId | null {
+  return [...stores].filter((store) => values[store] != null).sort((a, b) => (values[a] ?? 0) - (values[b] ?? 0))[0] ?? null;
 }
 
-function maxStore(values: Partial<Record<StoreId, number>>): StoreId | null {
-  const winner = [...STORES].sort((a, b) => (values[b] ?? 0) - (values[a] ?? 0))[0] ?? null;
+function maxStore(values: Partial<Record<StoreId, number>>, stores: StoreId[]): StoreId | null {
+  const winner = [...stores].sort((a, b) => (values[b] ?? 0) - (values[a] ?? 0))[0] ?? null;
   return winner && (values[winner] ?? 0) > 0 ? winner : null;
 }

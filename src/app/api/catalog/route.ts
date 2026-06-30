@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCatalogPage, type CatalogMode } from "@/lib/catalog";
 import { DEFAULT_REGION, REGIONS, type RegionId } from "@/lib/regions";
+import { STORES, type StoreId } from "@/lib/types";
 
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
@@ -16,6 +17,7 @@ export async function GET(request: NextRequest) {
         limit: parseNumber(params.get("limit")),
         offset: parseNumber(params.get("offset")),
         region: parseRegion(params.get("region")),
+        stores: parseStores(params.get("stores")),
         refresh: false
       })
     );
@@ -43,4 +45,10 @@ function parseNumber(value: string | null): number | undefined {
   if (!value) return undefined;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function parseStores(value: string | null): StoreId[] {
+  if (!value) return [...STORES];
+  const stores = value.split(",").filter((store): store is StoreId => STORES.includes(store as StoreId));
+  return stores.length ? [...new Set(stores)] : [...STORES];
 }

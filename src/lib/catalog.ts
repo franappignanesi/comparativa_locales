@@ -18,6 +18,7 @@ export type CatalogParams = {
   offset?: number;
   refresh?: boolean;
   region?: RegionId;
+  stores?: StoreId[];
   useCachedExchangeRate?: boolean;
 };
 
@@ -52,14 +53,15 @@ export async function getCatalogPage(params: CatalogParams = {}): Promise<Catalo
   const strictIds = new Set(sample.strictSample.map((game) => game.id));
   const broadIds = new Set(sample.broadSample.map((game) => game.id));
   const expandedLatest = expandLatestWithSample(latest, sample);
+  const activeStores = normalizeStores(params.stores);
   const analysis = {
-    strict: analyzePrices(expandedLatest, strictIds),
-    broad: analyzePrices(expandedLatest, broadIds)
+    strict: analyzePrices(expandedLatest, strictIds, activeStores),
+    broad: analyzePrices(expandedLatest, broadIds, activeStores)
   };
   const mode = params.mode === "strict" ? "strict" : "broad";
   const limit = clampLimit(params.limit);
   const offset = Math.max(0, params.offset ?? 0);
-  const filtered = filterAndSortRows(expandedLatest.prices, sample, analysis[mode], { ...params, mode });
+  const filtered = filterAndSortRows(expandedLatest.prices, sample, analysis[mode], { ...params, stores: activeStores, mode });
   const rows = compactRows(filtered.slice(offset, offset + limit));
   const pageGameIds = new Set(rows.map((row) => row.gameId));
   const history = await getPriceHistoryReport(expandedLatest, { refreshItad: params.refresh, gameIds: pageGameIds });
@@ -70,7 +72,7 @@ export async function getCatalogPage(params: CatalogParams = {}): Promise<Catalo
       prices: rows,
       errors: expandedLatest.errors.filter((error) => pageGameIds.has(error.gameId))
     },
-    history: sliceHistory(history, pageGameIds),
+    history: sliceHistory(history, pageGameIds, activeStores),
     analysis: {
       strict: sliceAnalysis(analysis.strict, pageGameIds),
       broad: sliceAnalysis(analysis.broad, pageGameIds)
@@ -137,11 +139,12 @@ function filterAndSortRows(
   const category = params.category ?? "todas";
   const filter = params.filter ?? "todos";
   const sort = params.sort ?? "diferencia";
+  const activeStores = normalizeStores(params.stores);
 
   return rows
     .filter((row) => ids.has(row.gameId))
     .filter((row) => !normalizedQuery || row.gameTitle.toLowerCase().includes(normalizedQuery))
-    .filter((row) => hasAnyCurrentPrice(row))
+    .filter((row) => hasAnyCurrentPrice(row, activeStores))
     .filter((row) => {
       if (category === "todas") return true;
       if (steamCategory(row) === category) return true;
@@ -150,31 +153,36 @@ function filterAndSortRows(
     })
     .filter((row) => {
       const gameAnalysis = analysis.games[row.gameId];
-      if (filter === "ofertas") return Object.values(row.prices).some((price) => (price?.discountPct ?? 0) > 0);
-      if (filter === "steam-ofertas") return (discountPct(row.prices.steam) ?? 0) > 0;
+      if (filter === "ofertas") return activeStores.some((store) => (discountPct(row.prices[store]) ?? 0) > 0);
+      if (filter === "steam-ofertas") return activeStores.includes("steam") && (discountPct(row.prices.steam) ?? 0) > 0;
       if (filter === "diferencias") return (gameAnalysis?.differenceVsSteam ?? 0) < -1000;
       if (filter === "historicos") return true;
       if (filter === "revision") return Boolean(gameAnalysis?.needsReview);
-      if (filter === "completos") return gameAnalysis?.coverage === STORES.length;
+      if (filter === "completos") return gameAnalysis?.coverage === activeStores.length;
       return true;
     })
     .sort((a, b) => {
-      if (sort === "descuento") return maxDiscountPct(b) - maxDiscountPct(a);
+      if (sort === "descuento") return maxDiscountPct(b, activeStores) - maxDiscountPct(a, activeStores);
       if (filter === "steam-ofertas" && sort === "relevancia") return compareSteamOfferRelevance(a, b, analysis);
-      if (filter === "ofertas" && sort === "relevancia") return maxDiscountPct(b) - maxDiscountPct(a);
+      if (filter === "ofertas" && sort === "relevancia") return maxDiscountPct(b, activeStores) - maxDiscountPct(a, activeStores);
       return compareRows(a, b, analysis, sort);
     });
 }
 
-function hasAnyCurrentPrice(row: PriceRow): boolean {
-  return STORES.some((store) => {
+function hasAnyCurrentPrice(row: PriceRow, stores: StoreId[]): boolean {
+  return stores.some((store) => {
     const price = row.prices[store];
     return Boolean(price?.available && price.arsFinalPrice != null);
   });
 }
 
-function maxDiscountPct(row: PriceRow): number {
-  return Math.max(0, ...STORES.map((store) => discountPct(row.prices[store]) ?? 0));
+function maxDiscountPct(row: PriceRow, stores: StoreId[]): number {
+  return Math.max(0, ...stores.map((store) => discountPct(row.prices[store]) ?? 0));
+}
+
+function normalizeStores(stores: StoreId[] | undefined): StoreId[] {
+  const valid = stores?.filter((store, index) => STORES.includes(store) && stores.indexOf(store) === index) ?? [];
+  return valid.length ? valid : [...STORES];
 }
 
 function discountPct(price: PriceRow["prices"][StoreId]): number | null {
@@ -213,10 +221,14 @@ function compareSteamOfferRelevance(a: PriceRow, b: PriceRow, analysis: Analysis
   return a.gameTitle.localeCompare(b.gameTitle);
 }
 
-function sliceHistory(history: PriceHistoryReport, gameIds: Set<string>): PriceHistoryReport {
+function sliceHistory(history: PriceHistoryReport, gameIds: Set<string>, stores: StoreId[]): PriceHistoryReport {
   return {
     ...history,
-    lowsByGame: Object.fromEntries(Object.entries(history.lowsByGame).filter(([gameId]) => gameIds.has(gameId))),
+    lowsByGame: Object.fromEntries(
+      Object.entries(history.lowsByGame)
+        .filter(([gameId]) => gameIds.has(gameId))
+        .map(([gameId, lows]) => [gameId, Object.fromEntries(stores.map((store) => [store, lows[store]]).filter(([, low]) => low != null))])
+    ),
     entriesByGame: {}
   };
 }

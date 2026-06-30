@@ -82,10 +82,10 @@ const STORE_LABELS: Record<StoreId, string> = {
 };
 
 const SIDEBAR_ITEMS: SidebarItem[] = [
-  { label: "Ofertas de Steam", icon: Flame, filter: "steam-ofertas", sort: "relevancia", featured: true },
-  { label: "Ofertas", icon: Flame, filter: "ofertas", sort: "descuento" },
-  { label: "Más baratos que en Steam", icon: TrendingDown, filter: "diferencias", sort: "diferencia" },
-  { label: "Mínimos históricos", icon: History, filter: "historicos", sort: "diferencia" }
+  { label: "Ofertas de Steam 🔥", icon: Flame, filter: "steam-ofertas", sort: "relevancia", featured: true },
+  { label: "Ofertas 🎁", icon: Flame, filter: "ofertas", sort: "descuento" },
+  { label: "Más baratos que Steam 👀", icon: TrendingDown, filter: "diferencias", sort: "diferencia" },
+  { label: "Mínimos históricos 📉", icon: History, filter: "historicos", sort: "diferencia" }
 ];
 
 const STEAM_CATEGORY_FILTERS = [
@@ -163,7 +163,7 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
     fetchCatalog({ offset: 0 })
       .then(setPayload)
       .finally(() => setLoading(false));
-  }, [debouncedQuery, category, filter, sort, region]);
+  }, [debouncedQuery, category, filter, sort, region, enabledStores]);
 
   useEffect(() => {
     const selectedFromUrl = searchParams.get("game");
@@ -229,6 +229,7 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
       filter,
       sort,
       region,
+      stores: enabledStores.join(","),
       limit: String(CATALOG_PAGE_SIZE),
       offset: String(options.offset)
     });
@@ -405,10 +406,10 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
             <SlidersHorizontal size={20} />
             <select value={filter} onChange={(event) => setFilter(event.target.value)} aria-label="Filtro">
               <option value="todos">Todos</option>
-              <option value="steam-ofertas">Ofertas de Steam</option>
-              <option value="ofertas">Ofertas</option>
-              <option value="diferencias">Más baratos que en Steam</option>
-              <option value="historicos">Mínimos históricos</option>
+              <option value="steam-ofertas">Ofertas de Steam 🔥</option>
+              <option value="ofertas">Ofertas 🎁</option>
+              <option value="diferencias">Más baratos que Steam 👀</option>
+              <option value="historicos">Mínimos históricos 📉</option>
               <option value="completos">Completos</option>
             </select>
           </label>
@@ -766,7 +767,7 @@ function HistoricalLowStrip({
 
   return (
     <button className="historyStrip" aria-label="Mínimos históricos" onClick={onOpen}>
-      <span className="historyTitle">Mínimos históricos</span>
+      <span className="historyTitle">Mínimos históricos 📉</span>
       <div className="historyColumns">
         {activeStores.map((store) => {
           const low = lows[store];
@@ -936,9 +937,7 @@ function PriceHistoryChart({
   displayCurrency: string;
   displayLocale: string;
 }) {
-  const historyStores = STORES.filter((store) => entries.some((entry) => entry.store === store && entry.arsFinalPrice != null && entry.arsFinalPrice > 0) || Boolean(lows[store]));
-  const activeStores = [...new Set([...(enabledStores.length ? enabledStores : []), ...historyStores])];
-  const chartStores = activeStores.length ? activeStores : STORES;
+  const chartStores = enabledStores.length ? enabledStores : STORES;
   const [tooltip, setTooltip] = useState<{ x: number; y: number; store: StoreId; date: string; price: string } | null>(null);
   const [focusedStore, setFocusedStore] = useState<StoreId | null>(currentWinner && chartStores.includes(currentWinner) ? currentWinner : chartStores[0] ?? null);
   useEffect(() => {
