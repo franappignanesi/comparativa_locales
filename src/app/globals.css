@@ -1008,6 +1008,10 @@ h2 {
   color: var(--muted);
 }
 
+.mobileSearchPanel {
+  display: none;
+}
+
 .iconSelect {
   position: relative;
   display: flex;
@@ -4302,6 +4306,102 @@ select option {
 
   .button {
     justify-content: center;
+  }
+
+  .toolbar.searchActive {
+    margin-bottom: 18px;
+  }
+
+  .mobileSearchPanel {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .mobileSearchStatus {
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary-soft);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .mobileSearchSpinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(248, 200, 19, 0.24);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 780ms linear infinite;
+  }
+
+  .mobileSearchSuggestions {
+    display: grid;
+    gap: 6px;
+  }
+
+  .mobileSearchSuggestion {
+    width: 100%;
+    min-height: 52px;
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) 18px;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px 6px 6px;
+    border: 1px solid rgba(78, 70, 50, 0.42);
+    border-radius: 6px;
+    background: rgba(17, 14, 5, 0.82);
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .mobileSearchSuggestion img,
+  .mobileSearchCoverFallback {
+    width: 36px;
+    height: 40px;
+    border-radius: 4px;
+    object-fit: cover;
+    background: var(--surface-low);
+  }
+
+  .mobileSearchSuggestion > span:nth-child(2) {
+    min-width: 0;
+    display: grid;
+    gap: 3px;
+  }
+
+  .mobileSearchSuggestion strong,
+  .mobileSearchSuggestion small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobileSearchSuggestion strong {
+    font-size: 13px;
+  }
+
+  .mobileSearchSuggestion small,
+  .mobileSearchEmpty {
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .mobileSearchSuggestion > svg {
+    transform: rotate(-90deg);
+    color: var(--primary);
+  }
+
+  .mobileSearchEmpty {
+    margin: 0;
+    padding: 10px 0;
+  }
+
+  .catalogMetrics.searchActive {
+    display: none;
   }
 
   .cards,

@@ -220,6 +220,8 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
 
   const summary = payload.analysis.broad;
   const selectedRow = selectedGameId ? payload.latest.prices.find((row) => row.gameId === selectedGameId) ?? null : null;
+  const queryActive = query.trim().length > 0;
+  const searchPending = query.trim() !== debouncedQuery.trim() || loading;
 
   async function fetchCatalog(options: { offset: number; refresh?: boolean }): Promise<ApiPayload> {
     const params = new URLSearchParams({
@@ -386,11 +388,47 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
           </div>
         </header>
 
-        <section className="toolbar" aria-label="Controles">
+        <section className={`toolbar ${queryActive ? "searchActive" : ""}`} aria-label="Controles">
           <label className="search">
             <Search size={20} />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar juego..." />
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Buscar juego..."
+              aria-label="Buscar juego"
+              enterKeyHint="search"
+            />
           </label>
+          {queryActive ? (
+            <div className="mobileSearchPanel" aria-label="Resultados de búsqueda">
+              <div className="mobileSearchStatus" role="status" aria-live="polite">
+                {searchPending ? (
+                  <>
+                    <span className="mobileSearchSpinner" />
+                    Buscando juegos...
+                  </>
+                ) : (
+                  `${payload.pagination.total} ${payload.pagination.total === 1 ? "resultado" : "resultados"}`
+                )}
+              </div>
+              {!searchPending && games.length ? (
+                <div className="mobileSearchSuggestions">
+                  {games.slice(0, 6).map((row) => (
+                    <button key={row.gameId} type="button" className="mobileSearchSuggestion" onClick={() => setSelectedGameId(row.gameId)}>
+                      {row.coverUrl ? <img src={row.coverUrl} alt="" loading="lazy" /> : <span className="mobileSearchCoverFallback" />}
+                      <span>
+                        <strong>{row.gameTitle}</strong>
+                        <small>{[row.releaseYear, formatCategory(displayGameCategory(row))].filter(Boolean).join(" · ")}</small>
+                      </span>
+                      <ChevronDown size={16} aria-hidden="true" />
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+              {!searchPending && !games.length ? <p className="mobileSearchEmpty">No encontramos juegos con ese nombre.</p> : null}
+            </div>
+          ) : null}
           <div className="categoryToggles" aria-label="Filtros de categoría">
             {STEAM_CATEGORY_FILTERS.map((item) => {
               const Icon = item.icon;
@@ -426,7 +464,7 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
           </label>
         </section>
 
-        <section className="cards">
+        <section className={`cards catalogMetrics ${queryActive ? "searchActive" : ""}`}>
           <Metric title="Tienda más barata promedio" value={summary.cheapestAverageStore ? STORE_LABELS[summary.cheapestAverageStore] : "Sin datos"} />
           <Metric
             title="Más victorias"
