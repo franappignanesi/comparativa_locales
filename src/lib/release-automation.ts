@@ -13,6 +13,7 @@ type SteamAppDetails = {
   success?: boolean;
   data?: {
     name?: string;
+    header_image?: string;
     type?: string;
     is_free?: boolean;
     release_date?: { date?: string; coming_soon?: boolean };
@@ -317,6 +318,7 @@ function toCandidate(input: {
   const steamTags = [...new Set([...tags, ...genreTags])].slice(0, 16);
   return {
     title: input.title,
+    coverUrl: input.app.header_image ?? `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${input.appId}/header.jpg`,
     edition: "standard",
     category: inferCategory(steamTags, input.steamSpy),
     primaryTag: primaryTag(steamTags),

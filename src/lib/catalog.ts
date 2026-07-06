@@ -98,7 +98,7 @@ export function expandLatestWithSample(latest: LatestPrices, sample: GameSample)
     if (existing) {
       return {
         ...existing,
-        coverUrl: existing.coverUrl ?? game.coverUrl ?? null,
+        coverUrl: game.coverUrl ?? existing.coverUrl ?? null,
         primaryTag: existing.primaryTag ?? game.primaryTag ?? null,
         category: game.category,
         releaseYear: game.releaseYear,

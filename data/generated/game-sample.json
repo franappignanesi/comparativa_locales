@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-30T02:12:40.894Z",
+  "timestamp": "2026-07-06T00:46:43.656Z",
   "strictSample": [
     {
       "title": "Cyberpunk 2077",
@@ -201377,6 +201377,7 @@
     },
     {
       "title": "SAND: Raiders of Sophie",
+      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1431300/cb9c54133c4f0bcada158d2da8cb47575914e89d/header.jpg?t=1782290789",
       "edition": "standard",
       "category": "AA",
       "primaryTag": "Action",
@@ -201400,7 +201401,6 @@
       },
       "confidence": "high",
       "id": "sand-raiders-of-sophie",
-      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1431300/header.jpg",
       "availableStores": [
         "steam"
       ],
@@ -201414,6 +201414,7 @@
     },
     {
       "title": "MECCHA CHAMELEON",
+      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/163e2a742e5fb8e1f5d1e3a890da98f04ab809d4/header.jpg?t=1782561846",
       "edition": "standard",
       "category": "AA",
       "primaryTag": "Casual",
@@ -201435,7 +201436,6 @@
       },
       "confidence": "high",
       "id": "meccha-chameleon",
-      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/header.jpg",
       "availableStores": [
         "steam"
       ],
@@ -201449,6 +201449,7 @@
     },
     {
       "title": "Paralives",
+      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1118520/277ab7a2ad1bbce0f4837bb37a3c86d109bd5258/header.jpg?t=1783011783",
       "edition": "standard",
       "category": "AA",
       "primaryTag": "Simulation",
@@ -201471,7 +201472,6 @@
       },
       "confidence": "high",
       "id": "paralives",
-      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1118520/header.jpg",
       "availableStores": [
         "steam"
       ],
@@ -201485,6 +201485,7 @@
     },
     {
       "title": "007 First Light",
+      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/dbe86ebd2edb4c77d113e9e2feefeb90189fabc9/header.jpg?t=1782807423",
       "edition": "standard",
       "category": "AA",
       "primaryTag": "Action",
@@ -201507,7 +201508,6 @@
       },
       "confidence": "high",
       "id": "007-first-light",
-      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/header.jpg",
       "availableStores": [
         "steam"
       ],
@@ -201521,6 +201521,7 @@
     },
     {
       "title": "Forza Horizon 6",
+      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2483190/744a52b2f79bb03825dea2c0fcfa29e330bb2f1e/header_alt_assets_1.jpg?t=1782238812",
       "edition": "standard",
       "category": "AA",
       "primaryTag": "Simulation",
@@ -201544,7 +201545,6 @@
       },
       "confidence": "high",
       "id": "forza-horizon-6",
-      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2483190/header.jpg",
       "availableStores": [
         "steam"
       ],
@@ -201558,6 +201558,7 @@
     },
     {
       "title": "Subnautica 2",
+      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1962700/header.jpg?t=1780372044",
       "edition": "standard",
       "category": "AA",
       "primaryTag": "Action",
@@ -201581,7 +201582,6 @@
       },
       "confidence": "high",
       "id": "subnautica-2",
-      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1962700/header.jpg",
       "availableStores": [
         "steam"
       ],
@@ -201595,6 +201595,7 @@
     },
     {
       "title": "Gamble With Your Friends",
+      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3892270/395e6d7972474333a698b26f8aa5597bf38109a1/header.jpg?t=1782258835",
       "edition": "standard",
       "category": "indie popular",
       "primaryTag": "Adventure",
@@ -201618,7 +201619,6 @@
       },
       "confidence": "high",
       "id": "gamble-with-your-friends",
-      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3892270/header.jpg",
       "availableStores": [
         "steam"
       ],
@@ -201632,6 +201632,7 @@
     },
     {
       "title": "EA SPORTS FC™ 26",
+      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/64d362e71693f1ec7023f52ab94026f9a0d4fbed/header.jpg?t=1783095306",
       "edition": "standard",
       "category": "AA",
       "primaryTag": "Simulation",
@@ -201654,7 +201655,6 @@
       },
       "confidence": "high",
       "id": "ea-sports-fc-26",
-      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/header.jpg",
       "availableStores": [
         "steam"
       ],
@@ -201668,6 +201668,7 @@
     },
     {
       "title": "Stellar Blade™",
+      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/header.jpg?t=1776466244",
       "edition": "standard",
       "category": "AA",
       "primaryTag": "Action",
@@ -201691,7 +201692,6 @@
       },
       "confidence": "high",
       "id": "stellar-blade",
-      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/header.jpg",
       "availableStores": [
         "steam"
       ],
@@ -201705,6 +201705,7 @@
     },
     {
       "title": "NBA 2K26",
+      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3472040/46650897e3b766a8b7f5e50313fcabba9afcf564/header_alt_assets_6.jpg?t=1782486648",
       "edition": "standard",
       "category": "AA",
       "primaryTag": "Sports",
@@ -201726,7 +201727,6 @@
       },
       "confidence": "high",
       "id": "nba-2k26",
-      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3472040/header.jpg",
       "availableStores": [
         "steam"
       ],
@@ -201740,6 +201740,7 @@
     },
     {
       "title": "Battlefield™ 6",
+      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2807960/c12d12ce3c7d217398d3fcad77427bfc9d57c570/header.jpg?t=1782831583",
       "edition": "standard",
       "category": "AA",
       "primaryTag": "Action",
@@ -201761,7 +201762,6 @@
       },
       "confidence": "high",
       "id": "battlefield-6",
-      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2807960/header.jpg",
       "availableStores": [
         "steam"
       ],
@@ -201775,6 +201775,7 @@
     },
     {
       "title": "Escape from Tarkov",
+      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3932890/e1367f10d469137a2ced522b642a9b1ee10450da/header.jpg?t=1779703783",
       "edition": "standard",
       "category": "multiplayer pago",
       "primaryTag": "Action",
@@ -201799,7 +201800,6 @@
       },
       "confidence": "high",
       "id": "escape-from-tarkov",
-      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3932890/header.jpg",
       "availableStores": [
         "steam"
       ],
@@ -201813,6 +201813,7 @@
     },
     {
       "title": "Borderlands 4",
+      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1285190/9f59c9c0659e7be06cc1fd775f1bc48f125bcbac/header_alt_assets_3_spanish.jpg?t=1782457878",
       "edition": "standard",
       "category": "AA",
       "primaryTag": "Action",
@@ -201836,7 +201837,6 @@
       },
       "confidence": "high",
       "id": "borderlands-4",
-      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1285190/header.jpg",
       "availableStores": [
         "steam"
       ],
@@ -201850,6 +201850,7 @@
     },
     {
       "title": "Resident Evil Requiem",
+      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3764200/ce5437442768e38eb575f205ab9397d0264017b0/header.jpg?t=1779840172",
       "edition": "standard",
       "category": "AA",
       "primaryTag": "Action",
@@ -201872,7 +201873,6 @@
       },
       "confidence": "high",
       "id": "resident-evil-requiem",
-      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3764200/header.jpg",
       "availableStores": [
         "steam"
       ],
@@ -201886,6 +201886,7 @@
     },
     {
       "title": "PEAK",
+      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3527290/31bac6b2eccf09b368f5e95ce510bae2baf3cfcd/header.jpg?t=1775581133",
       "edition": "standard",
       "category": "indie popular",
       "primaryTag": "Action",
@@ -201909,7 +201910,6 @@
       },
       "confidence": "high",
       "id": "peak",
-      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3527290/header.jpg",
       "availableStores": [
         "steam"
       ],
@@ -201923,6 +201923,7 @@
     },
     {
       "title": "Dispatch",
+      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2592160/header.jpg?t=1779899220",
       "edition": "standard",
       "category": "indie popular",
       "primaryTag": "Action",
@@ -201948,7 +201949,6 @@
       },
       "confidence": "high",
       "id": "dispatch",
-      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2592160/header.jpg",
       "availableStores": [
         "steam"
       ],
