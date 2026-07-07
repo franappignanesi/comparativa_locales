@@ -492,6 +492,7 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
               wishlisted={wishlist.some((item) => item.gameId === row.gameId)}
               onToggleWishlist={() => toggleWishlist(row)}
               usdToArs={payload.latest.usdToArs || FALLBACK_USD_TO_ARS}
+              usdToTarget={payload.latest.usdToTarget || payload.latest.usdToArs || FALLBACK_USD_TO_ARS}
               displayCurrency={payload.latest.currency ?? "ARS"}
               displayLocale={payload.latest.locale ?? "es-AR"}
               onOpen={() => setSelectedGameId(row.gameId)}
@@ -542,6 +543,7 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
           historyEntries={payload.history.entriesByGame[selectedRow.gameId] ?? []}
           historyLoading={loadingGameHistoryId === selectedRow.gameId}
           usdToArs={payload.latest.usdToArs || FALLBACK_USD_TO_ARS}
+          usdToTarget={payload.latest.usdToTarget || payload.latest.usdToArs || FALLBACK_USD_TO_ARS}
           displayCurrency={payload.latest.currency ?? "ARS"}
           displayLocale={payload.latest.locale ?? "es-AR"}
           user={user}
@@ -592,6 +594,7 @@ function GameCard({
   wishlisted,
   onToggleWishlist,
   usdToArs,
+  usdToTarget,
   displayCurrency,
   displayLocale,
   onOpen,
@@ -605,6 +608,7 @@ function GameCard({
   wishlisted: boolean;
   onToggleWishlist: () => void;
   usdToArs: number;
+  usdToTarget: number;
   displayCurrency: string;
   displayLocale: string;
   onOpen: () => void;
@@ -684,7 +688,7 @@ function GameCard({
           )}
         </div>
 
-        <HistoricalLowStrip lows={historyLows} enabledStores={activeStores} usdToArs={usdToArs} displayCurrency={displayCurrency} displayLocale={displayLocale} onOpen={onOpen} />
+        <HistoricalLowStrip lows={historyLows} enabledStores={activeStores} usdToArs={usdToArs} usdToTarget={usdToTarget} displayCurrency={displayCurrency} displayLocale={displayLocale} onOpen={onOpen} />
       </div>
     </article>
   );
@@ -789,6 +793,7 @@ function HistoricalLowStrip({
   lows,
   enabledStores,
   usdToArs,
+  usdToTarget,
   displayCurrency,
   displayLocale,
   onOpen
@@ -796,29 +801,70 @@ function HistoricalLowStrip({
   lows: PriceHistoryReport["lowsByGame"][string];
   enabledStores: StoreId[];
   usdToArs: number;
+  usdToTarget: number;
   displayCurrency: string;
   displayLocale: string;
   onOpen?: () => void;
 }) {
   const activeStores = enabledStores.length ? enabledStores : STORES;
-  const hasAnyLow = activeStores.some((store) => lows[store]?.arsFinalPrice != null);
 
   return (
-    <button className="historyStrip" aria-label="Mínimos históricos" onClick={onOpen}>
-      <span className="historyTitle">Mínimos históricos 📉</span>
-      <div className="historyColumns">
-        {activeStores.map((store) => {
-          const low = lows[store];
-          return (
-            <div className="historyColumn" key={store}>
-              <span>{STORE_LABELS[store]}</span>
-              <strong>{low ? formatHistoricalOfficialPrice(low, store, usdToArs, displayCurrency, displayLocale) : "Sin dato"}</strong>
-            </div>
-          );
-        })}
-      </div>
-      {!hasAnyLow ? <small>Se completa al actualizar precios.</small> : null}
+    <button className="historyStrip" aria-label="Ver mínimo histórico y evolución completa" onClick={onOpen}>
+      <LowestHistoricalLow
+        lows={lows}
+        stores={activeStores}
+        usdToArs={usdToArs}
+        usdToTarget={usdToTarget}
+        displayCurrency={displayCurrency}
+        displayLocale={displayLocale}
+      />
     </button>
+  );
+}
+
+function LowestHistoricalLow({
+  lows,
+  stores,
+  usdToArs,
+  usdToTarget,
+  displayCurrency,
+  displayLocale,
+  expanded = false
+}: {
+  lows: PriceHistoryReport["lowsByGame"][string];
+  stores: StoreId[];
+  usdToArs: number;
+  usdToTarget: number;
+  displayCurrency: string;
+  displayLocale: string;
+  expanded?: boolean;
+}) {
+  const lowest = stores
+    .map((store) => ({
+      store,
+      low: lows[store],
+      comparablePrice: comparableHistoricalPrice(lows[store], displayCurrency, usdToTarget)
+    }))
+    .filter((entry) => entry.comparablePrice != null)
+    .sort((a, b) => (a.comparablePrice ?? Number.MAX_SAFE_INTEGER) - (b.comparablePrice ?? Number.MAX_SAFE_INTEGER))[0];
+
+  return (
+    <div className={expanded ? "historyMinimum expanded" : "historyMinimum"}>
+      <div>
+        <span className="historyTitle">El mínimo histórico 📉</span>
+        <small>
+          {lowest ? (
+            <>
+              <StoreLogo store={lowest.store} />
+              {STORE_LABELS[lowest.store]}
+            </>
+          ) : "Se completa al actualizar precios."}
+        </small>
+      </div>
+      <strong>
+        {lowest?.low ? formatHistoricalOfficialPrice(lowest.low, lowest.store, usdToArs, displayCurrency, displayLocale) : "Sin dato"}
+      </strong>
+    </div>
   );
 }
 
@@ -830,6 +876,7 @@ function GameDetailModal({
   historyEntries,
   historyLoading,
   usdToArs,
+  usdToTarget,
   displayCurrency,
   displayLocale,
   user,
@@ -844,6 +891,7 @@ function GameDetailModal({
   historyEntries: PriceHistoryReport["entriesByGame"][string];
   historyLoading: boolean;
   usdToArs: number;
+  usdToTarget: number;
   displayCurrency: string;
   displayLocale: string;
   user: GoogleUser | null;
@@ -909,6 +957,7 @@ function GameDetailModal({
             currentWinner={analysis?.winner ?? null}
             loading={historyLoading}
             usdToArs={usdToArs}
+            usdToTarget={usdToTarget}
             displayCurrency={displayCurrency}
             displayLocale={displayLocale}
           />
@@ -962,6 +1011,7 @@ function PriceHistoryChart({
   currentWinner,
   loading,
   usdToArs,
+  usdToTarget,
   displayCurrency,
   displayLocale
 }: {
@@ -972,6 +1022,7 @@ function PriceHistoryChart({
   currentWinner: StoreId | null;
   loading: boolean;
   usdToArs: number;
+  usdToTarget: number;
   displayCurrency: string;
   displayLocale: string;
 }) {
@@ -1116,7 +1167,16 @@ function PriceHistoryChart({
       <small>
         Últimos 6 meses cuando hay registros suficientes; si no, desde el primer registro real. Se agregan puntos mensuales manteniendo el último precio conocido.
       </small>
-      <h4 className="historyLowTitle">MÍNIMOS HISTÓRICOS</h4>
+      <LowestHistoricalLow
+        lows={lows}
+        stores={chartStores}
+        usdToArs={usdToArs}
+        usdToTarget={usdToTarget}
+        displayCurrency={displayCurrency}
+        displayLocale={displayLocale}
+        expanded
+      />
+      <h4 className="historyLowTitle">MÍNIMOS HISTÓRICOS POR TIENDA</h4>
       <div className="historyLowCapsules">
         {chartStores.map((store) => {
           const low = lows[store];
@@ -1180,6 +1240,28 @@ function formatCategory(category: string): string {
 
 function displayGameCategory(row: Pick<PriceRow, "primaryTag" | "category">): string {
   return row.primaryTag?.trim() || row.category;
+}
+
+function comparableHistoricalPrice(
+  price: PriceHistoryReport["lowsByGame"][string][StoreId],
+  displayCurrency: string,
+  usdToTarget: number
+): number | null {
+  if (!price || price.originalFinalPrice == null || price.originalFinalPrice <= 0) return null;
+
+  const currency = (price.originalCurrency ?? "USD").toUpperCase();
+  const normalized = price.arsFinalPrice != null && price.arsFinalPrice > 0 ? price.arsFinalPrice : null;
+  if (currency === displayCurrency.toUpperCase()) return normalized ?? price.originalFinalPrice;
+
+  if (currency === "USD" && usdToTarget > 0) {
+    const converted = price.originalFinalPrice * usdToTarget;
+    // Some legacy USD lows stored their dollar amount in the normalized field.
+    // Keep valid tax-adjusted values, but reject values far below the conversion.
+    if (normalized != null && (usdToTarget <= 2 || normalized >= converted * 0.5)) return normalized;
+    return converted;
+  }
+
+  return normalized ?? price.originalFinalPrice;
 }
 
 function formatHistoricalOfficialPrice(

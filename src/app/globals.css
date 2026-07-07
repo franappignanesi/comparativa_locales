@@ -2428,53 +2428,62 @@ select option {
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.historyColumns {
+.historyMinimum {
+  min-width: 0;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.historyMinimum > div {
+  min-width: 0;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 6px;
-  margin-top: 10px;
 }
 
-.historyColumn {
+.historyMinimum small {
   min-width: 0;
-  display: grid;
-  gap: 3px;
-  align-content: start;
-}
-
-.historyColumn span {
-  min-width: 0;
-  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--faint);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 800;
-  text-overflow: ellipsis;
   text-transform: uppercase;
-  white-space: nowrap;
 }
 
-.historyColumn strong {
+.historyMinimum small .storeLogo {
+  width: 13px;
+  height: 13px;
+  flex-basis: 13px;
+}
+
+.historyMinimum > strong {
   color: var(--primary-soft);
-  font-size: 11px;
+  font-size: 18px;
+  line-height: 1;
   font-weight: 800;
   white-space: nowrap;
 }
 
-.historyColumn em,
-.historyStrip small {
-  color: var(--faint);
-  font-size: 8px;
-  font-style: normal;
-  font-weight: 800;
-  text-transform: uppercase;
+.historyMinimum.expanded {
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid rgba(248, 200, 19, 0.45);
+  border-radius: 6px;
+  background: rgba(248, 200, 19, 0.1);
 }
 
-.historyStrip small {
-  display: block;
-  margin-top: 8px;
-  text-transform: none;
+.historyMinimum.expanded .historyTitle {
+  color: var(--primary);
+}
+
+.historyMinimum.expanded > strong {
+  font-size: 22px;
 }
 
 .modalBackdrop {
@@ -4542,10 +4551,6 @@ select option {
 
   .historyStrip {
     padding-top: 10px;
-  }
-
-  .historyColumns {
-    margin-top: 7px;
   }
 
   .cards,
