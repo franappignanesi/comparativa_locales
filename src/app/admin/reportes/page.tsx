@@ -10,6 +10,7 @@ import { fetchWishlistAlerts, persistSession, readStoredUser, type WishlistAlert
 import { isAdminEmail } from "@/lib/admin";
 import { DEFAULT_REGION, type RegionId } from "@/lib/regions";
 import type { ProblemReport } from "@/lib/report-store";
+import type { EngagementSummary } from "@/lib/engagement-store";
 
 type ResolveDraft = {
   reportId: string;
@@ -22,6 +23,7 @@ export default function AdminReportsPage() {
   const [user, setUser] = useState<GoogleUser | null>(null);
   const [alerts, setAlerts] = useState<WishlistAlert[]>([]);
   const [reports, setReports] = useState<ProblemReport[]>([]);
+  const [engagement, setEngagement] = useState<EngagementSummary | null>(null);
   const [expandedReportId, setExpandedReportId] = useState<string | null>(null);
   const [updatingReportId, setUpdatingReportId] = useState<string | null>(null);
   const [resolveDraft, setResolveDraft] = useState<ResolveDraft>({ reportId: "", notify: null, message: "" });
@@ -39,19 +41,28 @@ export default function AdminReportsPage() {
     if (!user) {
       setAlerts([]);
       setReports([]);
+      setEngagement(null);
       setLoading(false);
       return;
     }
     fetchWishlistAlerts(user.sub, region).then(setAlerts);
     if (!isAdminEmail(user.email)) {
       setReports([]);
+      setEngagement(null);
       setLoading(false);
       return;
     }
     setLoading(true);
-    fetch(`/api/admin/reports?email=${encodeURIComponent(user.email)}`)
-      .then((response) => response.json())
-      .then((payload) => setReports(payload.reports ?? []))
+    Promise.all([
+      fetch("/api/admin/reports").then((response) => response.ok ? response.json() : { reports: [] }),
+      fetch("/api/admin/engagement")
+        .then((response) => response.ok ? response.json() : null)
+        .catch(() => null)
+    ])
+      .then(([reportPayload, engagementPayload]) => {
+        setReports(reportPayload.reports ?? []);
+        setEngagement(engagementPayload?.periodDays ? engagementPayload : null);
+      })
       .finally(() => setLoading(false));
   }, [user, region]);
 
@@ -194,8 +205,11 @@ export default function AdminReportsPage() {
           </section>
         ) : loading ? (
           <p className="loading">Cargando reportes...</p>
-        ) : sortedReports.length ? (
-          <section className="reportsList">
+        ) : (
+          <>
+            <EngagementOverview summary={engagement} />
+            {sortedReports.length ? (
+              <section className="reportsList">
             {sortedReports.map((report) => {
               const expanded = expandedReportId === report.id;
               const resolving = resolveDraft.reportId === report.id;
@@ -299,13 +313,54 @@ export default function AdminReportsPage() {
                 </article>
               );
             })}
-          </section>
-        ) : (
-          <section className="adminNotice">
-            <p>Todavia no hay reportes.</p>
-          </section>
+              </section>
+            ) : (
+              <section className="adminNotice">
+                <p>Todavia no hay reportes.</p>
+              </section>
+            )}
+          </>
         )}
       </main>
     </div>
   );
+}
+
+function EngagementOverview({ summary }: { summary: EngagementSummary | null }) {
+  if (!summary) return null;
+  const engaged = summary.overall.from180To600 + summary.overall.over600;
+  return (
+    <section className="engagementOverview" aria-labelledby="engagement-title">
+      <div className="engagementHeader">
+        <div>
+          <span>Últimos {summary.periodDays} días</span>
+          <h2 id="engagement-title">Permanencia activa</h2>
+        </div>
+        <small>Datos anónimos por ruta</small>
+      </div>
+      <div className="engagementMetrics">
+        <div><span>Visitas medidas</span><strong>{summary.overall.samples}</strong></div>
+        <div><span>Promedio activo</span><strong>{formatDuration(summary.overall.averageSeconds)}</strong></div>
+        <div><span>Más de 3 minutos</span><strong>{engaged}</strong></div>
+      </div>
+      {summary.routes.length ? (
+        <div className="engagementRoutes">
+          {summary.routes.slice(0, 6).map((route) => (
+            <div key={route.path}>
+              <code>{route.path}</code>
+              <span>{route.samples} visitas</span>
+              <strong>{formatDuration(route.averageSeconds)}</strong>
+            </div>
+          ))}
+        </div>
+      ) : <p className="engagementEmpty">Las primeras mediciones aparecerán después de las próximas visitas.</p>}
+    </section>
+  );
+}
+
+function formatDuration(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  const remainder = seconds % 60;
+  return remainder ? `${minutes}m ${remainder}s` : `${minutes}m`;
 }
