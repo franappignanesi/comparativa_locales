@@ -78,7 +78,10 @@ export async function getPriceHistoryReport(
     ? gameIdsMissingHistory(baseEntries, options.gameIds)
     : new Set<string>();
   const fullItad = fullHistoryGameIds.size ? await getFullItadHistory(latest, fullHistoryGameIds) : emptyItad;
-  const entries = [...baseEntries, ...filterEntriesByGameIds(fullItad.entries, options.gameIds)];
+  const entries = normalizeHistoricalEntries(
+    [...baseEntries, ...filterEntriesByGameIds(fullItad.entries, options.gameIds)],
+    latest
+  );
   const lowsByGame = buildLowsByGame(entries, latest);
 
   return {
@@ -160,6 +163,27 @@ function filterCompatibleOwnEntries(entries: PriceHistoryEntry[], latest: Latest
   });
 }
 
+function normalizeHistoricalEntries(entries: PriceHistoryEntry[], latest: LatestPrices): PriceHistoryEntry[] {
+  const usdToTarget = latest.usdToTarget ?? latest.usdToArs ?? 0;
+  const taxMultiplier = 1 + (latest.digitalVatRate ?? 0);
+  if (usdToTarget <= 0) return entries;
+
+  return entries.map((entry) => {
+    if (entry.originalCurrency?.toUpperCase() !== "USD" || entry.originalFinalPrice == null || entry.originalFinalPrice <= 0) {
+      return entry;
+    }
+    const expectedFinal = entry.originalFinalPrice * usdToTarget * taxMultiplier;
+    const expectedBase = entry.originalBasePrice == null
+      ? entry.arsBasePrice
+      : entry.originalBasePrice * usdToTarget * taxMultiplier;
+    return {
+      ...entry,
+      arsFinalPrice: Math.round(expectedFinal),
+      arsBasePrice: expectedBase == null ? null : Math.round(expectedBase)
+    };
+  });
+}
+
 function mergeHistoryEntries(...groups: PriceHistoryEntry[][]): PriceHistoryEntry[] {
   const byKey = new Map<string, PriceHistoryEntry>();
   for (const entry of groups.flat()) {
@@ -231,8 +255,11 @@ function buildLowsByGame(entries: PriceHistoryEntry[], latest: LatestPrices): Re
     }
     const currentPrice = current.get(`${entry.gameId}:${entry.store}`) ?? null;
     const currentDifferenceArs = currentPrice == null ? null : currentPrice - entry.arsFinalPrice;
-    const currentDifferencePct =
-      currentPrice == null || entry.arsFinalPrice <= 0 ? null : Math.round((currentPrice / entry.arsFinalPrice - 1) * 100);
+    const currentDifferencePct = currentPrice == null || currentPrice <= 0
+      ? null
+      : entry.arsFinalPrice <= currentPrice
+        ? Math.round(((currentPrice - entry.arsFinalPrice) / currentPrice) * 100)
+        : Math.round(((entry.arsFinalPrice - currentPrice) / currentPrice) * 100);
     lows[entry.gameId] = {
       ...lows[entry.gameId],
       [entry.store]: {

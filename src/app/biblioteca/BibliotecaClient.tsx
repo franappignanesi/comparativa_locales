@@ -1381,8 +1381,10 @@ function formatCompactCurrency(value: number, currency: string, locale: string):
 }
 
 function formatLowDifference(low: number | null, current: number | null): string {
-  if (low == null || current == null || low <= 0) return "Sin comparación";
-  const pct = Math.round(Math.abs(current / low - 1) * 100);
+  if (low == null || current == null || low <= 0 || current <= 0) return "Sin comparación";
+  const pct = low < current
+    ? Math.round(((current - low) / current) * 100)
+    : Math.round(((low - current) / current) * 100);
   if (pct === 0) return "Igual que ahora";
   return low < current ? `${pct}% menos que ahora` : `${pct}% más que ahora`;
 }

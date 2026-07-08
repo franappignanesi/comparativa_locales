@@ -135,7 +135,7 @@ function filterAndSortRows(
 ): PriceRow[] {
   const selectedSample = params.mode === "strict" ? sample.strictSample : sample.broadSample;
   const ids = new Set(selectedSample.map((game) => game.id));
-  const normalizedQuery = (params.query ?? "").trim().toLowerCase();
+  const normalizedQuery = normalizeSearchText(params.query ?? "");
   const category = params.category ?? "todas";
   const filter = params.filter ?? "todos";
   const sort = params.sort ?? "diferencia";
@@ -143,7 +143,7 @@ function filterAndSortRows(
 
   return rows
     .filter((row) => ids.has(row.gameId))
-    .filter((row) => !normalizedQuery || row.gameTitle.toLowerCase().includes(normalizedQuery))
+    .filter((row) => !normalizedQuery || normalizeSearchText(row.gameTitle).includes(normalizedQuery))
     .filter((row) => hasAnyCurrentPrice(row, activeStores))
     .filter((row) => {
       if (category === "todas") return true;
@@ -167,6 +167,15 @@ function filterAndSortRows(
       if (filter === "ofertas" && sort === "relevancia") return maxDiscountPct(b, activeStores) - maxDiscountPct(a, activeStores);
       return compareRows(a, b, analysis, sort);
     });
+}
+
+function normalizeSearchText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 
 function hasAnyCurrentPrice(row: PriceRow, stores: StoreId[]): boolean {
