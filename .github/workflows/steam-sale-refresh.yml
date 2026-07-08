@@ -27,6 +27,10 @@ on:
         description: "Deploy refreshed data to production"
         required: false
         default: "true"
+      game_ids:
+        description: "Optional comma-separated game IDs for a targeted refresh"
+        required: false
+        default: ""
   schedule:
     # Steam sales start at 10:00 Pacific, normally 17:00 UTC / 14:00 Argentina.
     # Multiple small runs absorb GitHub schedule delays during the traffic spike.
@@ -64,6 +68,7 @@ jobs:
       STEAM_REQUEST_TIMEOUT_MS: "12000"
       STEAM_FORCE_SINGLE_REQUESTS: "1"
       STEAM_SINGLE_CONCURRENCY: "4"
+      STEAM_SALE_GAME_IDS: ${{ github.event.inputs.game_ids || '' }}
       DIGITAL_VAT_RATE: ${{ secrets.DIGITAL_VAT_RATE }}
     steps:
       - uses: actions/checkout@v7.0.0
@@ -105,7 +110,7 @@ jobs:
             cp "data/generated/latest-prices-${PRICE_REGION}.json" "steam-sale-cache/data/generated/latest-prices-${PRICE_REGION}.json"
             cp "data/generated/price-history-${PRICE_REGION}.json" "steam-sale-cache/data/generated/price-history-${PRICE_REGION}.json"
           fi
-          cp "data/generated/steam-sale-refresh-cursor-${PRICE_REGION}.json" steam-sale-cache/data/generated/
+          cp "data/generated/steam-sale-refresh-cursor-${PRICE_REGION}.json" steam-sale-cache/data/generated/ 2>/dev/null || true
           cp "data/generated/steam-sale-refresh-status-${PRICE_REGION}.json" steam-sale-cache/data/generated/
       - uses: actions/upload-artifact@v4
         if: ${{ always() && env.REGION_SELECTED == 'true' }}

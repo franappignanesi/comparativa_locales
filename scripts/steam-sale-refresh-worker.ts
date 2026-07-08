@@ -108,9 +108,12 @@ async function refreshRegion(regionId: RegionId, saleName: string): Promise<Regi
     const exchangeRate = await getExchangeRate(region.id);
     // broadSample is already ordered with the curated catalog first. Preserving that
     // order keeps popular titles ahead of automatically discovered long-tail games.
-    const games = sample.broadSample.filter((game) => game.availableStores.includes("steam") && game.identifiers.steamAppId);
+    const allGames = sample.broadSample.filter((game) => game.availableStores.includes("steam") && game.identifiers.steamAppId);
+    const targetedGameIds = parseGameIds(process.env.STEAM_SALE_GAME_IDS);
+    const targeted = targetedGameIds.size > 0;
+    const games = targeted ? allGames.filter((game) => targetedGameIds.has(game.id)) : allGames;
     const rowsById = new Map(latest.prices.map((row) => [row.gameId, row]));
-    let offset = Math.min(cursor.cursors[region.id] ?? 0, games.length);
+    let offset = targeted ? 0 : Math.min(cursor.cursors[region.id] ?? 0, games.length);
     const startOffset = offset;
     let batchesRun = 0;
     let refreshed = 0;
@@ -150,15 +153,19 @@ async function refreshRegion(regionId: RegionId, saleName: string): Promise<Regi
 
       batchesRun += 1;
       offset += selected.length;
-      cursor.cursors[region.id] = offset;
-      cursor.updatedAt = new Date().toISOString();
-      await writeJson(regionCursorPath, cursor);
+      if (!targeted) {
+        cursor.cursors[region.id] = offset;
+        cursor.updatedAt = new Date().toISOString();
+        await writeJson(regionCursorPath, cursor);
+      }
       console.log(JSON.stringify({ event: "steam_sale_batch_done", region: region.id, offset, total: games.length, batchesRun, refreshed, errors }));
     }
 
-    if (offset >= games.length) {
+    if (offset >= games.length && !targeted) {
       cursor.cursors[region.id] = 0;
       cursor.completed[region.id] = new Date().toISOString();
+      stoppedReason = "completed";
+    } else if (offset >= games.length) {
       stoppedReason = "completed";
     } else {
       stoppedReason = batchesRun >= maxBatches ? "max_batches" : "time_budget";
@@ -187,7 +194,7 @@ async function refreshRegion(regionId: RegionId, saleName: string): Promise<Regi
     if (updatedRows.length) {
       await appendLatestToHistory({ ...mergedLatest, prices: updatedRows });
     }
-    await writeJson(regionCursorPath, cursor);
+    if (!targeted) await writeJson(regionCursorPath, cursor);
 
     const status = buildStatus({
       ok: true,
@@ -302,4 +309,8 @@ function parseRegions(value: string | undefined): RegionId[] {
 function parsePositiveInt(value: string | undefined): number | null {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : null;
+}
+
+function parseGameIds(value: string | undefined): Set<string> {
+  return new Set((value ?? "").split(",").map((item) => item.trim()).filter(Boolean));
 }
