@@ -106,7 +106,9 @@ async function refreshRegion(regionId: RegionId, saleName: string): Promise<Regi
     const sample = await getGameSample();
     const latest = await getLatestPrices({ region: region.id });
     const exchangeRate = await getExchangeRate(region.id);
-    const games = prioritizeGames(sample.broadSample.filter((game) => game.availableStores.includes("steam") && game.identifiers.steamAppId));
+    // broadSample is already ordered with the curated catalog first. Preserving that
+    // order keeps popular titles ahead of automatically discovered long-tail games.
+    const games = sample.broadSample.filter((game) => game.availableStores.includes("steam") && game.identifiers.steamAppId);
     const rowsById = new Map(latest.prices.map((row) => [row.gameId, row]));
     let offset = Math.min(cursor.cursors[region.id] ?? 0, games.length);
     const startOffset = offset;
@@ -234,19 +236,6 @@ async function currentSale(now: Date): Promise<SaleWindow | null> {
 function normalizeCursor(cursor: CursorFile | null, sale: string): CursorFile {
   if (cursor?.sale === sale) return cursor;
   return { sale, updatedAt: null, cursors: {}, completed: {} };
-}
-
-function prioritizeGames(games: SampleGame[]): SampleGame[] {
-  return [...games].sort((a, b) => priorityScore(b) - priorityScore(a));
-}
-
-function priorityScore(game: SampleGame): number {
-  let score = 0;
-  if (game.comparisonStatus === "valid_all_stores") score += 40;
-  if (game.confidence === "high") score += 25;
-  if (game.releaseYear >= 2020) score += 10;
-  if (game.primaryTag === "Action" || game.primaryTag === "Adventure" || game.primaryTag === "RPG") score += 5;
-  return score;
 }
 
 function emptyRow(game: SampleGame): LatestPrices["prices"][number] {

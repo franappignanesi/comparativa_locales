@@ -72,8 +72,13 @@ export async function getPriceHistoryReport(
     options.gameIds
   );
   const itad = await getItadHistory(latest, options.refreshItad ?? false);
-  const fullItad = options.includeFullItad && options.gameIds ? await getFullItadHistory(latest, options.gameIds) : emptyItad;
-  const entries = [...ownEntries, ...filterEntriesByGameIds(itad.entries, options.gameIds), ...filterEntriesByGameIds(fullItad.entries, options.gameIds)];
+  const itadEntries = filterEntriesByGameIds(itad.entries, options.gameIds);
+  const baseEntries = [...ownEntries, ...itadEntries];
+  const fullHistoryGameIds = options.includeFullItad && options.gameIds
+    ? gameIdsMissingHistory(baseEntries, options.gameIds)
+    : new Set<string>();
+  const fullItad = fullHistoryGameIds.size ? await getFullItadHistory(latest, fullHistoryGameIds) : emptyItad;
+  const entries = [...baseEntries, ...filterEntriesByGameIds(fullItad.entries, options.gameIds)];
   const lowsByGame = buildLowsByGame(entries, latest);
 
   return {
@@ -90,6 +95,12 @@ export async function getPriceHistoryReport(
     lowsByGame,
     entriesByGame: buildEntriesByGame(entries)
   };
+}
+
+function gameIdsMissingHistory(entries: PriceHistoryEntry[], gameIds: Set<string>): Set<string> {
+  const counts = new Map<string, number>();
+  for (const entry of entries) counts.set(entry.gameId, (counts.get(entry.gameId) ?? 0) + 1);
+  return new Set([...gameIds].filter((gameId) => (counts.get(gameId) ?? 0) < MIN_FULL_HISTORY_POINTS));
 }
 
 async function getFullItadHistory(latest: LatestPrices, gameIds: Set<string>): Promise<ItadHistoryFile> {

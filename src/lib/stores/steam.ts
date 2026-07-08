@@ -24,36 +24,41 @@ export async function fetchStorePrices(games: SampleGame[], chunkSize = 50, regi
   const gamesWithAppId = games.filter((game) => Boolean(game.identifiers.steamAppId));
   const sleepMs = parseNonNegativeInt(process.env.STEAM_CHUNK_SLEEP_MS) ?? 2500;
 
-  for (let index = 0; index < gamesWithAppId.length; index += chunkSize) {
-    const chunk = gamesWithAppId.slice(index, index + chunkSize);
-    const appIds = chunk.map((game) => game.identifiers.steamAppId).join(",");
-    const url = `https://store.steampowered.com/api/appdetails?appids=${appIds}&cc=${region?.steamCc ?? "AR"}&l=spanish&filters=price_overview,basic`;
+  if (process.env.STEAM_FORCE_SINGLE_REQUESTS === "1") {
+    const individual = await fetchStorePricesIndividually(gamesWithAppId, region, sleepMs);
+    for (const [gameId, price] of individual) result.set(gameId, price);
+  } else {
+    for (let index = 0; index < gamesWithAppId.length; index += chunkSize) {
+      const chunk = gamesWithAppId.slice(index, index + chunkSize);
+      const appIds = chunk.map((game) => game.identifiers.steamAppId).join(",");
+      const url = steamDetailsUrl(appIds, region);
 
-    try {
-      logSteamChunk("start", region, index, chunk.length);
-      const response = await fetchSteam(url);
-      if (!response.ok) {
-        logSteamChunk(`http_${response.status}`, region, index, chunk.length);
-        if (chunk.length > 1 && response.status === 400) {
-          const fallback = await fetchStorePrices(chunk, Math.ceil(chunk.length / 2), region);
-          for (const [gameId, price] of fallback) result.set(gameId, price);
+      try {
+        logSteamChunk("start", region, index, chunk.length);
+        const response = await fetchSteam(url);
+        if (!response.ok) {
+          logSteamChunk(`http_${response.status}`, region, index, chunk.length);
+          if (chunk.length > 1 && response.status === 400) {
+            const fallback = await fetchStorePricesIndividually(chunk, region, sleepMs);
+            for (const [gameId, price] of fallback) result.set(gameId, price);
+            continue;
+          }
+          for (const game of chunk) result.set(game.id, unavailable(game.title, `Steam HTTP ${response.status}`));
           continue;
         }
-        for (const game of chunk) result.set(game.id, unavailable(game.title, `Steam HTTP ${response.status}`));
-        continue;
+        const json = (await response.json()) as Record<string, SteamPayload>;
+        for (const game of chunk) {
+          result.set(game.id, parseSteamPayload(game, json[String(game.identifiers.steamAppId)]));
+        }
+        logSteamChunk("done", region, index, chunk.length);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Error desconocido";
+        logSteamChunk(`error:${message}`, region, index, chunk.length);
+        for (const game of chunk) result.set(game.id, unavailable(game.title, message));
       }
-      const json = (await response.json()) as Record<string, SteamPayload>;
-      for (const game of chunk) {
-        result.set(game.id, parseSteamPayload(game, json[String(game.identifiers.steamAppId)]));
-      }
-      logSteamChunk("done", region, index, chunk.length);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Error desconocido";
-      logSteamChunk(`error:${message}`, region, index, chunk.length);
-      for (const game of chunk) result.set(game.id, unavailable(game.title, message));
-    }
 
-    if (sleepMs > 0 && index + chunkSize < gamesWithAppId.length) await sleep(sleepMs);
+      if (sleepMs > 0 && index + chunkSize < gamesWithAppId.length) await sleep(sleepMs);
+    }
   }
 
   for (const game of games.filter((item) => !item.identifiers.steamAppId)) {
@@ -61,6 +66,41 @@ export async function fetchStorePrices(games: SampleGame[], chunkSize = 50, regi
   }
 
   return result;
+}
+
+async function fetchStorePricesIndividually(
+  games: SampleGame[],
+  region: RegionConfig | undefined,
+  sleepMs: number
+): Promise<Map<string, StorePrice>> {
+  const result = new Map<string, StorePrice>();
+  const concurrency = Math.max(1, parseNonNegativeInt(process.env.STEAM_SINGLE_CONCURRENCY) ?? 4);
+
+  for (let index = 0; index < games.length; index += concurrency) {
+    const group = games.slice(index, index + concurrency);
+    const prices = await Promise.all(
+      group.map(async (game) => {
+        try {
+          const response = await fetchSteam(steamDetailsUrl(String(game.identifiers.steamAppId), region));
+          if (!response.ok) return [game.id, unavailable(game.title, `Steam HTTP ${response.status}`)] as const;
+          const json = (await response.json()) as Record<string, SteamPayload>;
+          return [game.id, parseSteamPayload(game, json[String(game.identifiers.steamAppId)])] as const;
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Error desconocido";
+          return [game.id, unavailable(game.title, message)] as const;
+        }
+      })
+    );
+    for (const [gameId, price] of prices) result.set(gameId, price);
+    logSteamChunk("individual_done", region, index, group.length);
+    if (sleepMs > 0 && index + concurrency < games.length) await sleep(sleepMs);
+  }
+
+  return result;
+}
+
+function steamDetailsUrl(appIds: string, region?: RegionConfig): string {
+  return `https://store.steampowered.com/api/appdetails?appids=${appIds}&cc=${region?.steamCc ?? "AR"}&l=spanish&filters=price_overview,basic`;
 }
 
 async function fetchSteam(url: string): Promise<Response> {

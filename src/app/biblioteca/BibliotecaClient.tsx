@@ -122,7 +122,9 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
   const [loadingGameHistoryId, setLoadingGameHistoryId] = useState<string | null>(null);
   const historyAttemptsRef = useRef(new Set<string>());
-  const initialPayloadRef = useRef(Boolean(initialPayload));
+  const initialPayloadRef = useRef(
+    Boolean(initialPayload) && !searchParams.has("query") && !searchParams.has("filter") && !searchParams.has("sort") && !searchParams.has("game")
+  );
   const [user, setUser] = useState<GoogleUser | null>(null);
   const [wishlist, setWishlist] = useState<WishlistGame[]>([]);
   const [wishlistAlerts, setWishlistAlerts] = useState<WishlistAlert[]>([]);
@@ -209,10 +211,11 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
         }
       })
       .finally(() => {
+        historyAttemptsRef.current.delete(attemptKey);
         if (!controller.signal.aborted) setLoadingGameHistoryId(null);
       });
     return () => controller.abort();
-  }, [selectedGameId, payload, region]);
+  }, [selectedGameId, region]);
 
   if (!payload) {
     return <BibliotecaLoading />;
