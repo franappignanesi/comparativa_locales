@@ -41,12 +41,18 @@ permissions:
 
 jobs:
   refresh-steam-sale:
-    name: Refresh Steam sale prices
+    name: Refresh Steam sale prices (${{ matrix.region }})
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        region: [AR, MX, ES, PE, CL]
     env:
       GLITCHPRICE_PUBLIC_CACHE_SOURCE: file
-      PRICE_REGIONS: ${{ github.event.inputs.regions || 'AR,MX,ES,PE,CL' }}
+      PRICE_REGIONS: ${{ matrix.region }}
+      PRICE_REGION: ${{ matrix.region }}
+      REGION_SELECTED: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
       STEAM_SALE_BATCH_SIZE: ${{ github.event.inputs.batch_size || '120' }}
       STEAM_SALE_MAX_BATCHES: ${{ github.event.inputs.max_batches || '2' }}
       STEAM_SALE_MAX_MS: ${{ github.event.inputs.max_ms || '1080000' }}
@@ -61,7 +67,9 @@ jobs:
       DIGITAL_VAT_RATE: ${{ secrets.DIGITAL_VAT_RATE }}
     steps:
       - uses: actions/checkout@v7.0.0
+        if: env.REGION_SELECTED == 'true'
       - name: Restore latest public dataset
+        if: env.REGION_SELECTED == 'true'
         uses: actions/cache/restore@v4
         with:
           path: |
@@ -71,47 +79,38 @@ jobs:
             data/generated/itad-history*.json
             data/generated/itad-full-history*.json
             data/generated/pending-releases.json
-            data/generated/steam-sale-refresh-cursor.json
-          key: barateam-public-data-${{ github.run_id }}
+            data/generated/steam-sale-refresh-cursor-*.json
+          key: barateam-public-data-${{ github.run_id }}-${{ matrix.region }}
           restore-keys: |
             barateam-public-data-
       - uses: actions/setup-node@v6.4.0
+        if: env.REGION_SELECTED == 'true'
         with:
           node-version: 24
           cache: npm
       - run: npm ci
+        if: env.REGION_SELECTED == 'true'
       - run: npm run worker:steam-sale-refresh
-      - name: Preserve refreshed public dataset
-        if: success()
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            data/generated/game-sample.json
-            data/generated/latest-prices*.json
-            data/generated/price-history*.json
-            data/generated/itad-history*.json
-            data/generated/itad-full-history*.json
-            data/generated/pending-releases.json
-            data/generated/steam-sale-refresh-cursor.json
-          key: barateam-public-data-${{ github.run_id }}
+        if: env.REGION_SELECTED == 'true'
       - name: Collect steam sale cache
-        if: always()
+        if: ${{ always() && env.REGION_SELECTED == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p steam-sale-cache/data/generated
-          cp data/generated/latest-prices.json steam-sale-cache/data/generated/latest-prices.json 2>/dev/null || true
-          cp data/generated/price-history.json steam-sale-cache/data/generated/price-history.json 2>/dev/null || true
-          cp data/generated/steam-sale-refresh-cursor.json steam-sale-cache/data/generated/steam-sale-refresh-cursor.json 2>/dev/null || true
-          for region in MX ES PE CL; do
-            cp "data/generated/latest-prices-${region}.json" "steam-sale-cache/data/generated/latest-prices-${region}.json" 2>/dev/null || true
-            cp "data/generated/price-history-${region}.json" "steam-sale-cache/data/generated/price-history-${region}.json" 2>/dev/null || true
-          done
-          cp data/generated/steam-sale-refresh-status-*.json steam-sale-cache/data/generated/ 2>/dev/null || true
+          if [ "${PRICE_REGION}" = "AR" ]; then
+            cp data/generated/latest-prices.json steam-sale-cache/data/generated/latest-prices.json
+            cp data/generated/price-history.json steam-sale-cache/data/generated/price-history.json
+          else
+            cp "data/generated/latest-prices-${PRICE_REGION}.json" "steam-sale-cache/data/generated/latest-prices-${PRICE_REGION}.json"
+            cp "data/generated/price-history-${PRICE_REGION}.json" "steam-sale-cache/data/generated/price-history-${PRICE_REGION}.json"
+          fi
+          cp "data/generated/steam-sale-refresh-cursor-${PRICE_REGION}.json" steam-sale-cache/data/generated/
+          cp "data/generated/steam-sale-refresh-status-${PRICE_REGION}.json" steam-sale-cache/data/generated/
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: ${{ always() && env.REGION_SELECTED == 'true' }}
         with:
-          name: steam-sale-cache
+          name: steam-sale-cache-${{ matrix.region }}
           if-no-files-found: warn
           retention-days: 2
           path: steam-sale-cache/
@@ -143,8 +142,21 @@ jobs:
           ref: main
       - uses: actions/download-artifact@v4
         with:
-          name: steam-sale-cache
+          pattern: steam-sale-cache-*
+          merge-multiple: true
           path: .
+      - name: Preserve refreshed public dataset
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            data/generated/game-sample.json
+            data/generated/latest-prices*.json
+            data/generated/price-history*.json
+            data/generated/itad-history*.json
+            data/generated/itad-full-history*.json
+            data/generated/pending-releases.json
+            data/generated/steam-sale-refresh-cursor-*.json
+          key: barateam-public-data-${{ github.run_id }}
       - uses: actions/setup-node@v6.4.0
         with:
           node-version: 24

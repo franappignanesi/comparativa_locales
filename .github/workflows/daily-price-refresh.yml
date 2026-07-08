@@ -65,7 +65,7 @@ jobs:
             data/generated/itad-history*.json
             data/generated/itad-full-history*.json
             data/generated/pending-releases.json
-            data/generated/steam-sale-refresh-cursor.json
+            data/generated/steam-sale-refresh-cursor-*.json
           key: barateam-public-data-${{ github.run_id }}-catalog
           restore-keys: |
             barateam-public-data-
@@ -141,7 +141,7 @@ jobs:
             data/generated/itad-history*.json
             data/generated/itad-full-history*.json
             data/generated/pending-releases.json
-            data/generated/steam-sale-refresh-cursor.json
+            data/generated/steam-sale-refresh-cursor-*.json
           key: barateam-public-data-${{ github.run_id }}-${{ matrix.region }}
           restore-keys: |
             barateam-public-data-
@@ -229,7 +229,7 @@ jobs:
             data/generated/itad-history*.json
             data/generated/itad-full-history*.json
             data/generated/pending-releases.json
-            data/generated/steam-sale-refresh-cursor.json
+            data/generated/steam-sale-refresh-cursor-*.json
           key: barateam-public-data-${{ github.run_id }}
       - uses: actions/setup-node@v6.4.0
         with:

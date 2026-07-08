@@ -43,7 +43,6 @@ type RegionStatus = {
   error?: string;
 };
 
-const cursorPath = dataPath("generated", "steam-sale-refresh-cursor.json");
 const calendarPath = dataPath("steam-sale-calendar.json");
 const DEFAULT_MAX_MS = 18 * 60 * 1000;
 const DEFAULT_RESERVE_MS = 90 * 1000;
@@ -100,9 +99,10 @@ async function refreshRegion(regionId: RegionId, saleName: string): Promise<Regi
   const reserveMs = parsePositiveInt(process.env.STEAM_SALE_RESERVE_MS) ?? DEFAULT_RESERVE_MS;
   const deadline = Date.now() + maxMs - reserveMs;
   const region = getRegion(regionId);
+  const regionCursorPath = cursorPath(region.id);
 
   try {
-    const cursor = normalizeCursor(await readJson<CursorFile | null>(cursorPath, null), saleName);
+    const cursor = normalizeCursor(await readJson<CursorFile | null>(regionCursorPath, null), saleName);
     const sample = await getGameSample();
     const latest = await getLatestPrices({ region: region.id });
     const exchangeRate = await getExchangeRate(region.id);
@@ -152,7 +152,7 @@ async function refreshRegion(regionId: RegionId, saleName: string): Promise<Regi
       offset += selected.length;
       cursor.cursors[region.id] = offset;
       cursor.updatedAt = new Date().toISOString();
-      await writeJson(cursorPath, cursor);
+      await writeJson(regionCursorPath, cursor);
       console.log(JSON.stringify({ event: "steam_sale_batch_done", region: region.id, offset, total: games.length, batchesRun, refreshed, errors }));
     }
 
@@ -187,7 +187,7 @@ async function refreshRegion(regionId: RegionId, saleName: string): Promise<Regi
     if (updatedRows.length) {
       await appendLatestToHistory({ ...mergedLatest, prices: updatedRows });
     }
-    await writeJson(cursorPath, cursor);
+    await writeJson(regionCursorPath, cursor);
 
     const status = buildStatus({
       ok: true,
@@ -280,6 +280,10 @@ function latestPricesPath(region: RegionId): string {
 
 function statusPath(region: RegionId): string {
   return dataPath("generated", `steam-sale-refresh-status-${region}.json`);
+}
+
+function cursorPath(region: RegionId): string {
+  return dataPath("generated", `steam-sale-refresh-cursor-${region}.json`);
 }
 
 function getRegion(regionId: RegionId): RegionConfig {
