@@ -129,7 +129,6 @@ export default function WishlistPage() {
             </button>
             <div className="sideSubLinks">
               <Link href="/biblioteca" className="sideSubLink">Todo el catálogo</Link>
-              <Link href="/biblioteca?filter=steam-ofertas&sort=relevancia" className="sideSubLink featuredSideLink">Ofertas de Steam 🔥</Link>
               <Link href="/biblioteca?filter=ofertas&sort=descuento" className="sideSubLink">Ofertas 🎁</Link>
               <Link href="/biblioteca?filter=diferencias&sort=diferencia" className="sideSubLink">Más baratos que Steam 👀</Link>
               <Link href="/biblioteca?filter=historicos" className="sideSubLink">Mínimos históricos 📉</Link>

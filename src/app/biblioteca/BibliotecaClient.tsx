@@ -82,7 +82,6 @@ const STORE_LABELS: Record<StoreId, string> = {
 };
 
 const SIDEBAR_ITEMS: SidebarItem[] = [
-  { label: "Ofertas de Steam 🔥", icon: Flame, filter: "steam-ofertas", sort: "relevancia", featured: true },
   { label: "Ofertas 🎁", icon: Flame, filter: "ofertas", sort: "descuento" },
   { label: "Más baratos que Steam 👀", icon: TrendingDown, filter: "diferencias", sort: "diferencia" },
   { label: "Mínimos históricos 📉", icon: History, filter: "historicos", sort: "diferencia" }
@@ -447,7 +446,6 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
             <SlidersHorizontal size={20} />
             <select value={filter} onChange={(event) => setFilter(event.target.value)} aria-label="Filtro">
               <option value="todos">Todos</option>
-              <option value="steam-ofertas">Ofertas de Steam 🔥</option>
               <option value="ofertas">Ofertas 🎁</option>
               <option value="diferencias">Más baratos que Steam 👀</option>
               <option value="historicos">Mínimos históricos 📉</option>

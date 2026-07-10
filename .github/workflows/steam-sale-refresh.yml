@@ -31,10 +31,6 @@ on:
         description: "Optional comma-separated game IDs for a targeted refresh"
         required: false
         default: ""
-  schedule:
-    # Steam sales start at 10:00 Pacific, normally 17:00 UTC / 14:00 Argentina.
-    # Multiple small runs absorb GitHub schedule delays during the traffic spike.
-    - cron: "5,20,35,50 17-23 * * *"
 
 concurrency:
   group: steam-sale-refresh
@@ -111,7 +107,7 @@ jobs:
             cp "data/generated/price-history-${PRICE_REGION}.json" "steam-sale-cache/data/generated/price-history-${PRICE_REGION}.json"
           fi
           cp "data/generated/steam-sale-refresh-cursor-${PRICE_REGION}.json" steam-sale-cache/data/generated/ 2>/dev/null || true
-          cp "data/generated/steam-sale-refresh-status-${PRICE_REGION}.json" steam-sale-cache/data/generated/
+          cp "data/generated/steam-sale-refresh-status-${PRICE_REGION}.json" steam-sale-cache/data/generated/ 2>/dev/null || true
       - uses: actions/upload-artifact@v4
         if: ${{ always() && env.REGION_SELECTED == 'true' }}
         with:
