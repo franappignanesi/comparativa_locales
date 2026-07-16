@@ -55,6 +55,9 @@ jobs:
           cache: npm
       - run: npm ci
         if: steps.public-data.outputs.cache-matched-key != ''
+      - name: Compact price history
+        if: steps.public-data.outputs.cache-matched-key != ''
+        run: npm run worker:compact-price-history
       - name: Link Vercel project
         if: steps.public-data.outputs.cache-matched-key != ''
         shell: bash

@@ -308,7 +308,23 @@ function compactOwnHistory(entries: PriceHistoryEntry[]): PriceHistoryEntry[] {
     const current = byGameStoreDay.get(key);
     if (!current || timestamp >= Date.parse(current.timestamp)) byGameStoreDay.set(key, entry);
   }
-  return [...byGameStoreDay.values()].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  return [...byGameStoreDay.values()].map(compactSnapshotEntry).sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+}
+
+function compactSnapshotEntry(entry: PriceHistoryEntry): PriceHistoryEntry {
+  const compact: PriceHistoryEntry = {
+    gameId: entry.gameId,
+    store: entry.store,
+    timestamp: entry.timestamp,
+    originalCurrency: entry.originalCurrency ?? null,
+    originalFinalPrice: entry.originalFinalPrice ?? null,
+    originalBasePrice: entry.originalBasePrice ?? null,
+    arsFinalPrice: entry.arsFinalPrice ?? null,
+    arsBasePrice: entry.arsBasePrice ?? null,
+    discountPct: entry.discountPct ?? null,
+    source: "snapshot"
+  };
+  return compact;
 }
 
 function entryDay(timestamp: string): string {

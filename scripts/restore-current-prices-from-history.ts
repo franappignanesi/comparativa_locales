@@ -96,7 +96,7 @@ function restoredPrice(
       finalPrice: entry.originalFinalPrice,
       currency: entry.originalCurrency,
       discountPct: entry.discountPct,
-      url: entry.url,
+      url: entry.url ?? null,
       raw: null,
       source: "cache",
       fetchedAt: entry.timestamp

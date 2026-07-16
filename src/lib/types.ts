@@ -117,7 +117,7 @@ export type LatestPrices = {
 
 export type PriceHistoryEntry = {
   gameId: string;
-  gameTitle: string;
+  gameTitle?: string;
   store: StoreId;
   timestamp: string;
   originalCurrency: string | null;
@@ -126,7 +126,7 @@ export type PriceHistoryEntry = {
   arsFinalPrice: number | null;
   arsBasePrice: number | null;
   discountPct: number | null;
-  url: string | null;
+  url?: string | null;
   source: "snapshot" | "itad";
 };
 

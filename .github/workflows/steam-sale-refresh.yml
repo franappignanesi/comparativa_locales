@@ -147,6 +147,15 @@ jobs:
           pattern: steam-sale-cache-*
           merge-multiple: true
           path: .
+      - uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Compact price history
+        run: npm run worker:compact-price-history
+      - name: Repair transient price gaps
+        run: npm run worker:restore-current-prices
       - name: Preserve refreshed public dataset
         uses: actions/cache/save@v4
         with:
@@ -159,13 +168,6 @@ jobs:
             data/generated/pending-releases.json
             data/generated/steam-sale-refresh-cursor-*.json
           key: barateam-public-data-${{ github.run_id }}
-      - uses: actions/setup-node@v6.4.0
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - name: Repair transient price gaps
-        run: npm run worker:restore-current-prices
       - name: Evaluate wishlist notifications
         continue-on-error: true
         env:
