@@ -198,6 +198,7 @@ jobs:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_SUPPORT_LARGE_FUNCTIONS: "1"
       DIGITAL_VAT_RATE: ${{ secrets.DIGITAL_VAT_RATE }}
       POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
