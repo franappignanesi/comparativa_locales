@@ -62,6 +62,7 @@ jobs:
             data/generated/game-sample.json
             data/generated/latest-prices*.json
             data/generated/price-history*.json
+            data/generated/price-history*.json.gz
             data/generated/itad-history*.json
             data/generated/itad-full-history*.json
             data/generated/pending-releases.json
@@ -138,6 +139,7 @@ jobs:
             data/generated/game-sample.json
             data/generated/latest-prices*.json
             data/generated/price-history*.json
+            data/generated/price-history*.json.gz
             data/generated/itad-history*.json
             data/generated/itad-full-history*.json
             data/generated/pending-releases.json
@@ -226,6 +228,8 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Compact price history
+        env:
+          PRICE_HISTORY_GZIP_ONLY: "1"
         run: npm run worker:compact-price-history
       - name: Prune operational store
         run: npm run worker:prune-operational-store
@@ -238,6 +242,7 @@ jobs:
             data/generated/game-sample.json
             data/generated/latest-prices*.json
             data/generated/price-history*.json
+            data/generated/price-history*.json.gz
             data/generated/itad-history*.json
             data/generated/itad-full-history*.json
             data/generated/pending-releases.json

@@ -1,5 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { gzip } from "zlib";
+import { promisify } from "util";
 import { loadEnvConfig } from "@next/env";
 import { dataPath, readJson, writeJson } from "../src/lib/cache";
 import type { PriceHistoryEntry } from "../src/lib/types";
@@ -12,6 +14,7 @@ type PriceHistoryFile = {
 };
 
 const emptyHistory: PriceHistoryFile = { timestamp: null, entries: [] };
+const gzipAsync = promisify(gzip);
 
 main().catch((error) => {
   console.error(error);
@@ -35,7 +38,12 @@ async function main(): Promise<void> {
     };
     await writeJson(filePath, compacted);
     const after = await fileSize(filePath);
-    results.push({ file, entries: compacted.entries.length, before, after, saved: before - after });
+    const gzipPath = `${filePath}.gz`;
+    const gzipSize = await writeGzip(filePath, gzipPath);
+    if (process.env.PRICE_HISTORY_GZIP_ONLY === "1") {
+      await fs.unlink(filePath).catch(() => undefined);
+    }
+    results.push({ file, entries: compacted.entries.length, before, after, gzip: gzipSize, saved: before - after });
   }
 
   console.log(JSON.stringify({ ok: true, files: results.length, results }, null, 2));
@@ -59,4 +67,11 @@ function compactEntry(entry: PriceHistoryEntry): PriceHistoryEntry {
 
 async function fileSize(filePath: string): Promise<number> {
   return (await fs.stat(filePath)).size;
+}
+
+async function writeGzip(filePath: string, gzipPath: string): Promise<number> {
+  const content = await fs.readFile(filePath);
+  const compressed = await gzipAsync(content, { level: 9 });
+  await fs.writeFile(gzipPath, compressed);
+  return compressed.length;
 }

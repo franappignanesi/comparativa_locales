@@ -38,6 +38,7 @@ jobs:
             data/generated/game-sample.json
             data/generated/latest-prices*.json
             data/generated/price-history*.json
+            data/generated/price-history*.json.gz
             data/generated/itad-history*.json
             data/generated/itad-full-history*.json
             data/generated/pending-releases.json
@@ -57,6 +58,8 @@ jobs:
         if: steps.public-data.outputs.cache-matched-key != ''
       - name: Compact price history
         if: steps.public-data.outputs.cache-matched-key != ''
+        env:
+          PRICE_HISTORY_GZIP_ONLY: "1"
         run: npm run worker:compact-price-history
       - name: Link Vercel project
         if: steps.public-data.outputs.cache-matched-key != ''

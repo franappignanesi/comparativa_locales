@@ -1,8 +1,11 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { gunzip } from "zlib";
+import { promisify } from "util";
 import { hasOperationalStore, readJsonState, stateKeyFromPath, writeJsonState } from "./operational-store";
 
 const root = process.cwd();
+const gunzipAsync = promisify(gunzip);
 
 export function dataPath(...parts: string[]): string {
   return path.join(root, "data", ...parts);
@@ -44,7 +47,13 @@ async function readLocalJson<T>(filePath: string, fallback: T | null): Promise<T
     const content = await fs.readFile(filePath, "utf8");
     return JSON.parse(content) as T;
   } catch {
-    return fallback;
+    try {
+      const compressed = await fs.readFile(`${filePath}.gz`);
+      const content = await gunzipAsync(compressed);
+      return JSON.parse(content.toString("utf8")) as T;
+    } catch {
+      return fallback;
+    }
   }
 }
 
