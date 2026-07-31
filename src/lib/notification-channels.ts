@@ -61,20 +61,61 @@ function buildWishlistEmailHtml(user: StoredUser, alerts: WishlistAlert[]): stri
   const items = alerts
     .map(
       (alert) => `
-        <li style="margin:0 0 14px 0">
-          <strong>${escapeHtml(alert.gameTitle)}</strong><br />
-          <span>${escapeHtml(alert.message)}</span><br />
-          <small>${escapeHtml(alert.store.toUpperCase())} · ${escapeHtml(alert.region)}</small>
+        <li style="margin:0 0 14px 0;padding:14px;border:1px solid #e6e1d2;border-radius:10px;list-style:none;background:#fffaf0">
+          <strong style="display:block;font-size:17px;margin-bottom:6px;color:#15130d">${escapeHtml(alert.gameTitle)}</strong>
+          <span style="display:block;color:#5d4200;font-weight:700;margin-bottom:8px">${escapeHtml(alert.message)}</span>
+          <span style="display:block;color:#15130d">Ahora: <strong>${escapeHtml(formatAlertPrice(alert))}</strong></span>
+          ${alert.previousArsPrice ? `<span style="display:block;color:#5d6470">Antes aprox.: ${escapeHtml(formatArs(alert.previousArsPrice))}</span>` : ""}
+          <small style="display:block;margin-top:8px;color:#6c7280">${escapeHtml(STORE_LABELS[alert.store])} - Region ${escapeHtml(alert.region)}</small>
         </li>`
     )
     .join("");
   return `
-    <div style="font-family:Arial,sans-serif;line-height:1.45;color:#161616">
-      <h1 style="font-size:20px;margin:0 0 12px 0">BARATEAM</h1>
-      <p>Hola ${escapeHtml(user.name)}, encontramos novedades en tu wishlist.</p>
-      <ul style="padding-left:20px">${items}</ul>
-      <p><a href="${escapeHtml(siteUrl())}/wishlist">Ver mi wishlist</a></p>
-    </div>`;
+    <!doctype html>
+    <html lang="es">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="color-scheme" content="light" />
+      </head>
+      <body style="margin:0;padding:0;background:#f4f1e8">
+        <div style="font-family:Arial,sans-serif;line-height:1.45;color:#161616;max-width:620px;margin:0 auto;padding:28px 18px">
+          <div style="background:#f7b500;border-radius:18px 18px 0 0;padding:18px 20px">
+            <h1 style="font-size:24px;margin:0;color:#111;font-weight:900;letter-spacing:0">BARATEAM</h1>
+          </div>
+          <div style="background:#ffffff;border:1px solid #e6e1d2;border-top:0;border-radius:0 0 18px 18px;padding:22px 20px">
+            <p style="font-size:16px;margin:0 0 18px 0">Hola ${escapeHtml(user.name || "jugador")}, encontramos novedades en tu wishlist.</p>
+            <ul style="padding:0;margin:0">${items}</ul>
+            <p style="margin:22px 0 0 0">
+              <a href="${escapeHtml(siteUrl())}/wishlist" style="display:inline-block;background:#111;color:#fff;text-decoration:none;border-radius:999px;padding:11px 18px;font-weight:700">Ver mi wishlist</a>
+            </p>
+          </div>
+        </div>
+      </body>
+    </html>`;
+}
+
+const STORE_LABELS: Record<WishlistAlert["store"], string> = {
+  steam: "Steam",
+  epic: "Epic",
+  gog: "GOG",
+  humble: "Humble",
+  microsoft: "Microsoft"
+};
+
+function formatAlertPrice(alert: WishlistAlert): string {
+  if (alert.currentOfficialPrice != null && alert.currentCurrency) {
+    return `${alert.currentCurrency.toUpperCase()} ${formatNumber(alert.currentOfficialPrice)}`;
+  }
+  if (alert.currentArsPrice != null) return formatArs(alert.currentArsPrice);
+  return "Precio actualizado";
+}
+
+function formatArs(value: number): string {
+  return `ARS ${formatNumber(value)}`;
+}
+
+function formatNumber(value: number): string {
+  return value.toLocaleString("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 }
 
 function siteUrl(): string {

@@ -110,7 +110,9 @@ async function evaluateWishlistAlerts(
       if (preferences.priceDrop) {
         const previous = findPreviousSnapshot(entries, store, latest);
         if (previous?.arsFinalPrice != null && previous.arsFinalPrice > price.arsFinalPrice) {
-          const pct = Math.round((1 - price.arsFinalPrice / previous.arsFinalPrice) * 100);
+          const pctRaw = (1 - price.arsFinalPrice / previous.arsFinalPrice) * 100;
+          if (pctRaw < 1) continue;
+          const pct = Math.floor(pctRaw);
           alerts.push(buildAlert(userId, region, row, store, "price_drop", `Bajó ${pct}% en ${STORE_LABELS[store]}`, price, previous.arsFinalPrice));
         }
       }
