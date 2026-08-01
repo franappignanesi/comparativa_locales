@@ -211,6 +211,13 @@ jobs:
           fi
       - name: Build Vercel artifact
         run: vercel build --prod --token="$VERCEL_TOKEN"
+      - name: Include client-only marker in Vercel output
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .vercel/output/node_modules/client-only
+          printf "module.exports = {};\n" > .vercel/output/node_modules/client-only/index.js
+          printf '{"name":"client-only","version":"0.0.1"}\n' > .vercel/output/node_modules/client-only/package.json
       - name: Ensure deployment still uses latest main
         shell: bash
         run: |
