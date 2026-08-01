@@ -100,4 +100,4 @@ jobs:
           printf '{"name":"client-only","version":"0.0.1"}\n' > .vercel/output/node_modules/client-only/package.json
       - name: Deploy current application and dataset
         if: steps.public-data.outputs.cache-matched-key != ''
-        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+        run: vercel deploy --prebuilt --archive=tgz --prod --token="$VERCEL_TOKEN"
