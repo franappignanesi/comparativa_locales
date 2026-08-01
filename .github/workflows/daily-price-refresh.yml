@@ -294,6 +294,29 @@ jobs:
           mkdir -p .vercel/output/node_modules/client-only
           printf "module.exports = {};\n" > .vercel/output/node_modules/client-only/index.js
           printf '{"name":"client-only","version":"0.0.1"}\n' > .vercel/output/node_modules/client-only/package.json
+      - name: Prune client-only from Vercel traces
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          function walk(dir) {
+            if (!fs.existsSync(dir)) return [];
+            return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+              const full = path.join(dir, entry.name);
+              return entry.isDirectory() ? walk(full) : [full];
+            });
+          }
+          for (const file of walk('.vercel/output')) {
+            if (!file.endsWith('.nft.json')) continue;
+            const json = JSON.parse(fs.readFileSync(file, 'utf8'));
+            if (!Array.isArray(json.files)) continue;
+            const before = json.files.length;
+            json.files = json.files.filter((item) => !String(item).includes('node_modules/client-only/'));
+            if (json.files.length !== before) fs.writeFileSync(file, JSON.stringify(json));
+          }
+          NODE
       - name: Ensure deployment still uses latest main
         shell: bash
         run: |
