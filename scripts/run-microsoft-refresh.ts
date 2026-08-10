@@ -60,6 +60,8 @@ main().catch(async (error) => {
 
 async function main(): Promise<void> {
   const sample = await getGameSample();
+  const targetGameIds = parseGameIds(process.env.MICROSOFT_REFRESH_GAME_IDS);
+  const selectedSample = targetGameIds ? sample.broadSample.filter((game) => targetGameIds.has(game.id)) : sample.broadSample;
   const regions = parseRegions(process.env.PRICE_REGIONS ?? process.env.PRICE_REGION);
   const batchSize = parsePositiveInt(process.env.PRICE_REFRESH_BATCH_SIZE) ?? parsePositiveInt(process.env.PRICE_REFRESH_LIMIT) ?? DEFAULT_BATCH_SIZE;
   const maxBatches = parsePositiveInt(process.env.PRICE_REFRESH_MAX_BATCHES) ?? DEFAULT_MAX_BATCHES;
@@ -80,7 +82,7 @@ async function main(): Promise<void> {
   await writeJson(statusPath, runnerStatus);
   const lock = await acquireJobLock("microsoft-refresh", {
     ttlMs: parsePositiveInt(process.env.MICROSOFT_REFRESH_LOCK_TTL_MS) ?? 10 * 60 * 1000,
-    metadata: { regions, batchSize, maxBatches, concurrency, resume }
+    metadata: { regions, batchSize, maxBatches, concurrency, resume, targetGameIds: targetGameIds ? [...targetGameIds] : null }
   });
   if (!lock.acquired) {
     runnerStatus.updatedAt = new Date().toISOString();
@@ -122,7 +124,7 @@ async function main(): Promise<void> {
         runnerStatus.updatedAt = new Date().toISOString();
         await writeJson(statusPath, runnerStatus);
         console.log(JSON.stringify({ region: regionId, offset, status: "starting" }));
-        const result = await refreshMicrosoftBatch({ sample: sample.broadSample, regionId, offset, limit: batchSize, concurrency });
+        const result = await refreshMicrosoftBatch({ sample: selectedSample, regionId, offset, limit: batchSize, concurrency });
         regionStatus.batchesRun += 1;
         regionStatus.lastOffset = offset;
         regionStatus.nextOffset = result.selected < batchSize ? null : offset + batchSize;
@@ -322,6 +324,15 @@ function parseRegions(value: string | undefined): RegionId[] {
     .map((item) => item.trim().toUpperCase())
     .filter((item): item is RegionId => REGIONS.some((region) => region.id === item));
   return selected.length ? selected : [DEFAULT_REGION];
+}
+
+function parseGameIds(value: string | undefined): Set<string> | null {
+  if (!value) return null;
+  const ids = value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  return ids.length ? new Set(ids) : null;
 }
 
 function parsePositiveInt(value: string | undefined): number | null {

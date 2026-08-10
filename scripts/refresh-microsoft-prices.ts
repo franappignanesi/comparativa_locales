@@ -33,6 +33,7 @@ main().catch((error) => {
 
 async function main(): Promise<void> {
   const sample = await getGameSample();
+  const targetGameIds = parseGameIds(process.env.MICROSOFT_REFRESH_GAME_IDS);
   const regions = parseRegions(process.env.PRICE_REGIONS ?? process.env.PRICE_REGION);
   const limit = parsePositiveInt(process.env.PRICE_REFRESH_LIMIT) ?? DEFAULT_LIMIT;
   const offset = parseNonNegativeInt(process.env.PRICE_REFRESH_OFFSET) ?? 0;
@@ -47,6 +48,7 @@ async function main(): Promise<void> {
     const cached = await readJson<LatestPrices>(cachePath, emptyLatest(region.id));
     const rowsById = new Map(cached.prices.map((row) => [row.gameId, row]));
     const selectedGames = sample.broadSample
+      .filter((game) => !targetGameIds || targetGameIds.has(game.id))
       .filter((game) => shouldRefreshMicrosoft(game, rowsById.get(game.id)?.prices.microsoft))
       .slice(offset, offset + limit);
 
@@ -213,6 +215,15 @@ function parseRegions(value: string | undefined): RegionId[] {
     .map((item) => item.trim().toUpperCase())
     .filter((item): item is RegionId => REGIONS.some((region) => region.id === item));
   return selected.length ? selected : [DEFAULT_REGION];
+}
+
+function parseGameIds(value: string | undefined): Set<string> | null {
+  if (!value) return null;
+  const ids = value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  return ids.length ? new Set(ids) : null;
 }
 
 function parsePositiveInt(value: string | undefined): number | null {

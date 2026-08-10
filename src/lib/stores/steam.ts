@@ -5,13 +5,23 @@ type SteamPayload = {
   success?: boolean;
   data?: {
     name?: string;
-    price_overview?: {
-      initial: number;
-      final: number;
-      currency: string;
-      discount_percent?: number;
-    };
+    price_overview?: SteamPriceOverview;
   } & Record<string, unknown>;
+};
+
+type SteamPackagePayload = {
+  success?: boolean;
+  data?: {
+    name?: string;
+    price?: SteamPriceOverview;
+  } & Record<string, unknown>;
+};
+
+type SteamPriceOverview = {
+  initial: number;
+  final: number;
+  currency: string;
+  discount_percent?: number;
 };
 
 export async function fetchStorePrice(game: SampleGame, region?: RegionConfig): Promise<StorePrice> {
@@ -21,7 +31,8 @@ export async function fetchStorePrice(game: SampleGame, region?: RegionConfig): 
 
 export async function fetchStorePrices(games: SampleGame[], chunkSize = 50, region?: RegionConfig): Promise<Map<string, StorePrice>> {
   const result = new Map<string, StorePrice>();
-  const gamesWithAppId = games.filter((game) => Boolean(game.identifiers.steamAppId));
+  const gamesWithPackageId = games.filter((game) => Boolean(game.identifiers.steamSubId));
+  const gamesWithAppId = games.filter((game) => Boolean(game.identifiers.steamAppId) && !game.identifiers.steamSubId);
   const sleepMs = parseNonNegativeInt(process.env.STEAM_CHUNK_SLEEP_MS) ?? 2500;
 
   if (process.env.STEAM_FORCE_SINGLE_REQUESTS === "1") {
@@ -61,8 +72,42 @@ export async function fetchStorePrices(games: SampleGame[], chunkSize = 50, regi
     }
   }
 
-  for (const game of games.filter((item) => !item.identifiers.steamAppId)) {
-    result.set(game.id, unavailable(game.title, "Sin steamAppId"));
+  const packagePrices = await fetchSteamPackagePrices(gamesWithPackageId, region, sleepMs);
+  for (const [gameId, price] of packagePrices) result.set(gameId, price);
+
+  for (const game of games.filter((item) => !item.identifiers.steamAppId && !item.identifiers.steamSubId)) {
+    result.set(game.id, unavailable(game.title, "Sin steamAppId ni steamSubId"));
+  }
+
+  return result;
+}
+
+async function fetchSteamPackagePrices(
+  games: SampleGame[],
+  region: RegionConfig | undefined,
+  sleepMs: number
+): Promise<Map<string, StorePrice>> {
+  const result = new Map<string, StorePrice>();
+  const chunkSize = Math.max(1, Math.floor(Number(process.env.STEAM_PACKAGE_CHUNK_SIZE) || 25));
+
+  for (let index = 0; index < games.length; index += chunkSize) {
+    const chunk = games.slice(index, index + chunkSize);
+    const packageIds = chunk.map((game) => game.identifiers.steamSubId).join(",");
+    try {
+      const response = await fetchSteam(steamPackageDetailsUrl(packageIds, region));
+      if (!response.ok) {
+        for (const game of chunk) result.set(game.id, unavailable(game.title, `Steam package HTTP ${response.status}`));
+      } else {
+        const json = (await response.json()) as Record<string, SteamPackagePayload>;
+        for (const game of chunk) {
+          result.set(game.id, parseSteamPackagePayload(game, json[String(game.identifiers.steamSubId)]));
+        }
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Error desconocido";
+      for (const game of chunk) result.set(game.id, unavailable(game.title, message));
+    }
+    if (sleepMs > 0 && index + chunkSize < games.length) await sleep(sleepMs);
   }
 
   return result;
@@ -101,6 +146,10 @@ async function fetchStorePricesIndividually(
 
 function steamDetailsUrl(appIds: string, region?: RegionConfig): string {
   return `https://store.steampowered.com/api/appdetails?appids=${appIds}&cc=${region?.steamCc ?? "AR"}&l=spanish&filters=price_overview,basic`;
+}
+
+function steamPackageDetailsUrl(packageIds: string, region?: RegionConfig): string {
+  return `https://store.steampowered.com/api/packagedetails?packageids=${packageIds}&cc=${region?.steamCc ?? "AR"}&l=spanish&filters=price`;
 }
 
 async function fetchSteam(url: string): Promise<Response> {
@@ -178,6 +227,42 @@ function parseSteamPayload(game: SampleGame, payload: SteamPayload | undefined):
     currency: price.currency,
     discountPct: price.discount_percent ?? null,
     url: appId ? `https://store.steampowered.com/app/${appId}` : null,
+    raw: data,
+    source: "live"
+  };
+}
+
+function parseSteamPackagePayload(game: SampleGame, payload: SteamPackagePayload | undefined): StorePrice {
+  const packageId = game.identifiers.steamSubId;
+  if (!payload?.success) return unavailable(game.title, "Steam no devolvio paquete exitoso");
+  const data = payload.data;
+  const price = data?.price;
+
+  if (!price) {
+    return {
+      store: "steam",
+      title: data?.name ?? game.title,
+      available: false,
+      basePrice: null,
+      finalPrice: null,
+      currency: null,
+      discountPct: null,
+      url: packageId ? `https://store.steampowered.com/sub/${packageId}` : null,
+      raw: data,
+      error: "Sin precio de paquete Steam",
+      source: "live"
+    };
+  }
+
+  return {
+    store: "steam",
+    title: data?.name ?? game.title,
+    available: true,
+    basePrice: price.initial / 100,
+    finalPrice: price.final / 100,
+    currency: price.currency,
+    discountPct: price.discount_percent ?? null,
+    url: packageId ? `https://store.steampowered.com/sub/${packageId}` : null,
     raw: data,
     source: "live"
   };

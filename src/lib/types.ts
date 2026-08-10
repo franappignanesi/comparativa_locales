@@ -20,6 +20,7 @@ export type GameCategory =
 
 export type StoreIdentifiers = {
   steamAppId?: number | null;
+  steamSubId?: number | null;
   epicSlug?: string | null;
   gogSlug?: string | null;
   humbleSlug?: string | null;

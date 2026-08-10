@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-07-06T00:46:43.656Z",
+  "timestamp": "2026-08-10T00:22:47.779Z",
   "strictSample": [
     {
       "title": "Cyberpunk 2077",
@@ -14770,14 +14770,15 @@
       "releaseYear": 0,
       "notes": "Steam discovery intake. Reviews: 102529. Positive: 91%. Owners: 2,000,000 .. 5,000,000. Aprobable en masa por umbrales. Promovido automaticamente 2026-05-25T19:46:38.460Z.",
       "expectedStores": [
-        "steam"
+        "steam",
+        "microsoft"
       ],
       "identifiers": {
         "steamAppId": 1943950,
         "epicSlug": null,
         "gogSlug": null,
         "humbleSlug": null,
-        "microsoftProductId": null,
+        "microsoftProductId": "9MW15L8FRT9P",
         "microsoftUrl": null
       },
       "confidence": "high",
@@ -14803,13 +14804,13 @@
       "id": "escape-the-backrooms",
       "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1943950/header.jpg",
       "availableStores": [
-        "steam"
+        "steam",
+        "microsoft"
       ],
       "missingStores": [
         "epic",
         "gog",
-        "humble",
-        "microsoft"
+        "humble"
       ],
       "comparisonStatus": "missing_some_stores"
     },
@@ -21764,14 +21765,15 @@
       "releaseYear": 0,
       "notes": "Steam discovery intake. Reviews: 52842. Positive: 85%. Owners: 2,000,000 .. 5,000,000. Aprobable en masa por umbrales. Promovido automaticamente 2026-05-25T19:46:38.460Z.",
       "expectedStores": [
-        "steam"
+        "steam",
+        "microsoft"
       ],
       "identifiers": {
         "steamAppId": 617290,
         "epicSlug": null,
         "gogSlug": null,
         "humbleSlug": null,
-        "microsoftProductId": null,
+        "microsoftProductId": "9PBHXGWZTS2N",
         "microsoftUrl": null
       },
       "confidence": "high",
@@ -21797,13 +21799,13 @@
       "id": "remnant-from-the-ashes",
       "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/617290/header.jpg",
       "availableStores": [
-        "steam"
+        "steam",
+        "microsoft"
       ],
       "missingStores": [
         "epic",
         "gog",
-        "humble",
-        "microsoft"
+        "humble"
       ],
       "comparisonStatus": "missing_some_stores"
     },
@@ -201959,6 +201961,49 @@
         "microsoft"
       ],
       "comparisonStatus": "missing_some_stores"
+    },
+    {
+      "title": "Life is Strange Complete Season (Episodes 1-5)",
+      "edition": "standard",
+      "category": "AA",
+      "releaseYear": 2015,
+      "notes": "Pedido de usuario. Edicion compilatoria del Life is Strange original; Steam se referencia por app base 319630 y ITAD matchea el producto Complete Season/sub 56692. Microsoft/Xbox queda excluida porque la ficha publica no lista PC.",
+      "expectedStores": [
+        "steam",
+        "gog",
+        "humble"
+      ],
+      "identifiers": {
+        "steamAppId": 319630,
+        "epicSlug": null,
+        "gogSlug": "life_is_strange_complete_season",
+        "humbleSlug": "lifeisstrange_complete_storefront",
+        "microsoftProductId": null,
+        "microsoftUrl": null,
+        "steamSubId": 56692
+      },
+      "confidence": "medium",
+      "primaryTag": "Adventure",
+      "steamTags": [
+        "Adventure",
+        "Choices Matter",
+        "Story Rich",
+        "Episodic",
+        "Female Protagonist",
+        "Singleplayer"
+      ],
+      "id": "life-is-strange-complete-season-episodes-1-5",
+      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/319630/header.jpg",
+      "availableStores": [
+        "steam",
+        "gog",
+        "humble"
+      ],
+      "missingStores": [
+        "epic",
+        "microsoft"
+      ],
+      "comparisonStatus": "uncertain_match"
     }
   ],
   "rejected": [],
@@ -205947,7 +205992,8 @@
       "Borderlands 4",
       "Resident Evil Requiem",
       "PEAK",
-      "Dispatch"
+      "Dispatch",
+      "Life is Strange Complete Season (Episodes 1-5)"
     ],
     "gog": [
       "Elden Ring",
@@ -214053,7 +214099,6 @@
       "Total War: THREE KINGDOMS",
       "Persona 5 Royal",
       "Days Gone",
-      "Escape the Backrooms",
       "Kingdom Come: Deliverance II",
       "This War of Mine",
       "Age of Empires II (Retired)",
@@ -214193,7 +214238,6 @@
       "Chained Together",
       "Stormworks: Build and Rescue",
       "DRAGON BALL XENOVERSE 2",
-      "Remnant: From the Ashes",
       "The Hungry Lamb: Traveling in the Late Ming Dynasty",
       "Victoria 3",
       "The Elder Scrolls IV: Oblivion Remastered",
@@ -217828,21 +217872,22 @@
       "Borderlands 4",
       "Resident Evil Requiem",
       "PEAK",
-      "Dispatch"
+      "Dispatch",
+      "Life is Strange Complete Season (Episodes 1-5)"
     ]
   },
   "storeCoverage": {
-    "steam": 4069,
+    "steam": 4070,
     "epic": 91,
-    "gog": 55,
-    "humble": 155,
-    "microsoft": 128
+    "gog": 56,
+    "humble": 156,
+    "microsoft": 130
   },
   "categoryCoverage": {
     "AAA nuevo": 19,
     "AAA viejo": 320,
     "Microsoft/Xbox": 13,
-    "AA": 3632,
+    "AA": 3633,
     "multiplayer pago": 21,
     "indie popular": 57,
     "clásico": 9

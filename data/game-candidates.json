@@ -153235,5 +153235,36 @@
       "microsoftUrl": null
     },
     "confidence": "high"
+  },
+  {
+    "title": "Life is Strange Complete Season (Episodes 1-5)",
+    "edition": "standard",
+    "category": "AA",
+    "releaseYear": 2015,
+    "notes": "Pedido de usuario. Edicion compilatoria del Life is Strange original; Steam se referencia por app base 319630 y ITAD matchea el producto Complete Season/sub 56692. Microsoft/Xbox queda excluida porque la ficha publica no lista PC.",
+    "expectedStores": [
+      "steam",
+      "gog",
+      "humble"
+    ],
+    "identifiers": {
+      "steamAppId": 319630,
+      "epicSlug": null,
+      "gogSlug": "life_is_strange_complete_season",
+      "humbleSlug": "lifeisstrange_complete_storefront",
+      "microsoftProductId": null,
+      "microsoftUrl": null,
+      "steamSubId": 56692
+    },
+    "confidence": "medium",
+    "primaryTag": "Adventure",
+    "steamTags": [
+      "Adventure",
+      "Choices Matter",
+      "Story Rich",
+      "Episodic",
+      "Female Protagonist",
+      "Singleplayer"
+    ]
   }
 ]
