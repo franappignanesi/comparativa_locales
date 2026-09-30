@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "shux:import-curator": "tsx scripts/import-shux-curator.ts",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -54,6 +55,7 @@
     "@types/node": "22.15.21",
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",
+    "cheerio": "^1.2.0",
     "eslint": "9.27.0",
     "eslint-config-next": "^16.2.6",
     "tsx": "4.19.4",

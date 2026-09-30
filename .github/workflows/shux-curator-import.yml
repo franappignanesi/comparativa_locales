@@ -1,0 +1,55 @@
+name: Import Shux weekend games
+
+on:
+  schedule:
+    # Saturday 22:00 UTC = Saturday 19:00 Argentina (UTC-3).
+    - cron: "0 22 * * 6"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: shux-curator-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.0
+        with:
+          ref: main
+      - uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Check Steam review parser
+        run: npx tsx --test scripts/import-shux-curator.test.ts
+      - name: Import reviews and video links
+        run: npm run shux:import-curator
+      - name: Upload review list
+        uses: actions/upload-artifact@v4
+        with:
+          name: shux-weekend-games
+          path: |
+            data/shux-weekend-games.json
+            docs/juegos-del-finde.md
+            docs/juegos-del-finde.csv
+      - name: Save updated list
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/shux-weekend-games.json docs/juegos-del-finde.md docs/juegos-del-finde.csv
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Update Shux weekend game recommendations"
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 5
+          done
+          exit 1
