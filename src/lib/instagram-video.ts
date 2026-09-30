@@ -18,7 +18,8 @@ export function parseInstagramVideo(html: string, shortcode: string): InstagramV
       if (data.context.copyright_blocked !== false) return { videoUrl: null, reason: "restricted" };
       if (!media.is_video || !media.video_url) continue;
       const url = new URL(media.video_url);
-      if (url.protocol === "https:" && url.hostname.endsWith(".fbcdn.net")) return { videoUrl: url.href, reason: "available" };
+      const officialCdn = url.hostname.endsWith(".fbcdn.net") || url.hostname.endsWith(".cdninstagram.com");
+      if (url.protocol === "https:" && officialCdn) return { videoUrl: url.href, reason: "available" };
     } catch { continue; }
   }
   return { videoUrl: null, reason: "unavailable" };

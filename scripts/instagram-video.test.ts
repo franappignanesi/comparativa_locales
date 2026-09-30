@@ -9,6 +9,7 @@ function fixture(blocked: boolean | undefined, url = "https://instagram.example.
 
 test("read public video metadata without executing Instagram scripts", () => {
   assert.equal(parseInstagramVideo(fixture(false), "sample").videoUrl, "https://instagram.example.fbcdn.net/video.mp4");
+  assert.equal(parseInstagramVideo(fixture(false, "https://scontent-iad.cdninstagram.com/video.mp4"), "sample").reason, "available");
 });
 test("respect copyright restrictions even if a media URL is present", () => {
   assert.equal(parseInstagramVideo(fixture(true), "sample").videoUrl, null);
