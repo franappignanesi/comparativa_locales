@@ -2,6 +2,10 @@
 
 La lista para revisar esta en `docs/juegos-del-finde.md` y su version para planillas en `docs/juegos-del-finde.csv`. Los datos para BARATEAM estan en `data/shux-weekend-games.json`, vinculados por Steam App ID.
 
+El calendario usa la fecha de la resena en Mentor, que puede diferir de la publicacion del reel. Se excluyen los registros sin video.
+
+Al abrir una card, `/api/weekend-video` consulta el embed publico de ese juego con timeout y cache de 15 minutos. Si Instagram entrega un archivo de video sin restricciones, se usa el reproductor nativo del navegador. Los archivos se reproducen desde Instagram; no se descargan al repositorio ni se guardan en Neon. Las URLs temporales no se persisten. Si Instagram restringe el archivo o cambia su formato, se conserva el embed oficial. Su altura se ajusta con los mensajes MEASURE de Instagram, validando origen y ventana emisora. El iframe oficial no admite modificar su interfaz interna desde los estilos de BARATEAM.
+
 El workflow `Import Shux weekend games` se ejecuta los sabados a las 19:00 de Argentina (22:00 UTC). GitHub Actions puede demorar el inicio; el horario no garantiza puntualidad exacta. Tambien puede ejecutarse manualmente desde Actions.
 
 Para actualizar localmente:

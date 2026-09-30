@@ -171,6 +171,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort }: { ini
       return;
     }
     setLoading(true);
+    urlGameAttemptRef.current = "";
     setExtraSelectedRow(null);
     setSelectedGameId(null);
     weekendRequestRef.current?.abort();
@@ -607,7 +608,14 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort }: { ini
           user={user}
           wishlisted={wishlist.some((item) => item.gameId === selectedRow.gameId)}
           onToggleWishlist={() => toggleWishlist(selectedRow)}
-          onClose={() => setSelectedGameId(null)}
+          onClose={() => {
+            setSelectedGameId(null);
+            const url = new URL(window.location.href);
+            if (url.searchParams.has("game")) {
+              url.searchParams.delete("game");
+              window.history.replaceState(null, "", url.pathname + url.search);
+            }
+          }}
         />
       ) : null}
     </div>

@@ -46,6 +46,7 @@ export function WeekendShowcase({ games, offers, enabledStores, onOpen }: {
             <select aria-label="Mes de recomendaciones" value={month} onChange={(event) => changeMonth(event.target.value)}>{months.map((value) => <option key={value} value={value}>{monthTitle(value)}</option>)}</select>
             <button type="button" disabled={monthIndex <= 0} title="Mes siguiente con recomendaciones" aria-label="Mes siguiente con recomendaciones" onClick={() => changeMonth(months[monthIndex - 1])}><ChevronRight size={20} /></button>
           </div>
+          <p className="weekendCalendarCaption">{monthGames.length} {monthGames.length === 1 ? "juego publicado" : "juegos publicados"} en Mentor</p>
           <div className="weekendCalendarGrid">
             {["L", "M", "M", "J", "V", "S", "D"].map((day, index) => <span className="weekendWeekday" key={index} aria-hidden="true">{day}</span>)}
             {Array.from({ length: leadingDays }, (_, index) => <span key={`empty-${index}`} />)}
