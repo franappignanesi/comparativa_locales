@@ -4,7 +4,7 @@ Fuente: [Mentor de ShuxTeam](https://store.steampowered.com/curator/35362522-Shu
 
 189 reseñas; 179 con enlace a video. Se incluyen las reseñas informativas y negativas, identificadas por tipo.
 
-La fecha se conserva como la muestra Steam; no se inventa el año si no aparece. Los juegos retirados se conservan en importaciones posteriores.
+La fecha completa se obtiene de la etiqueta de Steam: cuando omite el año, corresponde al año de la consulta. Los juegos retirados se conservan en importaciones posteriores.
 
 | Juego | Fecha en Steam | Tipo | Video | Steam App ID |
 | --- | --- | --- | --- | --- |

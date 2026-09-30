@@ -1,5 +1,82 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap");
 
+.weekendTag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 5px 8px;
+  border: 1px solid #72d7b3;
+  border-radius: 4px;
+  color: #d9fff0;
+  background: #0e3027;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.weekendCardTag { position: absolute; z-index: 4; top: 10px; right: 52px; }
+.gameCard:has(.weekendTag) .wishlistStar { opacity: 1; transform: none; }
+.weekendIntro { padding: 16px 0 26px; max-width: 780px; }
+.weekendEyebrow { color: #72d7b3; font-size: 11px; font-weight: 700; letter-spacing: 0; }
+.weekendIntro h1 { margin: 10px 0 14px; font-size: 36px; letter-spacing: 0; }
+.weekendIntro p { color: var(--muted); font-size: 15px; line-height: 1.7; margin: 0; }
+.weekendCalendarSection { display: grid; grid-template-columns: minmax(250px, 340px) minmax(0, 1fr); gap: 28px; padding: 24px 0; border-block: 1px solid var(--line); }
+.weekendCalendarToolbar { display: grid; grid-template-columns: 36px minmax(0, 1fr) 36px; align-items: center; gap: 8px; margin-bottom: 16px; }
+.weekendCalendarToolbar button { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 4px; background: var(--surface-card); color: var(--text); cursor: pointer; }
+.weekendCalendarToolbar select { min-width: 0; width: 100%; background: var(--surface-card); border: 1px solid var(--line); color: var(--text); padding: 8px; border-radius: 4px; font-size: 13px; text-transform: capitalize; }
+.weekendCalendarToolbar button:disabled { opacity: .3; cursor: default; }
+.weekendCalendarGrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
+.weekendWeekday { padding: 8px 0; text-align: center; color: var(--muted); font-size: 12px; }
+.weekendCalendarGrid button { position: relative; aspect-ratio: 1; min-width: 0; border-radius: 4px; border: 1px solid transparent; background: transparent; color: var(--faint); font-size: 13px; }
+.weekendCalendarGrid .hasWeekendGame { background: #153d31; color: #d9fff0; border-color: #28634c; cursor: pointer; }
+.weekendCalendarGrid .selected { color: var(--primary-ink); background: var(--primary); border-color: var(--primary); }
+.weekendCalendarGrid i { position: absolute; width: 4px; height: 4px; background: currentColor; border-radius: 50%; bottom: 5px; left: calc(50% - 2px); }
+.weekendCalendarSelection { min-width: 0; }
+.weekendCalendarSelection h2, .weekendOffers h2, .weekendCatalogHeading { font-size: 20px; margin: 0 0 16px; letter-spacing: 0; }
+.weekendCalendarSelection h2 { text-transform: capitalize; }
+.weekendCalendarGames { display: grid; gap: 8px; max-height: 310px; overflow-y: auto; }
+.weekendCalendarGames button { width: 100%; display: grid; grid-template-columns: 90px minmax(0, 1fr) 18px; align-items: center; text-align: left; gap: 12px; padding: 8px 0; background: transparent; border: 0; border-bottom: 1px solid var(--line); color: var(--text); cursor: pointer; }
+.weekendCalendarGames img { width: 90px; aspect-ratio: 460 / 215; object-fit: cover; border-radius: 4px; }
+.weekendCalendarGames strong { font-size: 13px; line-height: 1.45; display: block; overflow-wrap: anywhere; }
+.weekendCalendarGames small { display: block; font-size: 11px; color: var(--muted); margin-top: 5px; }
+.weekendOffers { padding: 28px 0; }
+.weekendOfferGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.weekendOfferGrid button { min-width: 0; padding: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-card); color: var(--text); text-align: left; cursor: pointer; }
+.weekendOfferGrid img { width: 100%; aspect-ratio: 460 / 215; object-fit: cover; display: block; }
+.weekendOfferGrid span { padding: 12px; display: flex; gap: 10px; justify-content: space-between; align-items: flex-start; }
+.weekendOfferGrid strong { font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+.weekendOfferGrid b { color: #72d7b3; font-size: 17px; white-space: nowrap; }
+.weekendCatalogHeading { margin-top: 28px; }
+.weekendRecommendation { padding-top: 24px; border-top: 1px solid var(--line); }
+.weekendRecommendation h3 { line-height: 1.55; }
+.weekendReelLayout { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 28px; align-items: start; }
+.weekendReel { position: relative; width: 100%; aspect-ratio: 9 / 16; background: #f5f5f5; overflow: hidden; border-radius: 6px; }
+.weekendReel iframe { width: 100%; height: 100%; border: 0; display: block; }
+.weekendReel > a { display: flex; align-items: center; justify-content: center; height: 100%; gap: 10px; color: #171717; }
+.weekendReelAside { display: grid; gap: 12px; min-width: 0; }
+.weekendReelAside > p { margin: 0 0 12px; color: var(--muted); line-height: 1.7; font-size: 14px; overflow-wrap: anywhere; }
+.weekendAction { display: flex; align-items: center; gap: 10px; padding: 13px 14px; color: var(--text); background: var(--surface-card); border: 1px solid var(--line); border-radius: 4px; text-decoration: none; font-size: 13px; text-align: left; cursor: pointer; }
+.weekendAction:hover { border-color: #72d7b3; }
+.weekendOpeningIndicator { position: fixed; z-index: 80; left: 50%; bottom: 24px; transform: translateX(-50%); display: flex; gap: 10px; align-items: center; padding: 12px 18px; color: var(--text); background: var(--surface-card); border: 1px solid #72d7b3; border-radius: 6px; font-size: 13px; }
+@media (max-width: 700px) {
+  .weekendIntro h1 { font-size: 28px; }
+  .weekendIntro p { font-size: 13px; }
+  .weekendCalendarSection { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .weekendCalendar { max-width: 380px; width: 100%; margin-inline: auto; }
+  .weekendOfferGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .weekendOfferGrid span { padding: 9px; flex-wrap: wrap; gap: 4px; }
+  .weekendOfferGrid strong { font-size: 12px; }
+  .weekendReelLayout { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .weekendReel { max-width: 340px; margin-inline: auto; }
+  .modalActions:has(.weekendTag) { gap: 6px; left: 12px; right: 12px; justify-content: flex-end; }
+  .modalActions .weekendTag { margin-right: auto; font-size: 9px; padding-inline: 6px; }
+  .modalActions:has(.weekendTag) .problemReportButton { width: 34px; height: 34px; padding: 0; display: grid; place-items: center; }
+  .modalActions:has(.weekendTag) .problemReportButton span { display: none; }
+  .gameModal:has(.weekendTag) .modalHero { padding-top: 70px; }
+  .landingNav { flex-wrap: wrap; gap: 12px; }
+  .landingNavTools { flex-wrap: wrap; gap: 8px; }
+}
+
 :root {
   --bg: #0b0b0c;
   --surface: #171309;

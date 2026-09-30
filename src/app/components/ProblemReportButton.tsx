@@ -72,9 +72,9 @@ export function ProblemReportButton({ user }: { user: GoogleUser | null }) {
 
   return (
     <div className="problemReport">
-      <button className="problemReportButton" type="button" onClick={handleOpen}>
+      <button className="problemReportButton" type="button" onClick={handleOpen} aria-label="Reportar problema" title="Reportar problema">
         <AlertTriangle size={15} />
-        Reportar problema
+        <span>Reportar problema</span>
       </button>
       {open ? (
         <div className={sent ? "problemReportPanel sent" : "problemReportPanel"} role="dialog" aria-label="Reportar problema">

@@ -1,4 +1,5 @@
 export type StoreId = "steam" | "epic" | "gog" | "humble" | "microsoft";
+import type { WeekendGame } from "./weekend-games";
 
 export const STORES: StoreId[] = ["steam", "epic", "gog", "humble", "microsoft"];
 
@@ -103,6 +104,7 @@ export type LatestPrices = {
   usdToTargetTimestamp?: string | null;
   digitalVatRate?: number;
   prices: Array<{
+    weekendGame?: WeekendGame;
     gameId: string;
     gameTitle: string;
     coverUrl?: string | null;

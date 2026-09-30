@@ -197,6 +197,7 @@ export default function ComparativaGeneralPage() {
               <Link href="/biblioteca?filter=ofertas&sort=descuento" className="sideSubLink">Ofertas 🎁</Link>
               <Link href="/biblioteca?filter=diferencias&sort=diferencia" className="sideSubLink">Más baratos que Steam 👀</Link>
               <Link href="/biblioteca?filter=historicos" className="sideSubLink">Mínimos históricos 📉</Link>
+              <Link href="/biblioteca/juego-del-finde" className="sideSubLink">Juego del finde</Link>
             </div>
           </div>
           <Link href="/comparativa-general" className="sideLink active">

@@ -5,6 +5,7 @@ import { DEFAULT_REGION, type RegionId } from "./regions";
 import { getGameSample } from "./sample-builder";
 import type { GameSample, LatestPrices, NormalizedPrice, PriceHistoryReport, StoreId } from "./types";
 import { STORES } from "./types";
+import { getWeekendGames, WEEKEND_FILTER, type WeekendGame } from "./weekend-games";
 
 export type CatalogMode = "strict" | "broad";
 
@@ -20,9 +21,11 @@ export type CatalogParams = {
   region?: RegionId;
   stores?: StoreId[];
   useCachedExchangeRate?: boolean;
+  gameId?: string;
 };
 
 export type CatalogResponse = {
+  weekend?: { games: Array<WeekendGame & { gameId: string; coverUrl: string | null }>; offers: PriceRow[] };
   latest: LatestPrices;
   history: PriceHistoryReport;
   analysis: {
@@ -53,6 +56,18 @@ export async function getCatalogPage(params: CatalogParams = {}): Promise<Catalo
   const strictIds = new Set(sample.strictSample.map((game) => game.id));
   const broadIds = new Set(sample.broadSample.map((game) => game.id));
   const expandedLatest = expandLatestWithSample(latest, sample);
+  const weekendGames = getWeekendGames();
+  const weekendByAppId = new Map(weekendGames.map((game) => [game.steamAppId, game]));
+  const appIdByGameId = new Map(sample.broadSample.map((game) => [game.id, game.identifiers.steamAppId]));
+  expandedLatest.prices = expandedLatest.prices.map((row) => ({ ...row, weekendGame: weekendByAppId.get(appIdByGameId.get(row.gameId) ?? 0) }));
+  if (params.filter === WEEKEND_FILTER) {
+    const matchedApps = new Set(sample.broadSample.map((game) => game.identifiers.steamAppId));
+    weekendGames.filter((game) => !matchedApps.has(game.steamAppId)).forEach((game) => {
+      expandedLatest.prices.push({ gameId: `shux-steam-${game.steamAppId}`, gameTitle: game.title,
+        coverUrl: game.coverUrl,
+        category: "AA", releaseYear: 0, comparisonStatus: "missing_some_stores", prices: {}, weekendGame: game });
+    });
+  }
   const activeStores = normalizeStores(params.stores);
   const analysis = {
     strict: analyzePrices(expandedLatest, strictIds, activeStores),
@@ -67,6 +82,10 @@ export async function getCatalogPage(params: CatalogParams = {}): Promise<Catalo
   const history = await getPriceHistoryReport(expandedLatest, { refreshItad: params.refresh, gameIds: pageGameIds });
 
   return {
+    ...(params.filter === WEEKEND_FILTER ? { weekend: {
+      games: expandedLatest.prices.filter((row) => row.weekendGame).map((row) => ({ ...row.weekendGame!, gameId: row.gameId, coverUrl: row.coverUrl ?? null })),
+      offers: compactRows(expandedLatest.prices.filter((row) => row.weekendGame && maxDiscountPct(row, activeStores) > 0).sort((a, b) => maxDiscountPct(b, activeStores) - maxDiscountPct(a, activeStores)).slice(0, 6)),
+    } } : {}),
     latest: {
       ...expandedLatest,
       prices: rows,
@@ -142,9 +161,10 @@ function filterAndSortRows(
   const activeStores = normalizeStores(params.stores);
 
   return rows
-    .filter((row) => ids.has(row.gameId))
+    .filter((row) => ids.has(row.gameId) || (filter === WEEKEND_FILTER && row.weekendGame))
+    .filter((row) => !params.gameId || row.gameId === params.gameId)
     .filter((row) => !normalizedQuery || normalizeSearchText(row.gameTitle).includes(normalizedQuery))
-    .filter((row) => hasAnyCurrentPrice(row, activeStores))
+    .filter((row) => filter === WEEKEND_FILTER || hasAnyCurrentPrice(row, activeStores))
     .filter((row) => {
       if (category === "todas") return true;
       if (steamCategory(row) === category) return true;
@@ -153,6 +173,7 @@ function filterAndSortRows(
     })
     .filter((row) => {
       const gameAnalysis = analysis.games[row.gameId];
+      if (filter === WEEKEND_FILTER) return Boolean(row.weekendGame);
       if (filter === "ofertas") return activeStores.some((store) => (discountPct(row.prices[store]) ?? 0) > 0);
       if (filter === "steam-ofertas") return activeStores.includes("steam") && (discountPct(row.prices.steam) ?? 0) > 0;
       if (filter === "diferencias") return (gameAnalysis?.differenceVsSteam ?? 0) < -1000;
@@ -162,6 +183,7 @@ function filterAndSortRows(
       return true;
     })
     .sort((a, b) => {
+      if (sort === "recientes" || (filter === WEEKEND_FILTER && sort === "relevancia")) return (b.weekendGame?.reviewDate ?? "").localeCompare(a.weekendGame?.reviewDate ?? "") || a.gameTitle.localeCompare(b.gameTitle);
       if (sort === "descuento") return maxDiscountPct(b, activeStores) - maxDiscountPct(a, activeStores);
       if (filter === "steam-ofertas" && sort === "relevancia") return compareSteamOfferRelevance(a, b, analysis);
       if (filter === "ofertas" && sort === "relevancia") return maxDiscountPct(b, activeStores) - maxDiscountPct(a, activeStores);

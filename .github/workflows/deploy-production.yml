@@ -1,6 +1,7 @@
 name: Deploy application with current price data
 
 on:
+  workflow_call:
   push:
     branches: [main]
 
@@ -30,6 +31,8 @@ jobs:
       VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
     steps:
       - uses: actions/checkout@v7.0.0
+        with:
+          ref: main
       - name: Restore latest public dataset
         id: public-data
         uses: actions/cache/restore@v4

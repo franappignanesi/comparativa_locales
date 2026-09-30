@@ -2,6 +2,7 @@ import { load } from "cheerio";
 import { readFile, mkdir, writeFile, rename } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { parseSteamReviewDate } from "../src/lib/weekend-games";
 
 const curatorId = 35362522;
 const sourceUrl = `https://store.steampowered.com/curator/${curatorId}-ShuxTeam/`;
@@ -11,9 +12,11 @@ export interface CuratorReview {
   steamAppId: number;
   title: string;
   steamUrl: string;
+  coverUrl: string | null;
   videoUrl: string | null;
   reviewType: "recommended" | "informational" | "not_recommended";
   reviewDateLabel: string;
+  reviewDate: string | null;
   review: string;
 }
 
@@ -46,12 +49,13 @@ export function parseReviews(html: string): CuratorReview[] {
       steamAppId,
       title,
       steamUrl: `https://store.steampowered.com/app/${steamAppId}/`,
+      coverUrl: link.find("img[alt]").first().attr("src") || null,
       videoUrl: row.find(".recommendation_readmore a").toArray()
         .map((anchor) => extractVideoUrl($(anchor).attr("href")))
         .find((url) => url !== null) || null,
       reviewType,
-      // Steam omits the year on recent reviews; preserve its label instead of guessing.
       reviewDateLabel: row.find(".curator_review_date").text().trim(),
+      reviewDate: parseSteamReviewDate(row.find(".curator_review_date").text().trim(), new Date()),
       review,
     };
   });
@@ -106,7 +110,11 @@ export async function importCurator() {
   try { previous = JSON.parse(await readFile(outputPath, "utf8")); }
   catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
   // Keep old entries if a game disappears from Steam or becomes region restricted.
-  previous?.reviews.forEach((review) => { if (!reviews.has(review.steamAppId)) reviews.set(review.steamAppId, review); });
+  previous?.reviews.forEach((review) => {
+    const current = reviews.get(review.steamAppId);
+    if (!current) reviews.set(review.steamAppId, review);
+    else if (review.reviewDate && current.reviewDateLabel === review.reviewDateLabel) current.reviewDate = review.reviewDate;
+  });
   const records = [...reviews.values()];
   const changed = JSON.stringify(records) !== JSON.stringify(previous?.reviews);
   if (changed) {
@@ -118,7 +126,7 @@ export async function importCurator() {
     "# Juegos del finde de Shux", "",
     `Fuente: [Mentor de ShuxTeam](${sourceUrl}).`, "",
     `${records.length} reseñas; ${records.filter((r) => r.videoUrl).length} con enlace a video. Se incluyen las reseñas informativas y negativas, identificadas por tipo.`, "",
-    "La fecha se conserva como la muestra Steam; no se inventa el año si no aparece. Los juegos retirados se conservan en importaciones posteriores.", "",
+    "La fecha completa se obtiene de la etiqueta de Steam: cuando omite el año, corresponde al año de la consulta. Los juegos retirados se conservan en importaciones posteriores.", "",
     "| Juego | Fecha en Steam | Tipo | Video | Steam App ID |",
     "| --- | --- | --- | --- | --- |",
     ...records.map((r) => `| [${escapeCell(r.title)}](${r.steamUrl}) | ${escapeCell(r.reviewDateLabel)} | ${types[r.reviewType]} | ${r.videoUrl ? `[Ver video](${r.videoUrl})` : "Sin enlace en Mentor"} | ${r.steamAppId} |`), "",

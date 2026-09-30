@@ -42,8 +42,13 @@ import { FALLBACK_USD_TO_ARS, formatArs } from "@/lib/normalize";
 import { STORE_LOGOS } from "@/lib/store-assets";
 import type { LatestPrices, NormalizedPrice, PriceHistoryReport, StoreId } from "@/lib/types";
 import { STORES } from "@/lib/types";
+import type { CatalogResponse } from "@/lib/catalog";
+import { WEEKEND_FILTER } from "@/lib/weekend-games";
+import { WeekendRecommendation, WeekendTag } from "@/app/components/WeekendRecommendation";
+import { WeekendShowcase } from "@/app/components/WeekendShowcase";
 
 type ApiPayload = {
+  weekend?: CatalogResponse["weekend"];
   latest: LatestPrices;
   history: PriceHistoryReport;
   analysis: {
@@ -98,27 +103,32 @@ const STEAM_CATEGORY_FILTERS = [
 const CATALOG_PAGE_SIZE = 30;
 const SEARCH_DEBOUNCE_MS = 250;
 
-export function BibliotecaClient({ initialPayload }: { initialPayload: ApiPayload | null }) {
+export function BibliotecaClient({ initialPayload, initialFilter = "todos", initialSort = "diferencia" }: { initialPayload: ApiPayload | null; initialFilter?: string; initialSort?: string }) {
   return (
     <Suspense fallback={<BibliotecaLoading />}>
-      <BibliotecaContent initialPayload={initialPayload} />
+      <BibliotecaContent initialPayload={initialPayload} initialFilter={initialFilter} initialSort={initialSort} />
     </Suspense>
   );
 }
 
-function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | null }) {
+function BibliotecaContent({ initialPayload, initialFilter, initialSort }: { initialPayload: ApiPayload | null; initialFilter: string; initialSort: string }) {
   const searchParams = useSearchParams();
   const [payload, setPayload] = useState<ApiPayload | null>(initialPayload);
   const [query, setQuery] = useState(searchParams.get("query") ?? "");
   const [debouncedQuery, setDebouncedQuery] = useState(searchParams.get("query") ?? "");
   const [category, setCategory] = useState("todas");
-  const [filter, setFilter] = useState(searchParams.get("filter") ?? "todos");
-  const [sort, setSort] = useState(searchParams.get("sort") ?? "diferencia");
+  const [filter, setFilter] = useState(searchParams.get("filter") ?? initialFilter);
+  const [sort, setSort] = useState(searchParams.get("sort") ?? initialSort);
   const [libraryMenuOpen, setLibraryMenuOpen] = useState(true);
   const [region, setRegion] = useState<RegionId>(DEFAULT_REGION);
   const [loading, setLoading] = useState(!initialPayload);
   const [loadingMore, setLoadingMore] = useState(false);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
+  const [extraSelectedRow, setExtraSelectedRow] = useState<PriceRow | null>(null);
+  const [openingWeekendGame, setOpeningWeekendGame] = useState(false);
+  const [weekendOpenError, setWeekendOpenError] = useState(false);
+  const weekendRequestRef = useRef<AbortController | null>(null);
+  const urlGameAttemptRef = useRef("");
   const [loadingGameHistoryId, setLoadingGameHistoryId] = useState<string | null>(null);
   const historyAttemptsRef = useRef(new Set<string>());
   const initialPayloadRef = useRef(
@@ -161,17 +171,30 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
       return;
     }
     setLoading(true);
-    fetchCatalog({ offset: 0 })
+    setExtraSelectedRow(null);
+    setSelectedGameId(null);
+    weekendRequestRef.current?.abort();
+    setOpeningWeekendGame(false);
+    const controller = new AbortController();
+    fetchCatalog({ offset: 0, signal: controller.signal })
       .then(setPayload)
-      .finally(() => setLoading(false));
+      .catch((error) => { if (error.name !== "AbortError") console.error(error); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
   }, [debouncedQuery, category, filter, sort, region, enabledStores]);
 
   useEffect(() => {
     const selectedFromUrl = searchParams.get("game");
-    if (!payload || !selectedFromUrl) return;
+    if (!payload || !selectedFromUrl || loading || urlGameAttemptRef.current === `${region}:${selectedFromUrl}`) return;
+    urlGameAttemptRef.current = `${region}:${selectedFromUrl}`;
     const row = payload.latest.prices.find((game) => game.gameId === selectedFromUrl);
     if (row) setSelectedGameId(row.gameId);
-  }, [payload, searchParams]);
+    else if (filter === WEEKEND_FILTER) {
+      void openWeekendGame(selectedFromUrl);
+    }
+  }, [payload, searchParams, region, loading]);
+
+  useEffect(() => () => weekendRequestRef.current?.abort(), []);
 
   const games = payload?.latest.prices ?? [];
 
@@ -221,11 +244,35 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
   }
 
   const summary = payload.analysis.broad;
-  const selectedRow = selectedGameId ? payload.latest.prices.find((row) => row.gameId === selectedGameId) ?? null : null;
+  const selectedRow = selectedGameId ? payload.latest.prices.find((row) => row.gameId === selectedGameId) ?? (extraSelectedRow?.gameId === selectedGameId ? extraSelectedRow : null) : null;
   const queryActive = query.trim().length > 0;
   const searchPending = query.trim() !== debouncedQuery.trim() || loading;
 
-  async function fetchCatalog(options: { offset: number; refresh?: boolean }): Promise<ApiPayload> {
+  async function openWeekendGame(gameId: string) {
+    const existing = payload?.latest.prices.find((row) => row.gameId === gameId);
+    if (existing) { setSelectedGameId(gameId); return; }
+    weekendRequestRef.current?.abort();
+    const controller = new AbortController();
+    weekendRequestRef.current = controller;
+    setOpeningWeekendGame(true);
+    setWeekendOpenError(false);
+    try {
+      const params = new URLSearchParams({ filter: WEEKEND_FILTER, gameId, region, stores: enabledStores.join(","), limit: "1" });
+      const response = await fetch(`/api/catalog?${params}`, { signal: controller.signal });
+      if (!response.ok) throw new Error("weekend_game_failed");
+      const result = await response.json() as ApiPayload;
+      const row = result.latest.prices[0];
+      if (!row) throw new Error("weekend_game_missing");
+      setExtraSelectedRow(row);
+      setSelectedGameId(gameId);
+      setPayload((current) => current ? { ...current, history: { ...current.history, lowsByGame: { ...current.history.lowsByGame, ...result.history.lowsByGame } } } : current);
+    } catch (error) {
+      if ((error as Error).name !== "AbortError") setWeekendOpenError(true);
+      else urlGameAttemptRef.current = "";
+    } finally { if (!controller.signal.aborted) setOpeningWeekendGame(false); }
+  }
+
+  async function fetchCatalog(options: { offset: number; refresh?: boolean; signal?: AbortSignal }): Promise<ApiPayload> {
     const params = new URLSearchParams({
       mode: "broad",
       query: debouncedQuery,
@@ -238,7 +285,10 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
       offset: String(options.offset)
     });
     if (options.refresh) params.set("refresh", "1");
-    return fetch(`/api/catalog?${params.toString()}`).then((res) => res.json());
+    return fetch(`/api/catalog?${params.toString()}`, { signal: options.signal }).then((res) => {
+      if (!res.ok) throw new Error("catalog_failed");
+      return res.json();
+    });
   }
 
   async function loadMore() {
@@ -368,6 +418,7 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
                   </button>
                 );
               })}
+              <Link href="/biblioteca/juego-del-finde" className={filter === WEEKEND_FILTER ? "sideSubLink active" : "sideSubLink"}>Juego del finde</Link>
             </div>
           </div>
           <Link href="/comparativa-general" className="sideLink">
@@ -384,11 +435,15 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
       </aside>
 
       <main className="page">
-        <header className="heroHeader">
+        {filter === WEEKEND_FILTER && payload.weekend ? <WeekendShowcase games={payload.weekend.games} offers={payload.weekend.offers} enabledStores={enabledStores} onOpen={openWeekendGame} /> : <header className="heroHeader">
           <div>
             <h1>¡Compará precios de juegos!</h1>
           </div>
-        </header>
+        </header>}
+
+        {openingWeekendGame ? <div className="weekendOpeningIndicator" role="status"><span className="mobileSearchSpinner" />Abriendo juego...</div> : null}
+        {weekendOpenError ? <p role="alert">No pudimos abrir la recomendación. Probá de nuevo en unos segundos.</p> : null}
+        {filter === WEEKEND_FILTER ? <h2 className="weekendCatalogHeading">Todos nuestros juegos del finde</h2> : null}
 
         <section className={`toolbar ${queryActive ? "searchActive" : ""}`} aria-label="Controles">
           <label className="search">
@@ -449,6 +504,7 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
               <option value="ofertas">Ofertas 🎁</option>
               <option value="diferencias">Más baratos que Steam 👀</option>
               <option value="historicos">Mínimos históricos 📉</option>
+              <option value={WEEKEND_FILTER}>Juego del finde</option>
               <option value="completos">Completos</option>
             </select>
           </label>
@@ -461,11 +517,12 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
               <option value="precio">Precio</option>
               <option value="cobertura">Cobertura</option>
               <option value="nombre">Nombre</option>
+              {filter === WEEKEND_FILTER ? <option value="recientes">Más recientes</option> : null}
             </select>
           </label>
         </section>
 
-        <section className={`cards catalogMetrics ${queryActive ? "searchActive" : ""}`}>
+        {filter !== WEEKEND_FILTER ? <section className={`cards catalogMetrics ${queryActive ? "searchActive" : ""}`}>
           <Metric title="Tienda más barata promedio" value={summary.cheapestAverageStore ? STORE_LABELS[summary.cheapestAverageStore] : "Sin datos"} />
           <Metric
             title="Más victorias"
@@ -474,7 +531,7 @@ function BibliotecaContent({ initialPayload }: { initialPayload: ApiPayload | nu
           />
           <Metric title="Juegos cargados" value={String(payload.sampleMeta.broadTotal)} />
           <Metric title="Juegos con precio actual" value={String(summary.gamesAnalyzed)} />
-        </section>
+        </section> : null}
 
         <section className="gameGrid" aria-label="Comparaciones de precios">
           {loading ? (
@@ -642,6 +699,7 @@ function GameCard({
             -{bestDiscount.discountPct}%
           </span>
         ) : null}
+        {row.weekendGame ? <div className="weekendCardTag"><WeekendTag /></div> : null}
         <button
           className={wishlisted ? "wishlistStar active" : "wishlistStar"}
           type="button"
@@ -664,7 +722,7 @@ function GameCard({
             }}
             title="Filtrar por categoría"
           >
-            {formatReleaseYear(row.releaseYear)} · {formatCategory(displayGameCategory(row))}
+            {row.gameId.startsWith("shux-steam-") ? "Selección de Shux" : `${formatReleaseYear(row.releaseYear)} · ${formatCategory(displayGameCategory(row))}`}
           </button>
         </div>
       </div>
@@ -685,7 +743,7 @@ function GameCard({
               />
             ))
           ) : (
-            <div className="emptyPrices">Sin precios disponibles</div>
+            <div className="emptyPrices">{row.weekendGame ? "Precios pendientes de incorporación" : "Sin precios disponibles"}</div>
           )}
         </div>
 
@@ -905,6 +963,7 @@ function GameDetailModal({
     <div className="modalBackdrop" role="presentation" onClick={onClose}>
       <section className="gameModal" role="dialog" aria-modal="true" aria-label={row.gameTitle} onClick={(event) => event.stopPropagation()}>
         <div className="modalActions">
+          {row.weekendGame ? <WeekendTag /> : null}
           <button
             className={wishlisted ? "wishlistStar modalWishlistStar active" : "wishlistStar modalWishlistStar"}
             type="button"
@@ -924,7 +983,7 @@ function GameDetailModal({
           <div>
             <h2>{row.gameTitle}</h2>
             <span>
-              {formatReleaseYear(row.releaseYear)} · {formatCategory(displayGameCategory(row))}
+              {row.gameId.startsWith("shux-steam-") ? "Selección de Shux" : `${formatReleaseYear(row.releaseYear)} · ${formatCategory(displayGameCategory(row))}`}
             </span>
           </div>
         </header>
@@ -963,6 +1022,7 @@ function GameDetailModal({
             displayLocale={displayLocale}
           />
           </section>
+          {row.weekendGame ? <WeekendRecommendation key={row.gameId} game={row.weekendGame} gameId={row.gameId} /> : null}
         </div>
       </section>
     </div>

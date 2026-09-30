@@ -15,6 +15,8 @@ concurrency:
 
 jobs:
   import:
+    outputs:
+      changed: ${{ steps.save.outputs.changed }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -27,7 +29,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Check Steam review parser
-        run: npx tsx --test scripts/import-shux-curator.test.ts
+        run: npx tsx --test scripts/import-shux-curator.test.ts scripts/weekend-games.test.ts
       - name: Import reviews and video links
         run: npm run shux:import-curator
       - name: Upload review list
@@ -39,6 +41,7 @@ jobs:
             docs/juegos-del-finde.md
             docs/juegos-del-finde.csv
       - name: Save updated list
+        id: save
         shell: bash
         run: |
           set -euo pipefail
@@ -47,9 +50,16 @@ jobs:
           git add data/shux-weekend-games.json docs/juegos-del-finde.md docs/juegos-del-finde.csv
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "Update Shux weekend game recommendations"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
           for attempt in 1 2 3; do
             git pull --rebase origin main
             if git push origin HEAD:main; then exit 0; fi
             sleep 5
           done
           exit 1
+
+  publish:
+    needs: import
+    if: needs.import.outputs.changed == 'true'
+    uses: ./.github/workflows/deploy-production.yml
+    secrets: inherit

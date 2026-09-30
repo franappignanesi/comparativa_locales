@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
       await getCatalogPage({
         mode: parseMode(params.get("mode")),
         query: params.get("query") ?? "",
+        gameId: params.get("gameId") ?? undefined,
         category: params.get("category") ?? "todas",
         filter: params.get("filter") ?? "todos",
         sort: params.get("sort") ?? "diferencia",
