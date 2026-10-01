@@ -88,7 +88,9 @@ export function buildDiscordWeeklyMessage(latest: LatestPrices, catalog: SampleG
     if (bargainLines.length === 3) break;
   }
   embeds.push({ title: "👀 Más baratos que en Steam", color: 0xf59477,
-    description: `${bargainLines.join("\n\n") || "No hay nuevas diferencias destacadas esta semana: preferimos no repetir las anteriores."}\n\nCompará juegos entre tiendas oficiales en **5 países**, guardá tu lista de deseados y consultá precios históricos en [**BARATEAM**](${DISCORD_SITE}).\n\n¡Hasta la semana que viene!`,
+    description: bargainLines.join("\n\n") || "No hay nuevas diferencias destacadas esta semana: preferimos no repetir las anteriores." });
+  embeds.push({
+    description: `Compará juegos entre tiendas oficiales en **5 países**, guardá tu lista de deseados y consultá precios históricos en [**BARATEAM**](${DISCORD_SITE}).\n\n¡Hasta la semana que viene!`,
     footer: { text: "Argentina · Precios sin impuestos. Selección por descuento y popularidad. Las ofertas pueden terminar: confirmá en la tienda." }, timestamp: latest.timestamp ?? undefined });
   return { content: "**Buenas gente!** Acá algunos de los juegos más interesantes de la semana en **BARATEAM** 👇", embeds, bargainGameIds };
 }

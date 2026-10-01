@@ -24,7 +24,12 @@ const catalog = [{ id: "jdf", identifiers: { steamAppId: 10 } }] as SampleGame[]
 test("weekly hierarchy, native money, card links, image and nonrepeating sections", () => {
   const payload = buildDiscordWeeklyMessage(data(), catalog, [weekend], new Map(), new Set(["bargain0"]));
   const embeds = payload.embeds!;
-  assert.equal(embeds.length, 3);
+  assert.equal(embeds.length, 4);
+  assert.ok(!String(embeds[2].description).includes("Compará juegos"));
+  assert.match(String(embeds[3].description), /^Compará juegos/);
+  assert.match(String(embeds[3].description), /¡Hasta la semana que viene!/);
+  assert.equal(embeds[3].title, undefined);
+  assert.equal(embeds[3].color, undefined);
   assert.match(String(embeds[0].description), /USD 30,00 en Steam/);
   assert.match(String(embeds[0].description), /ARS 15.000,00 en Microsoft/);
   assert.match(String(embeds[0].description), /25% de descuento/);
