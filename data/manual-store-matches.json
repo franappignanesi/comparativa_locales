@@ -1,6 +1,27 @@
 {
   "matches": [
     {
+      "gameTitle": "Kingdom Come: Deliverance II",
+      "store": "microsoft",
+      "identifier": "9N4W31HSMVVD",
+      "edition": "standard",
+      "notes": "User report: verified PC purchase availability in the Microsoft AR display catalog. Historical July discount remains unverified."
+    },
+    {
+      "gameTitle": "Visage",
+      "store": "microsoft",
+      "identifier": "9P9V698V6MVR",
+      "edition": "standard",
+      "notes": "User report: verified Windows.Desktop purchase availability and ARS price in the Microsoft display catalog."
+    },
+    {
+      "gameTitle": "Injustice 2",
+      "store": "microsoft",
+      "identifier": "9PHT4W7WBBDQ",
+      "edition": "standard",
+      "notes": "User report: verified Standard Edition for PC; not the Xbox-only product or Legendary Edition."
+    },
+    {
       "gameTitle": "We Happy Few",
       "store": "microsoft",
       "identifier": "9NBLGGH5342P",

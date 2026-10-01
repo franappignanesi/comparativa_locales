@@ -9,12 +9,12 @@ import type {
 } from "./types";
 import { STORES } from "./types";
 import weekendAdditions from "../../data/weekend-catalog-additions.json";
+import manualStoreMatches from "../../data/manual-store-matches.json";
+import sourceCandidates from "../../data/game-candidates.json";
 
 const curatedCandidates = weekendAdditions as GameCandidate[];
 
-type ManualMatchesFile = {
-  matches: ManualStoreMatch[];
-};
+const manualMatches = manualStoreMatches.matches as ManualStoreMatch[];
 
 const emptySample: GameSample = {
   timestamp: null,
@@ -39,7 +39,6 @@ export async function buildGameSample(): Promise<GameSample> {
   const existingCandidates = await readJson<GameCandidate[]>(dataPath("game-candidates.json"), []);
   const knownApps = new Set(existingCandidates.map((game) => game.identifiers.steamAppId));
   const candidates = [...existingCandidates, ...curatedCandidates.filter((game) => !knownApps.has(game.identifiers.steamAppId))];
-  const manual = await readJson<ManualMatchesFile>(dataPath("manual-store-matches.json"), { matches: [] });
   const rejected: GameSample["rejected"] = [];
 
   const games = dedupeSampleGamesById(candidates
@@ -52,7 +51,7 @@ export async function buildGameSample(): Promise<GameSample> {
       }
       return true;
     })
-    .map((candidate) => toSampleGame(candidate, manual.matches)));
+    .map((candidate) => toSampleGame(candidate, manualMatches)));
 
   const strictSample = games.filter((game) => game.availableStores.length === STORES.length);
   const broadSample = games.filter((game) => game.availableStores.length > 0);
@@ -83,7 +82,30 @@ export async function buildGameSample(): Promise<GameSample> {
 
 export async function getGameSample(): Promise<GameSample> {
   const sample = await readJson<GameSample>(dataPath("generated", "game-sample.json"), emptySample);
-  return sample.timestamp ? withCuratedGames(sample) : buildGameSample();
+  return sample.timestamp ? withManualStoreMatches(withCuratedGames(withSourceCandidates(sample))) : buildGameSample();
+}
+
+export function withSourceCandidates(sample: GameSample): GameSample {
+  const apps = new Set(sample.broadSample.map((game) => game.identifiers.steamAppId).filter(Boolean));
+  const ids = new Set(sample.broadSample.map((game) => game.id));
+  const added = (sourceCandidates as GameCandidate[])
+    .filter((game) => game.edition === "standard" && game.expectedStores.length && !apps.has(game.identifiers.steamAppId))
+    .map((game) => toSampleGame(game, manualMatches)).filter((game) => !ids.has(game.id) && (ids.add(game.id), true));
+  if (!added.length) return sample;
+  const broadSample = [...sample.broadSample, ...added];
+  return { ...sample, broadSample, strictSample: broadSample.filter((game) => game.availableStores.length === STORES.length),
+    storeCoverage: Object.fromEntries(STORES.map((store) => [store, broadSample.filter((game) => game.availableStores.includes(store)).length])),
+    missingByStore: Object.fromEntries(STORES.map((store) => [store, broadSample.filter((game) => game.missingStores.includes(store)).map((game) => game.title)])),
+    categoryCoverage: broadSample.reduce<GameSample["categoryCoverage"]>((counts, game) => { counts[game.category] = (counts[game.category] ?? 0) + 1; return counts; }, {}) };
+}
+
+export function withManualStoreMatches(sample: GameSample): GameSample {
+  const titles = new Set(manualMatches.map((match) => match.gameTitle.toLowerCase()));
+  const broadSample = sample.broadSample.map((game) => titles.has(game.title.toLowerCase()) ? toSampleGame(game, manualMatches) : game);
+  if (broadSample.every((game, index) => game === sample.broadSample[index])) return sample;
+  return { ...sample, broadSample, strictSample: broadSample.filter((game) => game.availableStores.length === STORES.length),
+    storeCoverage: Object.fromEntries(STORES.map((store) => [store, broadSample.filter((game) => game.availableStores.includes(store)).length])),
+    missingByStore: Object.fromEntries(STORES.map((store) => [store, broadSample.filter((game) => game.missingStores.includes(store)).map((game) => game.title)])) };
 }
 
 // Public datasets can predate a code deploy; keep curated games when restoring that cache.

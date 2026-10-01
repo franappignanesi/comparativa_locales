@@ -21,6 +21,7 @@ export async function fetchStorePrice(game: SampleGame, region?: RegionConfig): 
   try {
     const response = await fetch(url, {
       headers: { "accept-language": `${region?.locale ?? "es-AR"},es;q=0.9,en;q=0.5` },
+      signal: AbortSignal.timeout(12000),
       next: { revalidate: 3600 }
     });
     if (!response.ok) return unavailable(game.title, `Microsoft HTTP ${response.status}`, url);
@@ -59,7 +60,7 @@ async function searchMicrosoftProductId(game: SampleGame, region?: RegionConfig)
   url.searchParams.set("query", game.title);
 
   try {
-    const response = await fetch(url, { next: { revalidate: 3600 } });
+    const response = await fetch(url, { next: { revalidate: 3600 }, signal: AbortSignal.timeout(12000) });
     if (!response.ok) return null;
     const json = await response.json();
     const results = collectSearchResults(json);
@@ -75,7 +76,7 @@ async function fetchDisplayCatalogPrice(game: SampleGame, productId: string, reg
   const url = `https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=${productId}&market=${market}&languages=${locale},neutral&MS-CV=DGU1mcuYo0WMMp+F.1`;
 
   try {
-    const response = await fetch(url, { next: { revalidate: 3600 } });
+    const response = await fetch(url, { next: { revalidate: 3600 }, signal: AbortSignal.timeout(12000) });
     if (!response.ok) return unavailable(game.title, `Microsoft catalog HTTP ${response.status}`, url);
     const json = await response.json();
     const product = json?.Products?.[0];
@@ -104,11 +105,13 @@ async function fetchDisplayCatalogPrice(game: SampleGame, productId: string, reg
   }
 }
 
-function findMicrosoftPrice(product: unknown): { basePrice: number; finalPrice: number; currency: string } | null {
+export function findMicrosoftPrice(product: unknown): { basePrice: number; finalPrice: number; currency: string } | null {
   const candidates = collectAvailabilities(product)
     .filter((availability) => {
       const actions = availability?.Actions;
-      return Array.isArray(actions) && actions.includes("Purchase") && isAvailabilityActive(availability) && !isLegacyGoldDiscount(availability);
+      const platforms = availability?.Conditions?.ClientConditions?.AllowedPlatforms;
+      const permitsPc = !Array.isArray(platforms) || platforms.some((platform: { PlatformName?: string }) => platform.PlatformName?.toLowerCase() === "windows.desktop");
+      return permitsPc && Array.isArray(actions) && actions.includes("Purchase") && isAvailabilityActive(availability) && !isLegacyGoldDiscount(availability);
     })
     .map((availability) => availability?.OrderManagementData?.Price)
     .filter(Boolean);

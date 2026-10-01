@@ -6,7 +6,7 @@
 .catalogOverview .metric strong { font-size: 26px; overflow-wrap: anywhere; }
 .catalogOverview .metric span { letter-spacing: 0; line-height: 1.4; }
 .weekendFeatured { min-width: 0; }
-.weekendFeaturedHeading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding-bottom: 12px; }
+.weekendFeaturedHeading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
 .weekendFeaturedHeading h2 { margin: 0 0 6px; font-size: 19px; letter-spacing: 0; color: #d9fff0; }
 .weekendFeaturedHeading p { margin: 0; color: var(--muted); line-height: 1.5; font-size: 12px; }
 .weekendFeaturedVideo { display: flex; gap: 6px; align-items: center; flex-shrink: 0; padding: 8px 0; border: 0; background: none; color: #72d7b3; cursor: pointer; font-size: 12px; }

@@ -18,7 +18,7 @@ import {
   X
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { RegionSelector } from "@/app/components/RegionSelector";
@@ -544,11 +544,10 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort }: { ini
           <Metric title="Juegos con precio actual" value={String(summary.gamesAnalyzed)} />
           </div>
           {payload.featuredWeekend ? <div className="weekendFeatured">
-            <div className="weekendFeaturedHeading">
+            <GameCard intro={<div className="weekendFeaturedHeading">
               <div><h2>Juego del finde</h2><p>La recomendación de la casa para viciar el finde fue <strong>{payload.featuredWeekend.gameTitle}</strong>.</p></div>
               <button type="button" className="weekendFeaturedVideo" onClick={() => { setShowWeekendVideo(true); void openWeekendGame(payload.featuredWeekend!.gameId); }}><Play size={16} />¡Mirá el video acá!</button>
-            </div>
-            <GameCard row={payload.featuredWeekend}
+            </div>} row={payload.featuredWeekend}
               analysis={summary.games[payload.featuredWeekend.gameId]}
               historyLows={payload.history.lowsByGame[payload.featuredWeekend.gameId] ?? {}}
               enabledStores={enabledStores} wishlisted={wishlist.some((item) => item.gameId === payload.featuredWeekend!.gameId)}
@@ -680,6 +679,7 @@ function BibliotecaLoading() {
 }
 
 function GameCard({
+  intro,
   row,
   analysis,
   historyLows,
@@ -694,6 +694,7 @@ function GameCard({
   category,
   onCategoryClick
 }: {
+  intro?: ReactNode;
   row: PriceRow;
   analysis: GameAnalysis | undefined;
   historyLows: PriceHistoryReport["lowsByGame"][string];
@@ -719,6 +720,7 @@ function GameCard({
 
   return (
     <article className="gameCard">
+      {intro}
       <div
         className="gameHero clickableHero"
         role="button"

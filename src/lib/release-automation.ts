@@ -1,5 +1,6 @@
 import { dataPath, readJson, writeJson } from "./cache";
-import { buildGameSample } from "./sample-builder";
+import { buildGameSample, getGameSample } from "./sample-builder";
+import { load } from "cheerio";
 import type { GameCandidate, GameCategory } from "./types";
 
 type SteamSearchItem = {
@@ -71,8 +72,8 @@ export async function discoverSteamReleases(): Promise<{
   const lookbackDays = parsePositiveInt(process.env.RELEASE_DISCOVERY_LOOKBACK_DAYS) ?? DEFAULT_LOOKBACK_DAYS;
   const countPerFilter = parsePositiveInt(process.env.RELEASE_DISCOVERY_COUNT) ?? 100;
   const topSellerBackfill = parseBoolean(process.env.RELEASE_TOP_SELLERS_BACKFILL);
-  const topSellerCount = topSellerBackfill ? parsePositiveInt(process.env.RELEASE_TOP_SELLERS_COUNT) ?? 100 : countPerFilter;
-  const existing = await readJson<GameCandidate[]>(dataPath("game-candidates.json"), []);
+  const topSellerCount = parsePositiveInt(process.env.RELEASE_TOP_SELLERS_COUNT) ?? 100;
+  const existing = await readReleaseCandidates();
   const previous = await readJson<PendingReleaseFile>(dataPath("generated", "pending-releases.json"), emptyPendingFile());
   const existingSteamIds = new Set(existing.map((game) => game.identifiers.steamAppId).filter(Boolean));
   const existingTitles = new Set(existing.map((game) => normalizeTitle(game.title)));
@@ -161,7 +162,7 @@ export async function promotePendingReleases(mode = process.env.RELEASE_PROMOTE_
   const limit = parsePositiveInt(process.env.RELEASE_PROMOTE_LIMIT) ?? (topSellerMode ? 100 : normalizedMode === "fast" ? 25 : 75);
   const minReviews = parsePositiveInt(process.env.RELEASE_PROMOTE_MIN_REVIEWS) ?? (topSellerMode || normalizedMode === "fast" ? 0 : 100);
   const minOwners = parsePositiveInt(process.env.RELEASE_PROMOTE_MIN_OWNERS) ?? (topSellerMode || normalizedMode === "fast" ? 0 : 10000);
-  const existing = await readJson<GameCandidate[]>(dataPath("game-candidates.json"), []);
+  const existing = await readReleaseCandidates();
   const pendingFile = await readJson<PendingReleaseFile | null>(dataPath("generated", "pending-releases.json"), null);
 
   if (!pendingFile?.pending?.length) {
@@ -229,14 +230,10 @@ async function discoverSearchItems(countPerFilter: number, topSellerCount = coun
     url.searchParams.set("infinite", "1");
     url.searchParams.set("cc", "AR");
     url.searchParams.set("l", "spanish");
-    const response = await fetch(url, { headers: { accept: "application/json", "user-agent": "BARATEAM catalog discovery/1.0" } });
-    if (!response.ok) continue;
+    const response = await fetch(url, { headers: { accept: "application/json", "user-agent": "BARATEAM catalog discovery/1.0" }, signal: AbortSignal.timeout(12000) });
+    if (!response.ok) throw new Error(`Steam discovery ${filter}: HTTP ${response.status}`);
     const data = (await response.json()) as { results_html?: string };
-    const appIds = [...(data.results_html ?? "").matchAll(/data-ds-appid="(\d+)"/g)].map((match) => Number(match[1]));
-    const titles = [...(data.results_html ?? "").matchAll(/<span class="title">([^<]+)<\/span>/g)].map((match) => decodeHtml(match[1]));
-    appIds.forEach((appId, index) => {
-      items.push({ appId, title: titles[index] ?? `Steam App ${appId}`, rank: index + 1, source: filter });
-    });
+    items.push(...parseSteamSearchResults(data.results_html ?? "", filter));
   }
   return items;
 }
@@ -254,7 +251,7 @@ async function fetchAppDetails(appIds: number[]): Promise<Map<number, SteamAppDe
 }
 
 async function fetchSingleAppDetails(appId: number): Promise<SteamAppDetails | null> {
-  const url = `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=AR&l=spanish&filters=basic,price_overview,genres,categories,release_date`;
+  const url = `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=AR&l=english&filters=basic,price_overview,genres,categories,release_date`;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     try {
       const response = await fetch(url, {
@@ -277,7 +274,7 @@ async function fetchSingleAppDetails(appId: number): Promise<SteamAppDetails | n
 
 async function fetchSteamSpyDetails(appId: number): Promise<SteamSpyDetails> {
   try {
-    const response = await fetch(`https://steamspy.com/api.php?request=appdetails&appid=${appId}`);
+    const response = await fetch(`https://steamspy.com/api.php?request=appdetails&appid=${appId}`, { signal: AbortSignal.timeout(8000) });
     if (!response.ok) return {};
     return (await response.json()) as SteamSpyDetails;
   } catch {
@@ -405,8 +402,24 @@ function normalizeTitle(title: string): string {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
 
-function decodeHtml(value: string): string {
-  return value.replace(/&amp;/g, "&").replace(/&quot;/g, "\"").replace(/&#39;/g, "'");
+export function parseSteamSearchResults(html: string, source: string): SteamSearchItem[] {
+  const $ = load(html);
+  return $(".search_result_row").toArray().flatMap((row, index) => {
+    const id = $(row).attr("data-ds-appid") ?? "";
+    if (!/^\d+$/.test(id)) return [];
+    return [{ appId: Number(id), title: $(row).find(".title").text().trim(), rank: index + 1, source }];
+  });
+}
+
+export function mergeReleaseCandidates(source: GameCandidate[], published: GameCandidate[]): GameCandidate[] {
+  const ids = new Set(source.map((game) => game.identifiers.steamAppId).filter(Boolean));
+  const titles = new Set(source.map((game) => normalizeTitle(game.title)));
+  return [...source, ...published.filter((game) => !ids.has(game.identifiers.steamAppId) && !titles.has(normalizeTitle(game.title)))];
+}
+
+async function readReleaseCandidates(): Promise<GameCandidate[]> {
+  const [source, sample] = await Promise.all([readJson<GameCandidate[]>(dataPath("game-candidates.json"), []), getGameSample()]);
+  return mergeReleaseCandidates(source, sample.broadSample.map(({ id, availableStores, missingStores, comparisonStatus, ...candidate }) => candidate));
 }
 
 function chunkArray<T>(items: T[], size: number): T[][] {

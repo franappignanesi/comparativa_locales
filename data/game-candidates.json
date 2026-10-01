@@ -153266,5 +153266,589 @@
       "Female Protagonist",
       "Singleplayer"
     ]
+  },
+  {
+    "title": "Minecraft Dungeons II",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1912410/86cbba83c1aaffa0b0efa4197ce29c2264ea9dc2/header.jpg?t=1790774234",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "RPG"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 6; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1912410,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Transport Fever 3",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3493540/6c4506fe585629dd2676db0ae957445471d8d926/header_alt_assets_0_spanish.jpg?t=1790777411",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Strategy",
+    "steamTags": [
+      "Casual",
+      "Simulation",
+      "Strategy"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 8; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3493540,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Nivalis Nights",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1488490/28e511ff46672f9649744961fd6edbf19df75265/header.jpg?t=1790694813",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Adventure",
+    "steamTags": [
+      "Adventure",
+      "RPG",
+      "Simulation"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 11; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1488490,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "EA SPORTS FC™ 27",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4080220/ff6a3779f1ca83aae8ad3878454f6c11008ea24d/header.jpg?t=1790357926",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Simulation",
+    "steamTags": [
+      "Simulation",
+      "Sports"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 5; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 4080220,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Songs of Glimmerwick",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1706510/2e6d0bc2ac7bac10bf9f90ca91d69a48ad76c255/header.jpg?t=1790786083",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": null,
+    "steamTags": [],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 66; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1706510,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Way of the Hunter 2",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2543830/89b81de5ed439dcdcfca24611a416c5ddb033c63/header.jpg?t=1790692945",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Adventure",
+    "steamTags": [
+      "Adventure",
+      "Simulation",
+      "Early Access"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 77; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2543830,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Dressmaker",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4019220/f1cd08127872e60e4c47a4bc3e40d682d94741bf/header.jpg?t=1790605593",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Simulation",
+    "steamTags": [
+      "Casual",
+      "Simulation"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 17; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 4019220,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Graveyard Keeper 2",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4358690/d87459ca350044e77598ef6079e4b267e027e541/header_alt_assets_1_spanish.jpg?t=1790169326",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Adventure",
+    "steamTags": [
+      "Adventure",
+      "RPG",
+      "Simulation"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 90; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 4358690,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Active Matter",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2887580/191801a8de4db48075ef195473a922391cb4c6de/header.jpg?t=1790331280",
+    "edition": "standard",
+    "category": "multiplayer pago",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Massively Multiplayer"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 41; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2887580,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "WARDOGS",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1867240/59d4daf753bd5d982e6675f7eee363bc817c574e/header.jpg?t=1790774170",
+    "edition": "standard",
+    "category": "indie popular",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Indie",
+      "Massively Multiplayer",
+      "Simulation",
+      "Early Access"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 7; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1867240,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "NBA 2K27",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4356430/9152438fde7de9f4c20b4fd9072ba69f844dacab/header.jpg?t=1790702884",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Sports",
+    "steamTags": [
+      "Sports"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 38; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 4356430,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Onimusha: Way of the Sword",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2638890/ce31174fea86d0bafa21b26e853dcd0b7326e36f/header.jpg?t=1790383151",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "RPG"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 72; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2638890,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "The Blood of Dawnwalker",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3751260/a7062f3b59d491c2678e3fd7ce2672858e480641/header.jpg?t=1790718217",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "RPG"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 70; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3751260,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "BOMBANANA!",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4656000/99c086faba625a8d3bc459bab444087d257ccbe1/header.jpg?t=1790377390",
+    "edition": "standard",
+    "category": "indie popular",
+    "primaryTag": "Indie",
+    "steamTags": [
+      "Casual",
+      "Indie"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 89; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 4656000,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "How to Fish",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4001890/45c4ddff4901e32c4b8b643e1b97d0d01898d299/header.jpg?t=1788788717",
+    "edition": "standard",
+    "category": "indie popular",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Casual",
+      "Indie",
+      "Simulation"
+    ],
+    "releaseYear": 0,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 34; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 4001890,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Dune: Awakening",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1172710/ca8cb1cac6d45b96c33fcd9458b837b296dfd3f7/header_alt_assets_9_spanish.jpg?t=1790078722",
+    "edition": "standard",
+    "category": "multiplayer pago",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "Massively Multiplayer",
+      "RPG"
+    ],
+    "releaseYear": 2025,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 48; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1172710,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "REMATCH",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2138720/cafe24aa9b3c329c4a083b017cbdd7965b6e23c3/header_alt_assets_1.jpg?t=1790262307",
+    "edition": "standard",
+    "category": "indie popular",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Indie",
+      "Sports"
+    ],
+    "releaseYear": 2025,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 58; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2138720,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "EA SPORTS™ Madden NFL 27",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3940610/7ed2213f0170c1b55410b82ed89a8bab3911c6ea/header.jpg?t=1789052387",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Strategy",
+    "steamTags": [
+      "Simulation",
+      "Sports",
+      "Strategy"
+    ],
+    "releaseYear": 0,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 69; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3940610,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Jurassic World Evolution 3",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2958130/df39f8c59232633e8e01ab63313b095402bdd0d5/header.jpg?t=1790687062",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Strategy",
+    "steamTags": [
+      "Simulation",
+      "Strategy"
+    ],
+    "releaseYear": 2025,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 78; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2958130,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Assassin’s Creed Shadows",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3159330/header.jpg?t=1789746114",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": null,
+    "steamTags": [],
+    "releaseYear": 2025,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 94; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3159330,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "The Outer Worlds 2",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1449110/fe273e39cbaf4997d1c8e53879800f07dba0ee03/header.jpg?t=1761760147",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "RPG"
+    ],
+    "releaseYear": 2025,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 95; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1449110,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Big Walk",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1478500/62eeee1507dbac905e128a62f2ce690550238db0/header.jpg?t=1785911674",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Adventure",
+    "steamTags": [
+      "Adventure"
+    ],
+    "releaseYear": 0,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 98; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1478500,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Crimson Desert Enhanced",
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3321460/236f3814be7a97d86831800691b6096d449222a8/header.jpg?t=1789020763",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure"
+    ],
+    "releaseYear": 2026,
+    "notes": "Release discovery. Top seller pago de Steam, puesto 99; backfill quincenal. Reviews: 0. Owners: 0 .. 20,000. Promovido por release automation top-sellers 2026-10-01T00:13:26.263Z.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3321460,
+      "epicSlug": null,
+      "gogSlug": null,
+      "humbleSlug": null,
+      "microsoftProductId": null,
+      "microsoftUrl": null
+    },
+    "confidence": "high"
   }
 ]
