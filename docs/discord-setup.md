@@ -42,6 +42,9 @@ Weekly publishing stays off until WEEKLY_ENABLED=1. Default schedule is Friday 1
 The daily refresh enqueues wishlist digests after successful evaluation. Discord delivery errors do NOT block publishing prices or email/push. The worker handles up to 30 messages / 3 minutes per execution. Pending, clearly rejected rate-limited attempts are continued on a later run, with a maximum of 3 attempts and 48-hour expiry. There is no automatic retry loop or periodic polling.
 The weekly workflow restores the existing public cache, performs no scraping, and refuses price datasets older than 48 hours. A manual run defaults to preview-only.
 
+The SHUX weekly digest uses three colored embeds: latest dated Juego del finde with an optional cover thumbnail and video link; up to five discounted games ranked by discount plus aggregate wishlist popularity; up to three alternatives at least 20% cheaper than Steam. Native currencies are labeled; comparisons use normalized USD. Uncertain editions and stale prices are excluded. Card links include the game search to work beyond the first catalog page.
+Games in the cheaper-than-Steam section are excluded for 60 days after a confirmed send. This small state lives in `discord_weekly_bargains`, separately from prunable pricing state, and is committed atomically with outbox completion. Previews and failed sends do not consume cooldowns. No repeats between digest sections; fewer results are preferable to filling with invalid offers. Existing weekly idempotency remains: rerunning a sent week does not post another message.
+
 ## User flow
 
 Google login > Profile > Connect Discord > approve identify permission > send confirmation test > explicitly enable private alerts.

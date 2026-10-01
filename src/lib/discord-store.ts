@@ -27,6 +27,8 @@ async function ready() {
       attempts INT NOT NULL DEFAULT 0, next_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), owner UUID,
       expires_at TIMESTAMPTZ NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), sent_at TIMESTAMPTZ)`);
     await sql().query("ALTER TABLE discord_outbox ADD COLUMN IF NOT EXISTS claimed_at TIMESTAMPTZ");
+    await sql().query(`CREATE TABLE IF NOT EXISTS discord_weekly_bargains (
+      game_id VARCHAR(191) PRIMARY KEY, sent_at TIMESTAMPTZ NOT NULL)`);
     await sql().query(`CREATE TABLE IF NOT EXISTS discord_alert_receipts (
       user_sub VARCHAR(191) NOT NULL, signature VARCHAR(64) NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       PRIMARY KEY (user_sub, signature))`);
@@ -83,7 +85,12 @@ export async function consumeDiscordState(state: string, userSub: string) {
   const result = await rows("DELETE FROM discord_oauth_states WHERE state_hash=$1 AND user_sub=$2 AND expires_at>NOW() RETURNING user_sub", [discordHash(state), userSub]);
   return result.length === 1;
 }
-export type DiscordPayload = { content?: string; embeds?: Array<Record<string, unknown>>; signatures?: string[]; region?: string; prices?: Array<{ gameId: string; store: string; currency: string; price: number; type: string; thresholdUsd?: number | null }> };
+export type DiscordPayload = { content?: string; embeds?: Array<Record<string, unknown>>; bargainGameIds?: string[]; signatures?: string[]; region?: string; prices?: Array<{ gameId: string; store: string; currency: string; price: number; type: string; thresholdUsd?: number | null }> };
+export async function getRecentDiscordBargains() {
+  await ready();
+  const result = await rows("SELECT game_id FROM discord_weekly_bargains WHERE sent_at>NOW()-INTERVAL '60 days'");
+  return new Set(result.map((row) => String(row.game_id)));
+}
 export async function discordUnsentSignatures(userSub: string, signatures: string[]) {
   await ready();
   const result = await rows("SELECT signature FROM discord_alert_receipts WHERE user_sub=$1 AND signature = ANY($2::text[])", [userSub, signatures]);
@@ -110,8 +117,15 @@ export async function finishDiscordJob(job: DiscordJob, status: "sent" | "pendin
   if (status === "sent" && job.kind === "dm" && job.payload.signatures?.length) {
     await sql().query("INSERT INTO discord_alert_receipts (user_sub,signature) SELECT $1,signature FROM unnest($2::text[]) AS signature WHERE EXISTS (SELECT 1 FROM discord_outbox WHERE id=$3 AND owner=$4 AND status='sending') ON CONFLICT DO NOTHING", [job.userSub, job.payload.signatures, job.id, job.owner]);
   }
-  await sql().query("UPDATE discord_outbox SET status=$1::varchar,next_at=$2,sent_at=CASE WHEN $1::varchar='sent' THEN NOW() ELSE sent_at END WHERE id=$3 AND owner=$4 AND status='sending'",
-    [status, new Date(Date.now() + retrySeconds * 1000).toISOString(), job.id, job.owner]);
+  // Commit the confirmed weekly delivery and its cooldown together, guarded by claim ownership.
+  await sql().query(`WITH finished AS (
+    UPDATE discord_outbox SET status=$1::varchar,next_at=$2,sent_at=CASE WHEN $1::varchar='sent' THEN NOW() ELSE sent_at END
+    WHERE id=$3 AND owner=$4 AND status='sending' RETURNING kind,status)
+    INSERT INTO discord_weekly_bargains (game_id,sent_at)
+    SELECT DISTINCT game_id,NOW() FROM unnest($5::text[]) AS game_id
+    WHERE EXISTS (SELECT 1 FROM finished WHERE kind='weekly' AND status='sent')
+    ON CONFLICT (game_id) DO UPDATE SET sent_at=EXCLUDED.sent_at`,
+    [status, new Date(Date.now() + retrySeconds * 1000).toISOString(), job.id, job.owner, (job.payload.bargainGameIds ?? []).slice(0, 3)]);
 }
 export async function pruneDiscordStore() {
   await ready();
@@ -119,6 +133,7 @@ export async function pruneDiscordStore() {
   await sql().query("UPDATE discord_outbox SET status='uncertain' WHERE status='sending' AND COALESCE(claimed_at,created_at)<NOW()-INTERVAL '1 hour'");
   await sql().query("DELETE FROM discord_outbox WHERE expires_at<NOW()-INTERVAL '7 days'");
   await sql().query("DELETE FROM discord_alert_receipts WHERE created_at<NOW()-INTERVAL '90 days'");
+  await sql().query("DELETE FROM discord_weekly_bargains WHERE sent_at<NOW()-INTERVAL '90 days'");
   await sql().query("DELETE FROM discord_oauth_states WHERE expires_at<NOW()");
   await sql().query("DELETE FROM discord_rate_limits WHERE expires_at<NOW()");
 }

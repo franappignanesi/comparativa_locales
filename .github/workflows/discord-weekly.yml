@@ -51,6 +51,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Check Discord message formatting and selection
+        run: npx tsx --test scripts/discord.test.ts scripts/discord-weekly.test.ts
       - name: Build weekly digest
         run: ${{ inputs.preview && 'npm run notifications:discord-weekly -- --preview' || 'npm run notifications:discord-weekly' }}
       - name: Publish queued digest
