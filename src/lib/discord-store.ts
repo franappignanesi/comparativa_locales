@@ -98,9 +98,14 @@ export async function discordUnsentSignatures(userSub: string, signatures: strin
 }
 export async function enqueueDiscord(id: string, kind: "dm" | "weekly", userSub: string, recipient: string, payload: DiscordPayload) {
   await ready();
-  await sql().query(`INSERT INTO discord_outbox (id,kind,user_sub,recipient,payload,expires_at) VALUES ($1,$2,$3,$4,$5::jsonb,NOW()+INTERVAL '2 days')
+  const updated = await rows(`INSERT INTO discord_outbox (id,kind,user_sub,recipient,payload,expires_at) VALUES ($1,$2,$3,$4,$5::jsonb,NOW()+INTERVAL '2 days')
     ON CONFLICT (id) DO UPDATE SET payload=EXCLUDED.payload, recipient=EXCLUDED.recipient
-    WHERE discord_outbox.status='pending' AND discord_outbox.attempts=0`, [discordHash(id), kind, userSub, recipient, JSON.stringify(payload)]);
+    WHERE discord_outbox.status='pending' AND discord_outbox.attempts=0 RETURNING status,attempts,expires_at`, [discordHash(id), kind, userSub, recipient, JSON.stringify(payload)]);
+  const current = updated[0] ?? (await rows("SELECT status,attempts,expires_at FROM discord_outbox WHERE id=$1", [discordHash(id)]))[0];
+  return {
+    status: String(current?.status ?? "missing"),
+    shouldDispatch: current?.status === "pending" && Number(current.attempts) < 3 && Date.parse(String(current.expires_at)) > Date.now()
+  };
 }
 export type DiscordJob = { id: string; kind: "dm" | "weekly"; userSub: string; recipient: string; payload: DiscordPayload; owner: string; attempts: number };
 export async function claimDiscordJob(onlyId: string | null = null): Promise<DiscordJob | null> {

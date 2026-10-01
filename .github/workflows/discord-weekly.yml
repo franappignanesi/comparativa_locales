@@ -6,6 +6,10 @@ on:
         description: "Preview only; do not publish to Discord"
         type: boolean
         default: true
+      test_publish:
+        description: "Send one extra TEST message to the channel (requires preview unchecked)"
+        type: boolean
+        default: false
   schedule:
     # Friday 19:15 Argentina. Avoid the busy start of the hour.
     - cron: "15 22 * * 5"
@@ -29,6 +33,7 @@ jobs:
       DISCORD_TEST_MODE: ${{ vars.DISCORD_TEST_MODE || '1' }}
       DISCORD_TEST_USER_IDS: ${{ secrets.DISCORD_TEST_USER_IDS }}
       DISCORD_DAILY_SEND_LIMIT: ${{ vars.DISCORD_DAILY_SEND_LIMIT || '100' }}
+      DISCORD_WEEKLY_TEST_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.test_publish && github.run_id || '' }}
     steps:
       - uses: actions/checkout@v7.0.0
       - uses: actions/cache/restore@v4
@@ -54,7 +59,8 @@ jobs:
       - name: Check Discord message formatting and selection
         run: npx tsx --test scripts/discord.test.ts scripts/discord-weekly.test.ts
       - name: Build weekly digest
+        id: digest
         run: ${{ inputs.preview && 'npm run notifications:discord-weekly -- --preview' || 'npm run notifications:discord-weekly' }}
       - name: Publish queued digest
-        if: inputs.preview != true && vars.DISCORD_SEND_ENABLED == '1' && vars.DISCORD_WEEKLY_ENABLED == '1'
+        if: steps.digest.outputs.dispatch == 'true' && inputs.preview != true && vars.DISCORD_SEND_ENABLED == '1' && vars.DISCORD_WEEKLY_ENABLED == '1'
         run: npm run notifications:discord

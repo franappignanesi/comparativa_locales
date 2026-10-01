@@ -14,7 +14,9 @@ async function main() {
   const ids = ["sent", "blocked", "uncertain", "wrong-owner"].map((suffix) => `${prefix}-${suffix}`);
   try {
     for (const [index, id] of ids.entries()) {
-      await enqueueDiscord(id, "weekly", "weekly", "weekly", { content: "Synthetic test; never dispatch", bargainGameIds: [id] });
+      const queued = await enqueueDiscord(id, "weekly", "weekly", "weekly", { content: "Synthetic test; never dispatch", bargainGameIds: [id] });
+      assert.equal(queued.shouldDispatch, true);
+      assert.equal(queued.status, "pending");
       assert.ok(!(await getRecentDiscordBargains()).has(id));
       const job = await claimDiscordJob(discordHash(id));
       assert.ok(job);
@@ -22,7 +24,9 @@ async function main() {
       await finishDiscordJob(index === 3 ? { ...job, owner: randomUUID() } : job, status);
       assert.equal((await getRecentDiscordBargains()).has(id), index === 0);
       if (index === 0) {
-        await enqueueDiscord(id, "weekly", "weekly", "weekly", { content: "Cannot replay", bargainGameIds: [id] });
+        const duplicate = await enqueueDiscord(id, "weekly", "weekly", "weekly", { content: "Cannot replay", bargainGameIds: [id] });
+        assert.equal(duplicate.shouldDispatch, false);
+        assert.equal(duplicate.status, "sent");
         assert.equal(await claimDiscordJob(discordHash(id)), null);
         await sql.query("UPDATE discord_weekly_bargains SET sent_at=NOW()-INTERVAL '61 days' WHERE game_id=$1", [id]);
         assert.ok(!(await getRecentDiscordBargains()).has(id));

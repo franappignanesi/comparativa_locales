@@ -45,6 +45,8 @@ The weekly workflow restores the existing public cache, performs no scraping, an
 The SHUX weekly digest uses three colored embeds: latest dated Juego del finde with an optional cover thumbnail and video link; up to five discounted games ranked by discount plus aggregate wishlist popularity; up to three alternatives at least 20% cheaper than Steam. Native currencies are labeled; comparisons use normalized USD. Uncertain editions and stale prices are excluded. Card links include the game search to work beyond the first catalog page.
 Games in the cheaper-than-Steam section are excluded for 60 days after a confirmed send. This small state lives in `discord_weekly_bargains`, separately from prunable pricing state, and is committed atomically with outbox completion. Previews and failed sends do not consume cooldowns. No repeats between digest sections; fewer results are preferable to filling with invalid offers. Existing weekly idempotency remains: rerunning a sent week does not post another message.
 
+Manual format trial: start a NEW workflow run on main, uncheck `preview` and check `test_publish`. This posts one extra message labeled as a test to the configured SHUX channel, subject to the same safety caps. Its idempotency key uses the GitHub run ID, so re-running that same trial cannot duplicate it. Leave `test_publish` unchecked for normal publishing. Workflow summaries explicitly distinguish preview, already-published and queued; a green run alone is not a delivery confirmation.
+
 ## User flow
 
 Google login > Profile > Connect Discord > approve identify permission > send confirmation test > explicitly enable private alerts.
