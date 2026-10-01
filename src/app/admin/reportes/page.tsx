@@ -130,7 +130,7 @@ export default function AdminReportsPage() {
     <div className="appShell">
       <nav className="brandBar">
         <div className="brandCluster">
-          <div className="brand">BARATEAM</div>
+          <Link className="brand" href="/">BARATEAM</Link>
           <span className="betaBadge">BETA</span>
         </div>
         <div className="navTools">
