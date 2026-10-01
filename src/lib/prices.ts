@@ -77,7 +77,7 @@ export async function refreshPrices(regionId: RegionId = DEFAULT_REGION): Promis
   };
 }
 
-export async function refreshPriceBatch(options: { limit: number; offset: number; region?: RegionId }): Promise<{
+export async function refreshPriceBatch(options: { limit: number; offset: number; region?: RegionId; gameIds?: Set<string> }): Promise<{
   latest: LatestPrices;
   refreshed: number;
   total: number;
@@ -92,7 +92,8 @@ export async function refreshPriceBatch(options: { limit: number; offset: number
   const timestamp = new Date().toISOString();
   const limit = Math.max(1, Math.floor(options.limit));
   const offset = Math.max(0, Math.floor(options.offset));
-  const selectedGames = sample.broadSample.slice(offset, offset + limit);
+  const eligibleGames = options.gameIds ? sample.broadSample.filter((game) => options.gameIds!.has(game.id)) : sample.broadSample;
+  const selectedGames = eligibleGames.slice(offset, offset + limit);
   const selectedIds = new Set(selectedGames.map((game) => game.id));
   const { prices: refreshedRows, errors } = await buildPriceRows(selectedGames, exchangeRate, region, timestamp);
   const cachedRowsById = new Map(cached.prices.map((row) => [row.gameId, row]));
@@ -128,7 +129,7 @@ export async function refreshPriceBatch(options: { limit: number; offset: number
   return {
     latest,
     refreshed: refreshedRows.length,
-    total: sample.broadSample.length,
+    total: eligibleGames.length,
     limit,
     offset
   };

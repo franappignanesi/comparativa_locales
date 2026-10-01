@@ -1,0 +1,833 @@
+[
+  {
+    "title": "CONTROL Resonant",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "RPG"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3669870/1e0c76e4253d347bb1304c3f213570251d924edf/header_292x136.jpg?t=1790673363",
+    "releaseYear": 2026,
+    "notes": "Shux Juego del finde. Verified Steam app 3669870.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3669870
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Assassin's Creed Black Flag Resynced",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3751950/9b046115b1663a4be2b252712328e4f6c162da68/header_292x136.jpg?t=1787915122",
+    "releaseYear": 2026,
+    "notes": "Shux Juego del finde. Verified Steam app 3751950.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3751950
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Beat The Champions",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Indie",
+    "steamTags": [
+      "Indie",
+      "Sports"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/4008350/805a13774164dcdb4f6b559abcda639a597c2269/header_292x136.jpg?t=1779991846",
+    "releaseYear": 2026,
+    "notes": "Shux Juego del finde. Verified Steam app 4008350.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 4008350
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Burglin' Gnomes",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3844970/d6127e4eabda23e1d1c727a1875e6b6cb0e634ae/header_292x136.jpg?t=1787427131",
+    "releaseYear": 2026,
+    "notes": "Shux Juego del finde. Verified Steam app 3844970.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3844970
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "House Flipper Remastered Collection",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Casual",
+    "steamTags": [
+      "Casual",
+      "Indie",
+      "Simulation"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3710840/ae87c307d7baa9b80c977fab7f331689bbe7eb9f/header_292x136.jpg?t=1789660984",
+    "releaseYear": 2026,
+    "notes": "Shux Juego del finde. Verified Steam app 3710840.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3710840
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Deep Rock Galactic: Rogue Core",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Early Access"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2605790/9d0c2bf98e5e10ebf27fc473a92fb26f3623b148/header_292x136_alt_assets_1.jpg?t=1788348461",
+    "releaseYear": 2026,
+    "notes": "Shux Juego del finde. Verified Steam app 2605790.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2605790
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Luna Abyss",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "Indie"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1933000/f74b90a7b96939239b52090220fca1b50d1aaf9b/header_292x136.jpg?t=1779870125",
+    "releaseYear": 2026,
+    "notes": "Shux Juego del finde. Verified Steam app 1933000.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1933000
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "LEGO® Batman™: El Legado del Caballero Oscuro",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2215200/a07a9a6c0c9c1225f5b260b4f29fe40e6f099f6b/header_292x136.jpg?t=1789746326",
+    "releaseYear": 2026,
+    "notes": "Shux Juego del finde. Verified Steam app 2215200.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2215200
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "SoulQuest",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "Indie",
+      "RPG"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2512450/a2cc729f0fb8412a6c05f401f40bf9b9ae1b77c1/header_292x136.jpg?t=1777678348",
+    "releaseYear": 2026,
+    "notes": "Shux Juego del finde. Verified Steam app 2512450.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2512450
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "PRAGMATA",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3357650/e32e168b25ed68a0cf6264c220c07e96c2abfb56/header_292x136.jpg?t=1789603448",
+    "releaseYear": 2026,
+    "notes": "Shux Juego del finde. Verified Steam app 3357650.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3357650
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "MOUSE: P.I. For Hire",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Indie"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2416450/298ff2fc3f6a700d022b8d3ec58047f2b426be03/header_292x136.jpg?t=1789672242",
+    "releaseYear": 2026,
+    "notes": "Shux Juego del finde. Verified Steam app 2416450.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2416450
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Goblin Cleanup",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Adventure",
+    "steamTags": [
+      "Adventure",
+      "Casual",
+      "Indie",
+      "Simulation",
+      "Early Access"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2748340/3129df3cf05a10bb0ad87cca4d30ea2bed4533e5/header_292x136_alt_assets_3.jpg?t=1781197088",
+    "releaseYear": 2025,
+    "notes": "Shux Juego del finde. Verified Steam app 2748340.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2748340
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Super Meat Boy 3D",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Indie"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3288210/2e13226847bb546625411aed75e74471f6705b18/header_292x136.jpg?t=1777969480",
+    "releaseYear": 2026,
+    "notes": "Shux Juego del finde. Verified Steam app 3288210.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3288210
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "DEATH STRANDING 2: ON THE BEACH",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3280350/6270c77b0729e2df0a17d660286eeddfd9169386/header_292x136.jpg?t=1774022345",
+    "releaseYear": 2026,
+    "notes": "Shux Juego del finde. Verified Steam app 3280350.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3280350
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "John Carpenter's Toxic Commando",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2157830/ade0163ee0cebba5dc9b200424e7f70c81222ddd/header_292x136.jpg?t=1790772049",
+    "releaseYear": 2026,
+    "notes": "Shux Juego del finde. Verified Steam app 2157830.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2157830
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Mewgenics",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Adventure",
+    "steamTags": [
+      "Adventure",
+      "Indie",
+      "RPG",
+      "Simulation",
+      "Strategy"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/686060/aa8075d11165fef4d4d0d09c156f0da0623b5da1/header_292x136.jpg?t=1788661023",
+    "releaseYear": 2026,
+    "notes": "Shux Juego del finde. Verified Steam app 686060.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 686060
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Blightstone",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Adventure",
+    "steamTags": [
+      "Adventure",
+      "Indie",
+      "RPG",
+      "Strategy",
+      "Early Access"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2832280/22a4db3b684ec89c6853927fded395db6c97b787/header_292x136.jpg?t=1776271607",
+    "releaseYear": 2026,
+    "notes": "Shux Juego del finde. Verified Steam app 2832280.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2832280
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "ReStory: Chill Electronics Repairs",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Indie",
+    "steamTags": [
+      "Indie",
+      "Simulation"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3812600/46cbb9d86cc31688f0c14ed89e1f1be63ba0efd0/header_292x136_alt_assets_3_spanish.jpg?t=1790169325",
+    "releaseYear": 2026,
+    "notes": "Shux Juego del finde. Verified Steam app 3812600.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3812600
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Final Vendetta",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Indie"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1891090/header_292x136.jpg?t=1761755487",
+    "releaseYear": 2022,
+    "notes": "Shux Juego del finde. Verified Steam app 1891090.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1891090
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Terminator 2D: NO FATE",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1718460/header_292x136.jpg?t=1782137385",
+    "releaseYear": 2025,
+    "notes": "Shux Juego del finde. Verified Steam app 1718460.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1718460
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "MARVEL Cosmic Invasion",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "Casual",
+      "Indie"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2753970/1ddb6ff382471f431fdfd1f28e95e0565633db1d/header_292x136.jpg?t=1779116512",
+    "releaseYear": 2025,
+    "notes": "Shux Juego del finde. Verified Steam app 2753970.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2753970
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "RV There Yet?",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "Indie"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3949040/cae24b4ed7f4531be51f0d63f785b7d253f92dc3/header_292x136.jpg?t=1789134289",
+    "releaseYear": 2025,
+    "notes": "Shux Juego del finde. Verified Steam app 3949040.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3949040
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Absolum",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "Indie",
+      "RPG"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1904480/65f868078425ea29b87cb85075fcd1b3a8b71400/header_292x136.jpg?t=1782461798",
+    "releaseYear": 2025,
+    "notes": "Shux Juego del finde. Verified Steam app 1904480.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1904480
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Cheaters Cheetah",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3438990/9a2059573da19d65a1651012179a92ece2ab9610/header_292x136.jpg?t=1741604289",
+    "releaseYear": 2025,
+    "notes": "Shux Juego del finde. Verified Steam app 3438990.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3438990
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Hollow Knight: Silksong",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "Indie"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1030300/7983574d464e6559ac7e24275727f73a8bcca1f3/header_292x136.jpg?t=1776125736",
+    "releaseYear": 2025,
+    "notes": "Shux Juego del finde. Verified Steam app 1030300.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1030300
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "METAL GEAR SOLID Δ: SNAKE EATER",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2417610/05c97cbcd0cfc27c8ed6c7fc6d81e0995aa2a7d4/header_292x136.jpg?t=1762249119",
+    "releaseYear": 2025,
+    "notes": "Shux Juego del finde. Verified Steam app 2417610.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2417610
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Mafia: El Viejo Continente",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1941540/d06980bb8f41737ca68da8eed40079347db09c84/header_292x136.jpg?t=1788898865",
+    "releaseYear": 2025,
+    "notes": "Shux Juego del finde. Verified Steam app 1941540.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1941540
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "akabos",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Adventure",
+    "steamTags": [
+      "Adventure",
+      "Casual",
+      "Indie",
+      "Free To Play"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3294950/header_292x136.jpg?t=1749467484",
+    "releaseYear": 2024,
+    "notes": "Shux Juego del finde. Verified Steam app 3294950. Free to play.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3294950
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Forgive Me Father 2",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Indie"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2272250/header_292x136.jpg?t=1789131266",
+    "releaseYear": 2024,
+    "notes": "Shux Juego del finde. Verified Steam app 2272250.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2272250
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "THE FINALS",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Free To Play"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2073850/61f55ef49a74c76bf9fda9ec35bc3101eeee2b3e/header_292x136.jpg?t=1789034839",
+    "releaseYear": 2023,
+    "notes": "Shux Juego del finde. Verified Steam app 2073850. Free to play.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2073850
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Guilty as Sock!",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Casual",
+    "steamTags": [
+      "Casual",
+      "Simulation"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3400930/header_292x136.jpg?t=1775754249",
+    "releaseYear": 2025,
+    "notes": "Shux Juego del finde. Verified Steam app 3400930.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3400930
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Portal with RTX",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2012840/header_292x136.jpg?t=1747634461",
+    "releaseYear": 2022,
+    "notes": "Shux Juego del finde. Verified Steam app 2012840. Free to play.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2012840
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "despelote",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Adventure",
+    "steamTags": [
+      "Adventure",
+      "Sports"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2367820/header_292x136.jpg?t=1759948341",
+    "releaseYear": 2025,
+    "notes": "Shux Juego del finde. Verified Steam app 2367820.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2367820
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "HOT WHEELS UNLEASHED™ 2 - Turbocharged",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "Racing",
+      "Simulation",
+      "Sports"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2051120/header_292x136.jpg?t=1785493588",
+    "releaseYear": 2023,
+    "notes": "Shux Juego del finde. Verified Steam app 2051120.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2051120
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Ashen",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "RPG"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/649950/header_292x136.jpg?t=1729099459",
+    "releaseYear": 2019,
+    "notes": "Shux Juego del finde. Verified Steam app 649950.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 649950
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Pixel Cup Soccer - Ultimate Edition",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Casual",
+      "Indie",
+      "Simulation",
+      "Sports"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1620540/header_292x136.jpg?t=1711814097",
+    "releaseYear": 2022,
+    "notes": "Shux Juego del finde. Verified Steam app 1620540.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1620540
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Mighty Morphin Power Rangers: Rita's Rewind",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2816870/header_292x136.jpg?t=1779295047",
+    "releaseYear": 2024,
+    "notes": "Shux Juego del finde. Verified Steam app 2816870.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2816870
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Embr",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Casual",
+      "Indie",
+      "Simulation",
+      "Strategy"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1062830/header_292x136.jpg?t=1784297499",
+    "releaseYear": 2021,
+    "notes": "Shux Juego del finde. Verified Steam app 1062830.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1062830
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Enlisted",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Massively Multiplayer",
+      "Free To Play"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2051620/e457983f97e463dc065ecedbd00c8e306f4e4abc/header_292x136.jpg?t=1790679497",
+    "releaseYear": 2024,
+    "notes": "Shux Juego del finde. Verified Steam app 2051620. Free to play.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2051620
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Pomberito",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "Indie",
+      "Simulation"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2761100/header_292x136.jpg?t=1740773693",
+    "releaseYear": 2024,
+    "notes": "Shux Juego del finde. Verified Steam app 2761100.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2761100
+    },
+    "confidence": "high"
+  }
+]

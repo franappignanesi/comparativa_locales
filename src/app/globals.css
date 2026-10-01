@@ -1,5 +1,27 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap");
 
+.catalogOverview { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-bottom: 36px; align-items: stretch; }
+.catalogOverview .catalogMetrics { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 0; gap: 12px; align-content: start; }
+.catalogOverview .metric { min-width: 0; min-height: 135px; padding: 16px; }
+.catalogOverview .metric strong { font-size: 26px; overflow-wrap: anywhere; }
+.catalogOverview .metric span { letter-spacing: 0; line-height: 1.4; }
+.weekendFeatured { min-width: 0; }
+.weekendFeaturedHeading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding-bottom: 12px; }
+.weekendFeaturedHeading h2 { margin: 0 0 6px; font-size: 19px; letter-spacing: 0; color: #d9fff0; }
+.weekendFeaturedHeading p { margin: 0; color: var(--muted); line-height: 1.5; font-size: 12px; }
+.weekendFeaturedVideo { display: flex; gap: 6px; align-items: center; flex-shrink: 0; padding: 8px 0; border: 0; background: none; color: #72d7b3; cursor: pointer; font-size: 12px; }
+.weekendFeatured .gameCard { border-color: #72d7b3; box-shadow: 0 0 0 2px #72d7b32b; }
+.weekendFeatured .gameHero { min-height: 130px; height: 130px; }
+.weekendFeatured .gameHeroText h3 { font-size: 20px; letter-spacing: 0; }
+@media (max-width: 1000px) { .weekendFeaturedHeading { flex-direction: column; gap: 4px; } }
+@media (max-width: 700px) {
+  .catalogOverview { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .catalogOverview .metric { min-height: 110px; padding: 12px; }
+  .catalogOverview .metric strong { font-size: 23px; }
+  .catalogOverview.searchActive { display: none; }
+  .weekendFeaturedHeading { flex-direction: row; flex-wrap: wrap; }
+}
+
 .weekendTag {
   display: inline-flex;
   align-items: center;

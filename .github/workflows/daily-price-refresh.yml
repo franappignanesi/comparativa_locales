@@ -3,6 +3,11 @@ name: Daily full price refresh
 on:
   workflow_dispatch:
     inputs:
+      weekend_games_only:
+        description: "Refresh only the curated weekend catalog additions"
+        required: false
+        type: boolean
+        default: false
       batch_size:
         description: "Games per batch"
         required: false
@@ -160,7 +165,7 @@ jobs:
           cache: npm
       - run: npm ci
         if: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
-      - run: npm run worker:full-refresh
+      - run: ${{ github.event.inputs.weekend_games_only == 'true' && 'npm run worker:weekend-refresh' || 'npm run worker:full-refresh' }}
         if: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
       - name: Collect region cache
         if: ${{ always() && contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}

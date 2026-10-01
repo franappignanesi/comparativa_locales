@@ -8,6 +8,9 @@ import type {
   StoreId
 } from "./types";
 import { STORES } from "./types";
+import weekendAdditions from "../../data/weekend-catalog-additions.json";
+
+const curatedCandidates = weekendAdditions as GameCandidate[];
 
 type ManualMatchesFile = {
   matches: ManualStoreMatch[];
@@ -33,7 +36,9 @@ export function slugifyTitle(title: string): string {
 }
 
 export async function buildGameSample(): Promise<GameSample> {
-  const candidates = await readJson<GameCandidate[]>(dataPath("game-candidates.json"), []);
+  const existingCandidates = await readJson<GameCandidate[]>(dataPath("game-candidates.json"), []);
+  const knownApps = new Set(existingCandidates.map((game) => game.identifiers.steamAppId));
+  const candidates = [...existingCandidates, ...curatedCandidates.filter((game) => !knownApps.has(game.identifiers.steamAppId))];
   const manual = await readJson<ManualMatchesFile>(dataPath("manual-store-matches.json"), { matches: [] });
   const rejected: GameSample["rejected"] = [];
 
@@ -78,7 +83,21 @@ export async function buildGameSample(): Promise<GameSample> {
 
 export async function getGameSample(): Promise<GameSample> {
   const sample = await readJson<GameSample>(dataPath("generated", "game-sample.json"), emptySample);
-  return sample.timestamp ? sample : buildGameSample();
+  return sample.timestamp ? withCuratedGames(sample) : buildGameSample();
+}
+
+// Public datasets can predate a code deploy; keep curated games when restoring that cache.
+export function withCuratedGames(sample: GameSample): GameSample {
+  const knownApps = new Set(sample.broadSample.map((game) => game.identifiers.steamAppId));
+  const knownIds = new Set(sample.broadSample.map((game) => game.id));
+  const added = curatedCandidates.filter((game) => !knownApps.has(game.identifiers.steamAppId))
+    .map((game) => toSampleGame(game, [])).filter((game) => !knownIds.has(game.id));
+  if (!added.length) return sample;
+  const broadSample = [...sample.broadSample, ...added];
+  return { ...sample, broadSample,
+    storeCoverage: Object.fromEntries(STORES.map((store) => [store, broadSample.filter((game) => game.availableStores.includes(store)).length])),
+    missingByStore: Object.fromEntries(STORES.map((store) => [store, broadSample.filter((game) => game.missingStores.includes(store)).map((game) => game.title)])),
+    categoryCoverage: broadSample.reduce<GameSample["categoryCoverage"]>((counts, game) => { counts[game.category] = (counts[game.category] ?? 0) + 1; return counts; }, {}) };
 }
 
 function toSampleGame(candidate: GameCandidate, manualMatches: ManualStoreMatch[]): SampleGame {

@@ -25,6 +25,7 @@ export type CatalogParams = {
 };
 
 export type CatalogResponse = {
+  featuredWeekend?: PriceRow;
   weekend?: { games: Array<WeekendGame & { gameId: string; coverUrl: string | null }>; offers: PriceRow[] };
   latest: LatestPrices;
   history: PriceHistoryReport;
@@ -78,10 +79,14 @@ export async function getCatalogPage(params: CatalogParams = {}): Promise<Catalo
   const offset = Math.max(0, params.offset ?? 0);
   const filtered = filterAndSortRows(expandedLatest.prices, sample, analysis[mode], { ...params, stores: activeStores, mode });
   const rows = compactRows(filtered.slice(offset, offset + limit));
+  const featuredWeekend = expandedLatest.prices.filter((row) => row.weekendGame)
+    .sort((a, b) => (b.weekendGame?.reviewDate ?? "").localeCompare(a.weekendGame?.reviewDate ?? ""))[0];
   const pageGameIds = new Set(rows.map((row) => row.gameId));
+  if (featuredWeekend) pageGameIds.add(featuredWeekend.gameId);
   const history = await getPriceHistoryReport(expandedLatest, { refreshItad: params.refresh, gameIds: pageGameIds });
 
   return {
+    ...(featuredWeekend ? { featuredWeekend: compactRows([featuredWeekend])[0] } : {}),
     ...(params.filter === WEEKEND_FILTER ? { weekend: {
       games: expandedLatest.prices.filter((row) => row.weekendGame).map((row) => ({ ...row.weekendGame!, gameId: row.gameId, coverUrl: row.coverUrl ?? null })),
       offers: compactRows(expandedLatest.prices.filter((row) => row.weekendGame && maxDiscountPct(row, activeStores) > 0).sort((a, b) => maxDiscountPct(b, activeStores) - maxDiscountPct(a, activeStores)).slice(0, 6)),

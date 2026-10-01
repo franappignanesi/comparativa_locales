@@ -13,6 +13,7 @@ import {
   Star,
   TrendingDown,
   Leaf,
+  Play,
   ShieldAlert,
   X
 } from "lucide-react";
@@ -48,6 +49,7 @@ import { WeekendRecommendation, WeekendTag } from "@/app/components/WeekendRecom
 import { WeekendShowcase } from "@/app/components/WeekendShowcase";
 
 type ApiPayload = {
+  featuredWeekend?: CatalogResponse["featuredWeekend"];
   weekend?: CatalogResponse["weekend"];
   latest: LatestPrices;
   history: PriceHistoryReport;
@@ -124,6 +126,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort }: { ini
   const [loading, setLoading] = useState(!initialPayload);
   const [loadingMore, setLoadingMore] = useState(false);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
+  const [showWeekendVideo, setShowWeekendVideo] = useState(false);
   const [extraSelectedRow, setExtraSelectedRow] = useState<PriceRow | null>(null);
   const [openingWeekendGame, setOpeningWeekendGame] = useState(false);
   const [weekendOpenError, setWeekendOpenError] = useState(false);
@@ -240,17 +243,23 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort }: { ini
     return () => controller.abort();
   }, [selectedGameId, region]);
 
+  useEffect(() => {
+    if (!showWeekendVideo || !selectedGameId) return;
+    document.querySelector(".gameModal .weekendRecommendation")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setShowWeekendVideo(false);
+  }, [selectedGameId, showWeekendVideo]);
+
   if (!payload) {
     return <BibliotecaLoading />;
   }
 
   const summary = payload.analysis.broad;
-  const selectedRow = selectedGameId ? payload.latest.prices.find((row) => row.gameId === selectedGameId) ?? (extraSelectedRow?.gameId === selectedGameId ? extraSelectedRow : null) : null;
+  const selectedRow = selectedGameId ? payload.latest.prices.find((row) => row.gameId === selectedGameId) ?? (payload.featuredWeekend?.gameId === selectedGameId ? payload.featuredWeekend : null) ?? (extraSelectedRow?.gameId === selectedGameId ? extraSelectedRow : null) : null;
   const queryActive = query.trim().length > 0;
   const searchPending = query.trim() !== debouncedQuery.trim() || loading;
 
   async function openWeekendGame(gameId: string) {
-    const existing = payload?.latest.prices.find((row) => row.gameId === gameId);
+    const existing = payload?.latest.prices.find((row) => row.gameId === gameId) ?? (payload?.featuredWeekend?.gameId === gameId ? payload.featuredWeekend : null);
     if (existing) { setSelectedGameId(gameId); return; }
     weekendRequestRef.current?.abort();
     const controller = new AbortController();
@@ -523,7 +532,8 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort }: { ini
           </label>
         </section>
 
-        {filter !== WEEKEND_FILTER ? <section className={`cards catalogMetrics ${queryActive ? "searchActive" : ""}`}>
+        {filter !== WEEKEND_FILTER ? <section className={`catalogOverview ${queryActive ? "searchActive" : ""}`} aria-label="Resumen de la biblioteca">
+          <div className="cards catalogMetrics">
           <Metric title="Tienda más barata promedio" value={summary.cheapestAverageStore ? STORE_LABELS[summary.cheapestAverageStore] : "Sin datos"} />
           <Metric
             title="Más victorias"
@@ -532,6 +542,23 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort }: { ini
           />
           <Metric title="Juegos cargados" value={String(payload.sampleMeta.broadTotal)} />
           <Metric title="Juegos con precio actual" value={String(summary.gamesAnalyzed)} />
+          </div>
+          {payload.featuredWeekend ? <div className="weekendFeatured">
+            <div className="weekendFeaturedHeading">
+              <div><h2>Juego del finde</h2><p>La recomendación de la casa para viciar el finde fue <strong>{payload.featuredWeekend.gameTitle}</strong>.</p></div>
+              <button type="button" className="weekendFeaturedVideo" onClick={() => { setShowWeekendVideo(true); void openWeekendGame(payload.featuredWeekend!.gameId); }}><Play size={16} />¡Mirá el video acá!</button>
+            </div>
+            <GameCard row={payload.featuredWeekend}
+              analysis={summary.games[payload.featuredWeekend.gameId]}
+              historyLows={payload.history.lowsByGame[payload.featuredWeekend.gameId] ?? {}}
+              enabledStores={enabledStores} wishlisted={wishlist.some((item) => item.gameId === payload.featuredWeekend!.gameId)}
+              onToggleWishlist={() => toggleWishlist(payload.featuredWeekend!)}
+              usdToArs={payload.latest.usdToArs || FALLBACK_USD_TO_ARS}
+              usdToTarget={payload.latest.usdToTarget || payload.latest.usdToArs || FALLBACK_USD_TO_ARS}
+              displayCurrency={payload.latest.currency ?? "ARS"} displayLocale={payload.latest.locale ?? "es-AR"}
+              onOpen={() => openWeekendGame(payload.featuredWeekend!.gameId)} category={category}
+              onCategoryClick={(value) => setCategory(category === value ? "todas" : value)} />
+          </div> : null}
         </section> : null}
 
         <section className="gameGrid" aria-label="Comparaciones de precios">
