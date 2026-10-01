@@ -13,6 +13,8 @@ test("curated games survive an older dataset restored from cache, without duplic
   assert.equal(new Set(first.broadSample.map((game) => game.id)).size, additions.length);
   assert.equal(first.storeCoverage.steam, additions.length);
   assert.equal(withCuratedGames(first).broadSample.length, additions.length);
+  const oldMetadata = { ...first, broadSample: first.broadSample.map((game) => ({ ...game, isFree: undefined })) };
+  assert.equal(withCuratedGames(oldMetadata).broadSample.filter((game) => game.isFree).length, 4);
   assert.equal(cached.broadSample.length, 0);
 });
 

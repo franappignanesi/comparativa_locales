@@ -778,7 +778,7 @@ function GameCard({
               />
             ))
           ) : (
-            <div className="emptyPrices">{row.weekendGame ? "Precios pendientes de incorporación" : "Sin precios disponibles"}</div>
+            <div className="emptyPrices">{row.isFree ? <a href={row.prices.steam?.url ?? (row.weekendGame ? `https://store.steampowered.com/app/${row.weekendGame.steamAppId}/` : "https://store.steampowered.com/")} target="_blank" rel="noopener noreferrer">Gratuito en Steam</a> : row.weekendGame ? "Precios pendientes de incorporación" : "Sin precios disponibles"}</div>
           )}
         </div>
 

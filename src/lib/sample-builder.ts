@@ -88,12 +88,14 @@ export async function getGameSample(): Promise<GameSample> {
 
 // Public datasets can predate a code deploy; keep curated games when restoring that cache.
 export function withCuratedGames(sample: GameSample): GameSample {
+  const freeApps = new Set(curatedCandidates.filter((game) => game.isFree).map((game) => game.identifiers.steamAppId));
+  const existing = sample.broadSample.map((game) => freeApps.has(game.identifiers.steamAppId) && !game.isFree ? { ...game, isFree: true } : game);
   const knownApps = new Set(sample.broadSample.map((game) => game.identifiers.steamAppId));
   const knownIds = new Set(sample.broadSample.map((game) => game.id));
   const added = curatedCandidates.filter((game) => !knownApps.has(game.identifiers.steamAppId))
     .map((game) => toSampleGame(game, [])).filter((game) => !knownIds.has(game.id));
-  if (!added.length) return sample;
-  const broadSample = [...sample.broadSample, ...added];
+  if (!added.length && existing.every((game, index) => game === sample.broadSample[index])) return sample;
+  const broadSample = [...existing, ...added];
   return { ...sample, broadSample,
     storeCoverage: Object.fromEntries(STORES.map((store) => [store, broadSample.filter((game) => game.availableStores.includes(store)).length])),
     missingByStore: Object.fromEntries(STORES.map((store) => [store, broadSample.filter((game) => game.missingStores.includes(store)).map((game) => game.title)])),

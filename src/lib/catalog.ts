@@ -122,6 +122,7 @@ export function expandLatestWithSample(latest: LatestPrices, sample: GameSample)
     if (existing) {
       return {
         ...existing,
+        isFree: game.isFree,
         coverUrl: game.coverUrl ?? existing.coverUrl ?? null,
         primaryTag: existing.primaryTag ?? game.primaryTag ?? null,
         category: game.category,
@@ -132,6 +133,7 @@ export function expandLatestWithSample(latest: LatestPrices, sample: GameSample)
     return {
       gameId: game.id,
       gameTitle: game.title,
+      isFree: game.isFree,
       coverUrl: game.coverUrl ?? null,
       primaryTag: game.primaryTag ?? null,
       category: game.category,

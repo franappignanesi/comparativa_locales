@@ -30,6 +30,7 @@ export type StoreIdentifiers = {
 };
 
 export type GameCandidate = {
+  isFree?: boolean;
   title: string;
   edition: "standard";
   category: GameCategory;
@@ -104,6 +105,7 @@ export type LatestPrices = {
   usdToTargetTimestamp?: string | null;
   digitalVatRate?: number;
   prices: Array<{
+    isFree?: boolean;
     weekendGame?: WeekendGame;
     gameId: string;
     gameTitle: string;

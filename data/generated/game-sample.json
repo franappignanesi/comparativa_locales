@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-01T00:07:13.795Z",
+  "timestamp": "2026-10-01T00:14:20.835Z",
   "strictSample": [
     {
       "title": "Cyberpunk 2077",
@@ -202881,6 +202881,7 @@
         "steamAppId": 3294950
       },
       "confidence": "high",
+      "isFree": true,
       "id": "akabos",
       "availableStores": [
         "steam"
@@ -202943,6 +202944,7 @@
         "steamAppId": 2073850
       },
       "confidence": "high",
+      "isFree": true,
       "id": "the-finals",
       "availableStores": [
         "steam"
@@ -203004,6 +203006,7 @@
         "steamAppId": 2012840
       },
       "confidence": "high",
+      "isFree": true,
       "id": "portal-with-rtx",
       "availableStores": [
         "steam"
@@ -203231,6 +203234,7 @@
         "steamAppId": 2051620
       },
       "confidence": "high",
+      "isFree": true,
       "id": "enlisted",
       "availableStores": [
         "steam"

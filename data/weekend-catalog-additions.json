@@ -577,7 +577,8 @@
     "identifiers": {
       "steamAppId": 3294950
     },
-    "confidence": "high"
+    "confidence": "high",
+    "isFree": true
   },
   {
     "title": "Forgive Me Father 2",
@@ -617,7 +618,8 @@
     "identifiers": {
       "steamAppId": 2073850
     },
-    "confidence": "high"
+    "confidence": "high",
+    "isFree": true
   },
   {
     "title": "Guilty as Sock!",
@@ -656,7 +658,8 @@
     "identifiers": {
       "steamAppId": 2012840
     },
-    "confidence": "high"
+    "confidence": "high",
+    "isFree": true
   },
   {
     "title": "despelote",
@@ -806,7 +809,8 @@
     "identifiers": {
       "steamAppId": 2051620
     },
-    "confidence": "high"
+    "confidence": "high",
+    "isFree": true
   },
   {
     "title": "Pomberito",
