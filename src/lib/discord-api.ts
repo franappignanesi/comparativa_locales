@@ -1,4 +1,4 @@
-import { boundedDiscordSetting, discordRecipientAllowed, discordSendsEnabled } from "./discord-config";
+import { boundedDiscordSetting, discordRecipientAllowed, discordSendsEnabled, discordWebhookUrl } from "./discord-config";
 import { discordControlEnabled, discordRateLimit } from "./discord-store";
 
 export class DiscordApiError extends Error {
@@ -33,13 +33,13 @@ export async function sendDiscordDm(recipient: string, payload: { content?: stri
   return discordRequest(`/channels/${dm.id}/messages`, { ...payload, nonce: nonce.slice(0, 25), enforce_nonce: true, allowed_mentions: { parse: [] } });
 }
 export async function sendDiscordWebhook(payload: { content?: string; embeds?: Array<Record<string, unknown>> }) {
-  if (!discordSendsEnabled() || !await discordControlEnabled()) throw new DiscordApiError(503);
-  const url = process.env.DISCORD_WEEKLY_WEBHOOK_URL;
-  if (!url || !/^https:\/\/discord\.com\/api(?:\/v10)?\/webhooks\/\d{17,22}\/[A-Za-z0-9_-]+$/.test(url)) throw new DiscordApiError(503);
+  if (!discordSendsEnabled() || !await discordControlEnabled()) throw new DiscordApiError(503, 3600, false, undefined, "sending_paused");
+  const url = discordWebhookUrl(process.env.DISCORD_WEEKLY_WEBHOOK_URL);
+  if (!url) throw new DiscordApiError(503, 3600, false, undefined, "invalid_webhook_url");
   if (!await discordRateLimit("weekly-global", 2, 86400)) throw new DiscordApiError(429, 3600);
   let response: Response;
-  try { response = await fetch(`${url}?wait=true`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...payload, allowed_mentions: { parse: [] } }), signal: AbortSignal.timeout(12000) }); }
+  try { response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...payload, allowed_mentions: { parse: [] } }), signal: AbortSignal.timeout(12000), redirect: "error" }); }
   catch { throw new DiscordApiError(0, 0, true); }
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new DiscordApiError(response.status, Math.min(86400, Math.max(1, Number(data.retry_after) || 60)), response.status >= 500);
+  if (!response.ok) throw new DiscordApiError(response.status, Math.min(86400, Math.max(1, Number(data.retry_after) || 60)), response.status >= 500, typeof data.code === "number" ? data.code : undefined);
 }

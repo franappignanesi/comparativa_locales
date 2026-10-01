@@ -2,7 +2,7 @@ import { loadEnvConfig } from "@next/env";
 loadEnvConfig(process.cwd());
 
 async function main() {
-  const { DISCORD_SITE, discordSendsEnabled } = await import("../src/lib/discord-config");
+  const { DISCORD_SITE, discordSendsEnabled, discordWebhookUrl } = await import("../src/lib/discord-config");
   const { readDiscordPrices, discordPriceFresh } = await import("../src/lib/discord-notifications");
   const { enqueueDiscord } = await import("../src/lib/discord-store");
   const { discordText, discordWeek } = await import("../src/lib/discord-messages");
@@ -24,7 +24,8 @@ async function main() {
     description: offers.map(({ game, store, price, amount }, index) => `**${index + 1}. ${discordText(game.gameTitle)}**\n${STORE_NAMES[store]} · **${price.originalCurrency ?? price.currency} ${amount.toLocaleString("es-AR", { maximumFractionDigits: 2 })}** · **-${price.discountPct}%**\n[Comparar precios](${DISCORD_SITE}/juegos/${encodeURIComponent(game.gameId)})`).join("\n\n"),
     footer: { text: "Argentina · Precios sin impuestos. Selección por descuento y popularidad. Las ofertas pueden terminar: confirmá en la tienda." }, timestamp: latest.timestamp! }] };
   if (process.argv.includes("--preview") || !discordSendsEnabled() || process.env.DISCORD_WEEKLY_ENABLED !== "1") { console.log(JSON.stringify({ preview: true, ...payload }, null, 2)); return; }
+  if (!discordWebhookUrl(process.env.DISCORD_WEEKLY_WEBHOOK_URL)) throw new Error("Invalid webhook URL");
   await enqueueDiscord(`weekly:${discordWeek()}`, "weekly", "weekly", "weekly", payload);
   console.log("Weekly Discord digest queued; run notifications:discord to dispatch.");
 }
-main().catch(() => { console.error("Weekly Discord digest unavailable: check current price cache and configuration."); process.exitCode = 1; });
+main().catch((error) => { console.error(error instanceof Error && error.message === "Invalid webhook URL" ? "DISCORD_WEEKLY_WEBHOOK_URL must contain the complete Discord webhook URL copied from Channel > Integrations > Webhooks > Copy Webhook URL, not a token, channel URL or invitation. The value is never logged." : "Weekly Discord digest unavailable: check current price cache and configuration."); process.exitCode = 1; });

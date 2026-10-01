@@ -52,8 +52,9 @@ async function main() {
       } catch (error) {
         failures++;
         const apiError = error instanceof DiscordApiError ? error : null;
+        console.error("[discord-worker] delivery failed", { kind: job.kind, status: apiError?.status ?? null, providerCode: apiError?.providerCode ?? null, reason: apiError?.reason ?? "unconfirmed", ambiguous: apiError?.ambiguous ?? true });
         const status = apiError?.ambiguous ? "uncertain" : apiError && [429, 401, 503].includes(apiError.status) ? "pending" : "blocked";
-        await finishDiscordJob(job, status, apiError?.retryAfter ?? 3600);
+        await finishDiscordJob(job, status, Math.max(60, apiError?.retryAfter || 3600));
         if (!apiError || apiError.status === 401 || apiError.status === 429 || apiError.status === 503 || failures >= 3) break;
       }
       await new Promise((resolve) => setTimeout(resolve, 1000));

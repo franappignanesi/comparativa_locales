@@ -1,12 +1,18 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { argentinaDate, buildDiscordWishlistMessage, discordAlertSignature, discordText, discordWeek } from "../src/lib/discord-messages";
-import { boundedDiscordSetting, discordRecipientAllowed, discordSameOrigin, discordSendsEnabled } from "../src/lib/discord-config";
+import { boundedDiscordSetting, discordRecipientAllowed, discordSameOrigin, discordSendsEnabled, discordWebhookUrl } from "../src/lib/discord-config";
 import { DiscordApiError, discordRequest, resetDiscordBudget, sendDiscordDm, sendDiscordWebhook } from "../src/lib/discord-api";
 import { discordTestFailure } from "../src/lib/discord-test-errors";
 import type { WishlistAlert } from "../src/lib/wishlist-alerts";
 
 const alert: WishlistAlert = { userId: "private-user", region: "AR", gameId: "game", gameTitle: "Juego @everyone", store: "steam", type: "price_drop", message: "Bajó 50%", triggeredAt: "2026-10-01T00:00:00Z", currentOfficialPrice: 10, currentCurrency: "USD", currentArsPrice: 10000 };
+test("webhook URLs accept Discord variants but reject unrelated targets", () => {
+  const path = "/api/webhooks/123456789012345678/test_token";
+  assert.equal(discordWebhookUrl(` https://discord.com${path}\n`)?.search, "?wait=true");
+  assert.equal(discordWebhookUrl(`https://discordapp.com${path}/?wait=false`)?.search, "?wait=true");
+  for (const url of [`https://evil.example${path}`, `https://discord.com.evil.example${path}`, `https://discord.com@evil.example${path}`, `http://discord.com${path}`, `https://discord.com:444${path}`, `https://discord.com${path}?other=1`, "https://discord.gg/NF88UabRc", "test_token", `https://discord.com${path}#fragment`]) assert.equal(discordWebhookUrl(url), null);
+});
 test("confirmation errors distinguish configuration, allowlist, privacy and uncertain delivery", () => {
   assert.match(discordTestFailure(new DiscordApiError(401)).error, /problema del servicio/);
   assert.equal(discordTestFailure(new DiscordApiError(403, 0, false, undefined, "recipient_not_allowed")).status, 403);
