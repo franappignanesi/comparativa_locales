@@ -3,14 +3,11 @@ import { LandingClient } from "@/app/components/LandingClient";
 import { getCatalogPage } from "@/lib/catalog";
 import { getLandingStats } from "@/lib/landing-data";
 import { DEFAULT_REGION } from "@/lib/regions";
+import { pageMetadata } from "@/lib/seo";
 
 export const revalidate = 86400;
 
-export const metadata: Metadata = {
-  title: "BARATEAM — Comparador de precios de juegos en Argentina (ARS)",
-  description:
-    "Compará precios de juegos en Argentina entre Steam, Epic Games, GOG, Humble y Microsoft Store. Ofertas y datos regionales actualizados a diario."
-};
+export const metadata: Metadata = pageMetadata("BARATEAM | Precios y ofertas de juegos en Argentina", "Compará precios de juegos para PC en Steam, Epic Games, GOG, Humble y Microsoft Store. Ofertas, precios en pesos y mínimos históricos actualizados a diario.", "/");
 
 export default async function LandingPage() {
   const [initialStats, initialCatalog] = await Promise.all([

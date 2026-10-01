@@ -18,7 +18,7 @@ import {
   X
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { RegionSelector } from "@/app/components/RegionSelector";
@@ -106,15 +106,24 @@ const CATALOG_PAGE_SIZE = 30;
 const SEARCH_DEBOUNCE_MS = 250;
 
 export function BibliotecaClient({ initialPayload, initialFilter = "todos", initialSort = "diferencia" }: { initialPayload: ApiPayload | null; initialFilter?: string; initialSort?: string }) {
+  const [search, setSearch] = useState("");
+  const searchParams = useMemo(() => new URLSearchParams(search), [search]);
   return (
-    <Suspense fallback={<BibliotecaLoading />}>
-      <BibliotecaContent initialPayload={initialPayload} initialFilter={initialFilter} initialSort={initialSort} />
-    </Suspense>
+    <>
+      <Suspense fallback={null}><BibliotecaQuerySync onChange={setSearch} /></Suspense>
+      <BibliotecaContent initialPayload={initialPayload} initialFilter={initialFilter} initialSort={initialSort} searchParams={searchParams} />
+    </>
   );
 }
 
-function BibliotecaContent({ initialPayload, initialFilter, initialSort }: { initialPayload: ApiPayload | null; initialFilter: string; initialSort: string }) {
+function BibliotecaQuerySync({ onChange }: { onChange: (search: string) => void }) {
   const searchParams = useSearchParams();
+  const search = searchParams.toString();
+  useEffect(() => onChange(search), [search, onChange]);
+  return null;
+}
+
+function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchParams }: { initialPayload: ApiPayload | null; initialFilter: string; initialSort: string; searchParams: URLSearchParams }) {
   const [payload, setPayload] = useState<ApiPayload | null>(initialPayload);
   const [query, setQuery] = useState(searchParams.get("query") ?? "");
   const [debouncedQuery, setDebouncedQuery] = useState(searchParams.get("query") ?? "");
@@ -143,6 +152,13 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort }: { ini
   const [enabledStores, setEnabledStores] = useState<StoreId[]>([...STORES]);
 
   useEffect(() => {
+    setQuery(searchParams.get("query") ?? "");
+    setDebouncedQuery(searchParams.get("query") ?? "");
+    setFilter(searchParams.get("filter") ?? initialFilter);
+    setSort(searchParams.get("sort") ?? initialSort);
+  }, [searchParams, initialFilter, initialSort]);
+
+  useEffect(() => {
     const saved = window.localStorage.getItem("glitchprice-region") as RegionId | null;
     if (saved) setRegion(saved);
     const savedUser = readStoredUser();
@@ -153,7 +169,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort }: { ini
     if (!user) {
       setWishlist([]);
       setWishlistAlerts([]);
-      setEnabledStores([...STORES]);
+      setEnabledStores((current) => current.length === STORES.length && STORES.every((store) => current.includes(store)) ? current : [...STORES]);
       return;
     }
     fetchWishlist(user.sub).then(setWishlist);
@@ -616,6 +632,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort }: { ini
       </main>
 
       <footer className="footer">
+        <Link href="/juegos">Catálogo completo de juegos</Link>
         <p>© 2026 BARATEAM. CREADO POR SHUX. PARA CONSULTAS ESCRIBIR A SHUXTEAM@GMAIL.COM O @SHUXTEAM EN INSTAGRAM</p>
       </footer>
 
@@ -750,7 +767,7 @@ function GameCard({
         </button>
         <div className="gameHeroOverlay" />
         <div className="gameHeroText">
-          <h3>{row.gameTitle}</h3>
+          <h3><a className="gameTitleLink" href={`/juegos/${row.gameId}`} onClick={(event) => { event.stopPropagation(); if (!event.ctrlKey && !event.metaKey && !event.shiftKey && event.button === 0) { event.preventDefault(); onOpen(); } }} onKeyDown={(event) => event.stopPropagation()}>{row.gameTitle}</a></h3>
           <button
             className={category === displayGameCategory(row) ? "categoryFilter active" : "categoryFilter"}
             onClick={(event) => {

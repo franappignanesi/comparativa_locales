@@ -3,15 +3,13 @@ import { BibliotecaClient } from "./BibliotecaClient";
 import { getCatalogPage, type CatalogParams } from "@/lib/catalog";
 import { DEFAULT_REGION, REGIONS, type RegionId } from "@/lib/regions";
 import { getGameSample } from "@/lib/sample-builder";
+import { pageMetadata } from "@/lib/seo";
 
 export const revalidate = 86400;
 
 export async function generateMetadata(): Promise<Metadata> {
   const sample = await getGameSample();
-  return {
-    title: "Biblioteca de juegos | BARATEAM",
-    description: `Compara precios de ${sample.broadSample.length} juegos entre Steam, Epic, GOG, Humble y Microsoft Store. Catalogo actualizado a diario.`
-  };
+  return pageMetadata("Biblioteca: precios y ofertas de juegos para PC | BARATEAM", `Compará precios de ${sample.broadSample.length} juegos para PC entre Steam, Epic, GOG, Humble y Microsoft Store. Ofertas y mínimos históricos con actualización diaria.`, "/biblioteca");
 }
 
 export default async function BibliotecaPage() {
