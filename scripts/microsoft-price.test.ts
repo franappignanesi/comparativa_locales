@@ -61,6 +61,10 @@ test("discovery does not silently turn upstream failures into missing products",
 test("Microsoft discovery state survives every daily artifact and cache handoff", async () => {
   const { readFile } = await import("node:fs/promises");
   const workflow = await readFile(".github/workflows/daily-price-refresh.yml", "utf8");
-  assert.equal((workflow.match(/data\/generated\/microsoft-discovery\.json/g) ?? []).length, 4);
+  assert.equal((workflow.match(/data\/generated\/microsoft-discovery\.json/g) ?? []).length, 3);
+  assert.ok(workflow.includes("restore-keys: barateam-microsoft-discovery-"));
+  const publicCacheBlocks = workflow.split(/\r?\n      - /).filter((block) => block.includes("uses: actions/cache/") && block.includes("key: barateam-public-data-"));
+  assert.equal(publicCacheBlocks.length, 3);
+  assert.ok(publicCacheBlocks.every((block) => !block.includes("microsoft-discovery.json")));
   assert.ok(workflow.includes("npx tsx scripts/discover-microsoft-games.ts"));
 });

@@ -13,7 +13,7 @@
 - The daily catalog job discovers up to 150 missing Microsoft mappings with three workers, 12-second request timeouts and a four-minute soft runtime budget.
 - Positive mappings require an active PC purchase and a non-trial Windows.Desktop installation package. Bundles without directly verifiable PC packages are deliberately left to existing/manual mappings rather than guessed.
 - Negative results are checked again after 30 days. Network errors are not recorded as absent products.
-- Mappings and check dates are public JSON in `data/generated/microsoft-discovery.json`, restored/saved with GitHub cache and passed in the catalog artifact to all five regions and deployment. No price data or discovery payloads are added to Neon.
+- Mappings and check dates are public JSON in `data/generated/microsoft-discovery.json`, restored/saved in a separate GitHub cache and passed in the catalog artifact to all five regions and deployment. Regular code deploys and Steam sale refreshes also restore the mapping cache. Existing public-data cache paths remain unchanged to preserve compatibility with all previous price/history caches. No price data or discovery payloads are added to Neon.
 - Explicit manual IDs/URLs take precedence. Existing refresh, history and notification mechanisms remain in place.
 
 ## Initial audit

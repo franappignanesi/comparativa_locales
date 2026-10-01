@@ -85,6 +85,13 @@ jobs:
           key: barateam-public-data-${{ github.run_id }}-${{ matrix.region }}
           restore-keys: |
             barateam-public-data-
+      - name: Restore Microsoft discovery progress
+        if: env.REGION_SELECTED == 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: data/generated/microsoft-discovery.json
+          key: barateam-microsoft-discovery-${{ github.run_id }}-${{ matrix.region }}
+          restore-keys: barateam-microsoft-discovery-
       - uses: actions/setup-node@v6.4.0
         if: env.REGION_SELECTED == 'true'
         with:
@@ -109,6 +116,7 @@ jobs:
           fi
           cp "data/generated/steam-sale-refresh-cursor-${PRICE_REGION}.json" steam-sale-cache/data/generated/ 2>/dev/null || true
           cp "data/generated/steam-sale-refresh-status-${PRICE_REGION}.json" steam-sale-cache/data/generated/ 2>/dev/null || true
+          cp data/generated/microsoft-discovery.json steam-sale-cache/data/generated/ 2>/dev/null || true
       - uses: actions/upload-artifact@v4
         if: ${{ always() && env.REGION_SELECTED == 'true' }}
         with:
