@@ -13,6 +13,14 @@ test("package identities never collide with app IDs", () => {
 test("trademark symbols do not create duplicate collection cards", () => {
   assert.equal(normalizedCatalogTitle("Command & Conquer™ Remastered Collection"), normalizedCatalogTitle("Command & Conquer Remastered Collection"));
 });
+
+test("different identities cannot overwrite the same public card slug", () => {
+  const first = { ...game(1), title: "Seek Girl \u2161" };
+  const second = { ...game(2), title: "Seek Girl \u2163" };
+  assert.deepEqual(chooseCatalogAdditions([first, second], [], 10), [first]);
+  assert.deepEqual(chooseCatalogAdditions([second], [first], 10), []);
+  assert.deepEqual(chooseCatalogAdditions([{ ...game(3), title: "\u4e2d\u6587" }], [], 10), []);
+});
 test("does not add duplicates, unverified identities or DLC", () => {
   const unverified = game(2); delete unverified.identifiers.itadId;
   assert.deepEqual(chooseCatalogAdditions([game(1), unverified, { ...game(3), title: "Game DLC" }], [game(1)], 100), []);

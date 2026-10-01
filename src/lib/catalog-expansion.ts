@@ -1,4 +1,5 @@
 import type { GameCandidate } from "./types";
+import { slugifyTitle } from "./sample-builder";
 
 export const PACK_TITLE = /\b(collection|trilogy|anthology|complete (?:pack|edition|season)|ultimate collection|legacy collection|double pack|duology)\b/i;
 export const EXCLUDED_PRODUCT = /\b(soundtrack|artbook|wallpaper|season pass|upgrade|dlc|demo|dedicated server|sdk|4[- ]pack|2[- ]pack)\b/i;
@@ -19,6 +20,7 @@ export function chooseCatalogAdditions(candidates: GameCandidate[], existing: Ga
   if (limit <= 0) return [];
   const ids = new Set(existing.map(catalogIdentity));
   const titles = new Set(existing.map(game => normalizedCatalogTitle(game.title)));
+  const slugs = new Set(existing.map(game => slugifyTitle(game.title)));
   const selected: GameCandidate[] = [];
   let packCount = 0;
   let comparablePacks = 0;
@@ -28,7 +30,8 @@ export function chooseCatalogAdditions(candidates: GameCandidate[], existing: Ga
   for (const game of sorted) {
     const id = catalogIdentity(game);
     const title = normalizedCatalogTitle(game.title);
-    if (!game.identifiers.itadId || ids.has(id) || titles.has(title) || EXCLUDED_PRODUCT.test(game.title)) continue;
+    const slug = slugifyTitle(game.title);
+    if (!slug || !game.identifiers.itadId || ids.has(id) || titles.has(title) || slugs.has(slug) || EXCLUDED_PRODUCT.test(game.title)) continue;
     if (game.productKind === "pack") {
       if (existingPackCount + packCount >= 150) continue;
       const nextComparable = comparablePacks + Number(game.expectedStores.length > 1);
@@ -39,6 +42,7 @@ export function chooseCatalogAdditions(candidates: GameCandidate[], existing: Ga
     selected.push(game);
     ids.add(id);
     titles.add(title);
+    slugs.add(slug);
     if (selected.length >= limit) break;
   }
   return selected;

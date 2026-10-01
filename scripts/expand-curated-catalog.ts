@@ -185,16 +185,17 @@ async function main() {
     const ready = proposals.flatMap(p => p.candidate ? [p.candidate] : []);
     const selected = chooseCatalogAdditions(ready, existing, limit);
     promotedCount = selected.length;
+    let after = before;
     const source = JSON.parse(await readFile("data/game-candidates.json", "utf8")) as GameCandidate[];
     const merged = new Map([...source, ...existing, ...selected].map(g => [slugifyTitle(g.title), g]));
     if (selected.length) {
       await writeFile("data/game-candidates.json", JSON.stringify([...merged.values()], null, 2) + "\n");
-      await buildGameSample();
+      after = (await buildGameSample()).broadSample.length;
       const promoted = new Set(selected.map(catalogIdentity));
       proposals.forEach(p => { if (promoted.has(p.shopId)) p.status = "Incorporado"; });
     }
     const packs = selected.filter(g => g.productKind === "pack");
-    const summary = { before, promoted: selected.length, after: before + selected.length, packs: packs.length, comparablePacks: packs.filter(g => g.expectedStores.length > 1).length, requests };
+    const summary = { before, promoted: selected.length, after, packs: packs.length, comparablePacks: packs.filter(g => g.expectedStores.length > 1).length, requests };
     console.log(JSON.stringify(summary));
     if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, `## Catálogo curado\n\n\`\`\`json\n${JSON.stringify(summary, null, 2)}\n\`\`\`\n\nLista de incorporaciones y descartes en el artifact catalog-state.\n`);
   }
