@@ -8,6 +8,7 @@ import { sendEmailAlerts, sendWebPushAlerts } from "./notification-channels";
 import { claimNotificationDelivery } from "./notification-delivery-store";
 import type { LatestPrices, PriceHistoryEntry, StoreId } from "./types";
 import { STORES } from "./types";
+import { enqueueDiscordWishlist } from "./discord-notifications";
 
 export type WishlistAlertType = "price_drop" | "below_usd" | "historical_low";
 
@@ -55,6 +56,7 @@ export async function evaluateAllWishlistAlerts(regions: RegionId[] = REGIONS.ma
   const users = await getAllUsersWithWishlists();
   const alerts: WishlistAlert[] = [];
   const delivered = { email: 0, webPush: 0 };
+  let discordQueued = 0;
   const allowedRegions = new Set(regions.length ? regions : [DEFAULT_REGION]);
   const regionsChecked = new Set<RegionId>();
 
@@ -68,13 +70,16 @@ export async function evaluateAllWishlistAlerts(regions: RegionId[] = REGIONS.ma
     const userDelivered = await deliverAlerts(user, userAlerts, settings);
     delivered.email += userDelivered.email;
     delivered.webPush += userDelivered.webPush;
+    try { discordQueued += await enqueueDiscordWishlist({ ...user, notificationSettings: settings }, userAlerts); }
+    catch { console.error("[discord] Could not queue wishlist digest; email/push unaffected"); }
   }
   const report = {
     timestamp: new Date().toISOString(),
     alerts,
     usersChecked: users.length,
     regionsChecked: [...regionsChecked],
-    delivered
+    delivered,
+    discordQueued
   };
   await writeJson(dataPath("generated", "wishlist-alerts.json"), report);
   return report;

@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, Bell, ChevronDown, History, Library, Mail, MonitorSmartphone, Settings, ShieldAlert, Webhook } from "lucide-react";
+import { BarChart3, Bell, ChevronDown, History, Library, Mail, MonitorSmartphone, Settings, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import type React from "react";
 import { useEffect, useState } from "react";
@@ -23,6 +23,7 @@ import { isAdminEmail } from "@/lib/admin";
 import { STORE_LOGOS } from "@/lib/store-assets";
 import type { StoreId } from "@/lib/types";
 import { STORES } from "@/lib/types";
+import { DiscordSettings } from "@/app/components/DiscordSettings";
 
 const STORE_LABELS: Record<StoreId, string> = {
   steam: "Steam",
@@ -230,14 +231,7 @@ export default function ProfilePage() {
                 onChange={(value) => updateSetting("webPush", value)}
               />
               {pushMessage ? <p className="settingsHelp">{pushMessage}</p> : null}
-              <NotificationToggle
-                icon={<Webhook size={18} />}
-                title="Notificación por Discord"
-                description="¡Próximamente! Canal pensado para conectar más adelante con usuario, bot o webhook personal."
-                checked={false}
-                disabled
-                onChange={(value) => updateSetting("discord", value)}
-              />
+              <DiscordSettings userId={user.sub} enabled={settings.discord} admin={isAdminEmail(user.email)} onChange={(discord) => setSettings((current) => ({ ...current, discord }))} />
             </section>
 
             <section className="profilePanel notificationSettings">

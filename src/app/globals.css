@@ -7,6 +7,13 @@
 .catalogOverview .metric span { letter-spacing: 0; line-height: 1.4; }
 .weekendFeatured { min-width: 0; }
 .catalogOverviewLeft { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.discordSettings { padding: 18px 0; border-top: 1px solid var(--line); }
+.discordSettingsActions { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+.discordSettingsActions button { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 4px; padding: 10px 12px; background: var(--surface-card); color: var(--text); cursor: pointer; }
+.discordSettingsActions button:disabled { opacity: .5; cursor: default; }
+.discordOptIn { display: flex; align-items: flex-start; gap: 9px; font-size: 13px; line-height: 1.5; }
+.discordOptIn input { margin-top: 3px; flex-shrink: 0; accent-color: #ffcf00; }
+.discordAdminControl { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 16px; }
 .popularWishlist { border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; background: var(--surface-card); min-width: 0; }
 .popularWishlist h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 13px; line-height: 1.5; letter-spacing: 0; }
 .popularWishlist h2 svg { color: var(--accent, #ffcf00); flex-shrink: 0; }

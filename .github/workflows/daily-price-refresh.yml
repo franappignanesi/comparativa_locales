@@ -287,7 +287,23 @@ jobs:
         continue-on-error: true
         env:
           PRICE_REGIONS: AR,MX,ES,PE,CL
+          DISCORD_SEND_ENABLED: ${{ vars.DISCORD_SEND_ENABLED || '0' }}
+          DISCORD_TEST_MODE: ${{ vars.DISCORD_TEST_MODE || '1' }}
+          DISCORD_TEST_USER_IDS: ${{ secrets.DISCORD_TEST_USER_IDS }}
         run: npm run notifications:evaluate
+      - name: Deliver Discord wishlist digests
+        if: vars.DISCORD_SEND_ENABLED == '1'
+        continue-on-error: true
+        timeout-minutes: 7
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_WEEKLY_WEBHOOK_URL: ${{ secrets.DISCORD_WEEKLY_WEBHOOK_URL }}
+          DISCORD_WEEKLY_ENABLED: ${{ vars.DISCORD_WEEKLY_ENABLED || '0' }}
+          DISCORD_SEND_ENABLED: ${{ vars.DISCORD_SEND_ENABLED || '0' }}
+          DISCORD_TEST_MODE: ${{ vars.DISCORD_TEST_MODE || '1' }}
+          DISCORD_TEST_USER_IDS: ${{ secrets.DISCORD_TEST_USER_IDS }}
+          DISCORD_DAILY_SEND_LIMIT: ${{ vars.DISCORD_DAILY_SEND_LIMIT || '100' }}
+        run: npm run notifications:discord
       - name: Guard private generated data
         shell: bash
         run: |

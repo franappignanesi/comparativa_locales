@@ -1,0 +1,58 @@
+name: Discord weekly offers
+on:
+  workflow_dispatch:
+    inputs:
+      preview:
+        description: "Preview only; do not publish to Discord"
+        type: boolean
+        default: true
+  schedule:
+    # Friday 19:15 Argentina. Avoid the busy start of the hour.
+    - cron: "15 22 * * 5"
+permissions:
+  contents: read
+concurrency:
+  group: discord-weekly-offers
+  cancel-in-progress: false
+jobs:
+  weekly:
+    if: github.event_name == 'workflow_dispatch' || vars.DISCORD_WEEKLY_ENABLED == '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GLITCHPRICE_PUBLIC_CACHE_SOURCE: file
+      POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+      DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+      DISCORD_WEEKLY_WEBHOOK_URL: ${{ secrets.DISCORD_WEEKLY_WEBHOOK_URL }}
+      DISCORD_SEND_ENABLED: ${{ vars.DISCORD_SEND_ENABLED || '0' }}
+      DISCORD_WEEKLY_ENABLED: ${{ vars.DISCORD_WEEKLY_ENABLED || '0' }}
+      DISCORD_TEST_MODE: ${{ vars.DISCORD_TEST_MODE || '1' }}
+      DISCORD_TEST_USER_IDS: ${{ secrets.DISCORD_TEST_USER_IDS }}
+      DISCORD_DAILY_SEND_LIMIT: ${{ vars.DISCORD_DAILY_SEND_LIMIT || '100' }}
+    steps:
+      - uses: actions/checkout@v7.0.0
+      - uses: actions/cache/restore@v4
+        id: prices
+        with:
+          path: |
+            data/generated/game-sample.json
+            data/generated/latest-prices*.json
+            data/generated/price-history*.json
+            data/generated/price-history*.json.gz
+            data/generated/itad-history*.json
+            data/generated/itad-full-history*.json
+            data/generated/pending-releases.json
+            data/generated/steam-sale-refresh-cursor-*.json
+          key: barateam-public-data-${{ github.run_id }}-discord
+          restore-keys: barateam-public-data-
+          fail-on-cache-miss: true
+      - uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Build weekly digest
+        run: ${{ inputs.preview && 'npm run notifications:discord-weekly -- --preview' || 'npm run notifications:discord-weekly' }}
+      - name: Publish queued digest
+        if: inputs.preview != true && vars.DISCORD_SEND_ENABLED == '1' && vars.DISCORD_WEEKLY_ENABLED == '1'
+        run: npm run notifications:discord

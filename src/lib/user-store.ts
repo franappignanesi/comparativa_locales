@@ -726,7 +726,7 @@ function normalizeNotificationSettings(settings: Partial<NotificationSettings>):
   return {
     email: Boolean(settings.email),
     webPush: Boolean(settings.webPush),
-    discord: false,
+    discord: Boolean(settings.discord),
     enabledStores: enabledStores?.length ? enabledStores : [...STORES],
     preferredRegion: normalizePreferredRegion(settings.preferredRegion)
   };
