@@ -5,6 +5,7 @@ import mysql from "mysql2/promise";
 import type { GameCategory, StoreId } from "./types";
 import { STORES } from "./types";
 import { DEFAULT_REGION, REGIONS, type RegionId } from "./regions";
+import { rankWishlists } from "./wishlist-ranking";
 
 export type StoredUser = {
   sub: string;
@@ -52,6 +53,7 @@ type UserStoreAdapter = {
   getNotificationSettings(userId: string): Promise<NotificationSettings>;
   updateNotificationSettings(userId: string, settings: Partial<NotificationSettings>): Promise<NotificationSettings>;
   getWishlist(userId: string): Promise<StoredWishlistItem[]>;
+  getWishlistRanking(): Promise<Array<{ gameId: string; saves: number }>>;
   getAllUsersWithWishlists(): Promise<Array<{ user: StoredUser; wishlist: StoredWishlistItem[] }>>;
   upsertWishlistItem(
     userId: string,
@@ -108,6 +110,10 @@ export function getWishlist(userId: string): Promise<StoredWishlistItem[]> {
 
 export function getAllUsersWithWishlists(): Promise<Array<{ user: StoredUser; wishlist: StoredWishlistItem[] }>> {
   return adapter.getAllUsersWithWishlists();
+}
+
+export function getWishlistRanking() {
+  return adapter.getWishlistRanking();
 }
 
 export function upsertWishlistItem(
@@ -226,6 +232,12 @@ function createPostgresAdapter(): UserStoreAdapter {
       const result: Array<{ user: StoredUser; wishlist: StoredWishlistItem[] }> = [];
       for (const user of users) result.push({ user, wishlist: await getPostgresWishlist(user.sub) });
       return result;
+    },
+
+    async getWishlistRanking() {
+      await ensureSchema();
+      const rows = await sql.query("SELECT game_id, COUNT(DISTINCT user_sub) AS saves FROM wishlist_items GROUP BY game_id ORDER BY saves DESC, game_id ASC");
+      return rows.map((row) => ({ gameId: String(row.game_id), saves: Number(row.saves) }));
     },
 
     async upsertWishlistItem(userId, item) {
@@ -406,6 +418,12 @@ function createMysqlAdapter(): UserStoreAdapter {
       return result;
     },
 
+    async getWishlistRanking() {
+      await ensureSchema();
+      const [rows] = await getPool().query<mysql.RowDataPacket[]>("SELECT game_id, COUNT(DISTINCT user_sub) AS saves FROM wishlist_items GROUP BY game_id ORDER BY saves DESC, game_id ASC");
+      return rows.map((row) => ({ gameId: String(row.game_id), saves: Number(row.saves) }));
+    },
+
     async upsertWishlistItem(userId, item) {
       await ensureSchema();
       await ensureMysqlUserPlaceholder(userId);
@@ -546,6 +564,11 @@ function createJsonAdapter(): UserStoreAdapter {
           } satisfies StoredUser),
         wishlist: getWishlistFromDb(db, userId)
       }));
+    },
+
+    async getWishlistRanking() {
+      const db = await readDb();
+      return rankWishlists(Object.values(db.wishlists));
     },
 
     async upsertWishlistItem(userId, item) {

@@ -171,7 +171,7 @@ function filterAndSortRows(
     .filter((row) => ids.has(row.gameId) || (filter === WEEKEND_FILTER && row.weekendGame))
     .filter((row) => !params.gameId || row.gameId === params.gameId)
     .filter((row) => !normalizedQuery || normalizeSearchText(row.gameTitle).includes(normalizedQuery))
-    .filter((row) => filter === WEEKEND_FILTER || hasAnyCurrentPrice(row, activeStores))
+    .filter((row) => Boolean(params.gameId) || filter === WEEKEND_FILTER || hasAnyCurrentPrice(row, activeStores))
     .filter((row) => {
       if (category === "todas") return true;
       if (steamCategory(row) === category) return true;

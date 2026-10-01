@@ -47,6 +47,7 @@ import type { CatalogResponse } from "@/lib/catalog";
 import { WEEKEND_FILTER } from "@/lib/weekend-games";
 import { WeekendRecommendation, WeekendTag } from "@/app/components/WeekendRecommendation";
 import { WeekendShowcase } from "@/app/components/WeekendShowcase";
+import { PopularWishlist } from "@/app/components/PopularWishlist";
 
 type ApiPayload = {
   featuredWeekend?: CatalogResponse["featuredWeekend"];
@@ -274,7 +275,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
   const queryActive = query.trim().length > 0;
   const searchPending = query.trim() !== debouncedQuery.trim() || loading;
 
-  async function openWeekendGame(gameId: string) {
+  async function openWeekendGame(gameId: string, gameFilter = WEEKEND_FILTER) {
     const existing = payload?.latest.prices.find((row) => row.gameId === gameId) ?? (payload?.featuredWeekend?.gameId === gameId ? payload.featuredWeekend : null);
     if (existing) { setSelectedGameId(gameId); return; }
     weekendRequestRef.current?.abort();
@@ -283,7 +284,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
     setOpeningWeekendGame(true);
     setWeekendOpenError(false);
     try {
-      const params = new URLSearchParams({ filter: WEEKEND_FILTER, gameId, region, stores: enabledStores.join(","), limit: "1" });
+      const params = new URLSearchParams({ filter: gameFilter, gameId, region, stores: enabledStores.join(","), limit: "1" });
       const response = await fetch(`/api/catalog?${params}`, { signal: controller.signal });
       if (!response.ok) throw new Error("weekend_game_failed");
       const result = await response.json() as ApiPayload;
@@ -468,7 +469,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
         </header>}
 
         {openingWeekendGame ? <div className="weekendOpeningIndicator" role="status"><span className="mobileSearchSpinner" />Abriendo juego...</div> : null}
-        {weekendOpenError ? <p role="alert">No pudimos abrir la recomendación. Probá de nuevo en unos segundos.</p> : null}
+        {weekendOpenError ? <p role="alert">No pudimos abrir el juego. Probá de nuevo en unos segundos.</p> : null}
         {filter === WEEKEND_FILTER ? <h2 className="weekendCatalogHeading">Todos nuestros juegos del finde</h2> : null}
 
         <section className={`toolbar ${queryActive ? "searchActive" : ""}`} aria-label="Controles">
@@ -549,6 +550,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
         </section>
 
         {filter !== WEEKEND_FILTER ? <section className={`catalogOverview ${queryActive ? "searchActive" : ""}`} aria-label="Resumen de la biblioteca">
+          <div className="catalogOverviewLeft">
           <div className="cards catalogMetrics">
           <Metric title="Tienda más barata promedio" value={summary.cheapestAverageStore ? STORE_LABELS[summary.cheapestAverageStore] : "Sin datos"} />
           <Metric
@@ -558,6 +560,8 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
           />
           <Metric title="Juegos cargados" value={String(payload.sampleMeta.broadTotal)} />
           <Metric title="Juegos con precio actual" value={String(summary.gamesAnalyzed)} />
+          </div>
+          <PopularWishlist onOpen={(gameId) => { void openWeekendGame(gameId, "todos"); }} />
           </div>
           {payload.featuredWeekend ? <div className="weekendFeatured">
             <GameCard intro={<div className="weekendFeaturedHeading">
