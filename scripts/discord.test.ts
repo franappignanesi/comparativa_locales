@@ -2,10 +2,18 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { argentinaDate, buildDiscordWishlistMessage, discordAlertSignature, discordText, discordWeek } from "../src/lib/discord-messages";
 import { boundedDiscordSetting, discordRecipientAllowed, discordSameOrigin, discordSendsEnabled } from "../src/lib/discord-config";
-import { discordRequest, resetDiscordBudget, sendDiscordDm, sendDiscordWebhook } from "../src/lib/discord-api";
+import { DiscordApiError, discordRequest, resetDiscordBudget, sendDiscordDm, sendDiscordWebhook } from "../src/lib/discord-api";
+import { discordTestFailure } from "../src/lib/discord-test-errors";
 import type { WishlistAlert } from "../src/lib/wishlist-alerts";
 
 const alert: WishlistAlert = { userId: "private-user", region: "AR", gameId: "game", gameTitle: "Juego @everyone", store: "steam", type: "price_drop", message: "Bajó 50%", triggeredAt: "2026-10-01T00:00:00Z", currentOfficialPrice: 10, currentCurrency: "USD", currentArsPrice: 10000 };
+test("confirmation errors distinguish configuration, allowlist, privacy and uncertain delivery", () => {
+  assert.match(discordTestFailure(new DiscordApiError(401)).error, /problema del servicio/);
+  assert.equal(discordTestFailure(new DiscordApiError(403, 0, false, undefined, "recipient_not_allowed")).status, 403);
+  assert.match(discordTestFailure(new DiscordApiError(403, 0, false, 50007)).error, /mensajes directos/);
+  assert.match(discordTestFailure(new DiscordApiError(0, 0, true)).error, /no repitas/);
+  assert.match(discordTestFailure(new Error("database failure"), true).error, /guardar la verificación/);
+});
 test("Discord text neutralizes mentions and markdown", () => {
   const value = discordText("@everyone **hello** [link](https://evil.example) <@123>");
   assert.ok(!value.includes("@") && !value.includes("[") && !value.includes("<") && !value.includes("*"));
