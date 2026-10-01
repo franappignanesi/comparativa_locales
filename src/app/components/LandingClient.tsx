@@ -22,6 +22,7 @@ type StatsPayload = {
   currency?: string;
   locale?: string;
   sampleMeta: {
+    broadTotal: number;
     categoryCoverage: Partial<Record<GameCategory, number>>;
     categoryCoverageComparable?: Record<string, number>;
   };
@@ -97,6 +98,7 @@ export function LandingClient({
   const displayCurrency = stats?.currency ?? catalog?.latest.currency ?? "ARS";
   const displayLocale = stats?.locale ?? catalog?.latest.locale ?? "es-AR";
   const totalGames = summary?.gamesAnalyzed ?? 0;
+  const catalogTotal = stats?.sampleMeta.broadTotal ?? 0;
   const maxCoverage = Math.max(1, totalGames);
   const maxAverage = Math.max(1, ...STORES.map((store) => summary?.averageByStore[store] ?? 0));
   const categoryCoverage = stats?.sampleMeta.categoryCoverageComparable ?? stats?.sampleMeta.categoryCoverage ?? {};
@@ -239,8 +241,8 @@ export function LandingClient({
 
       <section className="marketBand">
         <div className="totalGames">
-          <strong>{totalGames}</strong>
-          <span>juegos analizados</span>
+          <strong>{catalogTotal}</strong>
+          <span>en catálogo</span>
         </div>
         <div className="marketDistribution">
           <h2>Distribución por género</h2>
