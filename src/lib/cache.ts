@@ -69,6 +69,7 @@ function isStaticPublicCache(filePath: string): boolean {
   const key = stateKeyFromPath(filePath);
   return (
     key === "generated/game-sample.json" ||
+    key === "generated/microsoft-discovery.json" ||
     /^generated\/latest-prices(?:-[A-Z]{2})?\.json$/.test(key) ||
     /^generated\/price-history(?:-[A-Z]{2})?\.json$/.test(key) ||
     /^generated\/itad(?:-full)?-history(?:-[A-Z]{2})?\.json$/.test(key)

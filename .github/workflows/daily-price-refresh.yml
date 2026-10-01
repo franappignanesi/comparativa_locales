@@ -75,6 +75,7 @@ jobs:
             data/generated/itad-history*.json
             data/generated/itad-full-history*.json
             data/generated/pending-releases.json
+            data/generated/microsoft-discovery.json
             data/generated/steam-sale-refresh-cursor-*.json
           key: barateam-public-data-${{ github.run_id }}-catalog
           restore-keys: |
@@ -97,6 +98,9 @@ jobs:
             echo "Steam top sellers backfill enabled"
           fi
       - run: npm run worker:release-automation
+      - name: Discover missing Microsoft PC games
+        continue-on-error: true
+        run: npx tsx scripts/discover-microsoft-games.ts
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -107,6 +111,7 @@ jobs:
             data/game-candidates.json
             data/generated/game-sample.json
             data/generated/pending-releases.json
+            data/generated/microsoft-discovery.json
 
   refresh-region:
     name: Refresh ${{ matrix.region }}
@@ -153,6 +158,7 @@ jobs:
             data/generated/itad-history*.json
             data/generated/itad-full-history*.json
             data/generated/pending-releases.json
+            data/generated/microsoft-discovery.json
             data/generated/steam-sale-refresh-cursor-*.json
           key: barateam-public-data-${{ github.run_id }}-${{ matrix.region }}
           restore-keys: |
@@ -256,6 +262,7 @@ jobs:
             data/generated/itad-history*.json
             data/generated/itad-full-history*.json
             data/generated/pending-releases.json
+            data/generated/microsoft-discovery.json
             data/generated/steam-sale-refresh-cursor-*.json
           key: barateam-public-data-${{ github.run_id }}
       - name: Evaluate wishlist notifications

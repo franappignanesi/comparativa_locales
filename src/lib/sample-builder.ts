@@ -11,6 +11,7 @@ import { STORES } from "./types";
 import weekendAdditions from "../../data/weekend-catalog-additions.json";
 import manualStoreMatches from "../../data/manual-store-matches.json";
 import sourceCandidates from "../../data/game-candidates.json";
+import { withDiscoveredMicrosoftGames } from "./microsoft-discovery";
 
 const curatedCandidates = weekendAdditions as GameCandidate[];
 
@@ -76,13 +77,14 @@ export async function buildGameSample(): Promise<GameSample> {
     categoryCoverage
   };
 
-  await writeJson(dataPath("generated", "game-sample.json"), sample);
-  return sample;
+  const enriched = await withDiscoveredMicrosoftGames(sample);
+  await writeJson(dataPath("generated", "game-sample.json"), enriched);
+  return enriched;
 }
 
 export async function getGameSample(): Promise<GameSample> {
   const sample = await readJson<GameSample>(dataPath("generated", "game-sample.json"), emptySample);
-  return sample.timestamp ? withManualStoreMatches(withCuratedGames(withSourceCandidates(sample))) : buildGameSample();
+  return sample.timestamp ? withDiscoveredMicrosoftGames(withManualStoreMatches(withCuratedGames(withSourceCandidates(sample)))) : buildGameSample();
 }
 
 export function withSourceCandidates(sample: GameSample): GameSample {
@@ -196,7 +198,7 @@ function hasStoreMatch(candidate: GameCandidate, store: StoreId, manualMatches: 
   if (store === "epic") return Boolean(candidate.identifiers.epicSlug);
   if (store === "gog") return Boolean(candidate.identifiers.gogSlug);
   if (store === "humble") return Boolean(candidate.identifiers.humbleSlug);
-  return Boolean(candidate.identifiers.microsoftUrl);
+  return Boolean(candidate.identifiers.microsoftProductId || candidate.identifiers.microsoftUrl);
 }
 
 function getComparisonStatus(

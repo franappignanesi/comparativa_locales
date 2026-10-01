@@ -1,6 +1,13 @@
 {
   "matches": [
     {
+      "gameTitle": "Sea of Thieves",
+      "store": "microsoft",
+      "identifier": "9P2N57MC619K",
+      "edition": "standard",
+      "notes": "Verified Windows PC package and purchase availability. Microsoft names the standard game Sea of Thieves: 2026 Edition; not Deluxe, Premium or X Edition."
+    },
+    {
       "gameTitle": "Kingdom Come: Deliverance II",
       "store": "microsoft",
       "identifier": "9N4W31HSMVVD",

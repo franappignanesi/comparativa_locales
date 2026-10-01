@@ -49,7 +49,17 @@ export async function fetchStorePrice(game: SampleGame, region?: RegionConfig): 
   }
 }
 
-async function searchMicrosoftProductId(game: SampleGame, region?: RegionConfig): Promise<string | null> {
+export async function discoverMicrosoftProduct(game: SampleGame, region?: RegionConfig): Promise<string | null> {
+  const id = await searchMicrosoftProductId({ ...game, expectedStores: [...game.expectedStores, "microsoft"] }, region, true);
+  if (!id) return null;
+  const response = await fetch(`https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=${id}&market=${region?.microsoftMarket ?? "AR"}&languages=en-us,neutral`, { signal: AbortSignal.timeout(12000) });
+  if (!response.ok) throw new Error(`Microsoft catalog HTTP ${response.status}`);
+  const product = (await response.json())?.Products?.[0];
+  const title = product?.LocalizedProperties?.[0]?.ProductTitle;
+  return typeof title === "string" && isMicrosoftTitleCompatible(game.title, title) && hasMicrosoftPcPurchase(product) && findMicrosoftPrice(product) ? id : null;
+}
+
+async function searchMicrosoftProductId(game: SampleGame, region?: RegionConfig, strict = false): Promise<string | null> {
   if (!game.expectedStores.includes("microsoft")) return null;
   const url = new URL("https://storeedgefd.dsx.mp.microsoft.com/v9.0/pages/searchResults");
   url.searchParams.set("appVersion", MICROSOFT_SEARCH_VERSION);
@@ -61,11 +71,15 @@ async function searchMicrosoftProductId(game: SampleGame, region?: RegionConfig)
 
   try {
     const response = await fetch(url, { next: { revalidate: 3600 }, signal: AbortSignal.timeout(12000) });
-    if (!response.ok) return null;
+    if (!response.ok) {
+      if (strict) throw new Error(`Microsoft search HTTP ${response.status}`);
+      return null;
+    }
     const json = await response.json();
     const results = collectSearchResults(json);
     return selectMicrosoftSearchResult(game, results)?.ProductId ?? null;
-  } catch {
+  } catch (error) {
+    if (strict) throw error;
     return null;
   }
 }
@@ -131,6 +145,21 @@ export function findMicrosoftPrice(product: unknown): { basePrice: number; final
     finalPrice: cheapest.finalPrice ?? 0,
     basePrice: cheapest.basePrice && cheapest.basePrice > 0 ? cheapest.basePrice : cheapest.finalPrice ?? 0
   };
+}
+
+export function hasMicrosoftPcPurchase(product: unknown): boolean {
+  const catalog = product as Record<string, any> | null;
+  if (catalog?.ProductType !== "Game" || !Array.isArray(catalog.DisplaySkuAvailabilities)) return false;
+  return catalog.DisplaySkuAvailabilities.some((entry: Record<string, any>) => {
+    const properties = entry.Sku?.Properties;
+    const hasPcPackage = properties?.Packages?.some((pkg: Record<string, any>) =>
+      pkg.PlatformDependencies?.some((platform: { PlatformName?: string }) => platform.PlatformName?.toLowerCase() === "windows.desktop")
+    );
+    return hasPcPackage && properties?.IsTrial !== true && entry.Availabilities?.some((availability: Record<string, any>) =>
+      availability.Actions?.includes("Purchase") && isAvailabilityActive(availability) && !isLegacyGoldDiscount(availability) &&
+      availability.Conditions?.ClientConditions?.AllowedPlatforms?.some((platform: { PlatformName?: string }) => platform.PlatformName?.toLowerCase() === "windows.desktop")
+    );
+  });
 }
 
 function isLegacyGoldDiscount(availability: Record<string, any>): boolean {
@@ -210,7 +239,7 @@ function collectSearchResults(node: unknown): MicrosoftSearchResult[] {
   return Array.isArray(direct) ? [...(direct as MicrosoftSearchResult[]), ...nested] : nested;
 }
 
-function selectMicrosoftSearchResult(game: SampleGame, results: MicrosoftSearchResult[]): MicrosoftSearchResult | null {
+export function selectMicrosoftSearchResult(game: Pick<SampleGame, "title">, results: MicrosoftSearchResult[]): MicrosoftSearchResult | null {
   const expected = cleanMicrosoftTitle(game.title);
   const scored = results
     .filter((result) => result.ProductId && result.Title)
@@ -243,6 +272,8 @@ function cleanMicrosoftTitle(value: string): string {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/:\s*20\d{2}\s+edition\s*$/, "")
+    .replace(/\bfor (?:windows|pc)\b/g, "")
     .replace(/\b(the|edition|standard|pc|game)\b/g, "")
     .replace(/[^a-z0-9]+/g, " ")
     .replace(/\b(windows|xbox|one|series|xs)\b/g, "")
@@ -253,7 +284,7 @@ function cleanMicrosoftTitle(value: string): string {
 function hasEditionMismatch(candidateTitle: string, resultTitle: string): boolean {
   const candidate = candidateTitle.toLowerCase();
   const result = resultTitle.toLowerCase();
-  const editionWords = ["deluxe", "ultimate", "gold", "bundle", "pack", "trilogy", "collection"];
+  const editionWords = ["deluxe", "premium", "ultimate", "gold", "bundle", "pack", "trilogy", "collection"];
   return editionWords.some((word) => result.includes(word) && !candidate.includes(word));
 }
 
