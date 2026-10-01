@@ -81,7 +81,20 @@ test("every public dataset cache uses identical paths for save and restore", asy
     assert.ok(steps.length, `Public cache missing in ${file}`);
     for (const step of steps) paths.push(step.with!.path!.split(/\r?\n/).map(line => line.trim()).filter(Boolean).join("\n"));
   }
-  assert.equal(paths.length, 7);
+  assert.equal(paths.length, 8);
   assert.equal(new Set(paths).size, 1, "Different cache paths create incompatible GitHub cache versions and restore old data");
   assert.ok(paths[0].includes("data/generated/catalog-expansion.json"));
+});
+
+test("Steam sale publishing restores the catalog before merging regional artifacts", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const { createRequire } = await import("node:module");
+  const { load } = createRequire(import.meta.url)("js-yaml");
+  const workflow = load(await readFile(".github/workflows/steam-sale-refresh.yml", "utf8"));
+  const steps = workflow.jobs["publish-production"].steps as Array<{ id?: string; uses?: string }>;
+  const restore = steps.findIndex(step => step.id === "public-data");
+  const merge = steps.findIndex(step => step.uses?.startsWith("actions/download-artifact@"));
+  assert.ok(restore > 0 && restore < merge);
+  const worker = await readFile("scripts/steam-sale-refresh-worker.ts", "utf8");
+  assert.ok(worker.includes("game.identifiers.steamAppId || game.identifiers.steamSubId"));
 });

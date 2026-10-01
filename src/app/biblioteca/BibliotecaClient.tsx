@@ -638,7 +638,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
       </main>
 
       <footer className="footer">
-        <Link href="/juegos">Catálogo completo de juegos</Link>
+        <Link className="footerCatalogLink" href="/juegos">Catálogo completo de juegos</Link>
         <p>© 2026 BARATEAM. CREADO POR SHUX. PARA CONSULTAS ESCRIBIR A SHUXTEAM@GMAIL.COM O @SHUXTEAM EN INSTAGRAM</p>
         <LegalLinks />
       </footer>

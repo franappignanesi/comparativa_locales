@@ -23,6 +23,10 @@ on:
         description: "Run even outside configured sale windows"
         required: false
         default: "false"
+      reset_cursor:
+        description: "Start a new full pass instead of continuing a previous sale refresh"
+        required: false
+        default: "false"
       publish:
         description: "Deploy refreshed data to production"
         required: false
@@ -57,6 +61,7 @@ jobs:
       STEAM_SALE_MAX_BATCHES: ${{ github.event.inputs.max_batches || '2' }}
       STEAM_SALE_MAX_MS: ${{ github.event.inputs.max_ms || '1080000' }}
       FORCE_STEAM_SALE_REFRESH: ${{ github.event.inputs.force == 'true' && '1' || '0' }}
+      STEAM_SALE_RESET_CURSOR: ${{ github.event.inputs.reset_cursor == 'true' && '1' || '0' }}
       STEAM_CHUNK_SIZE: "25"
       STEAM_CHUNK_SLEEP_MS: "250"
       STEAM_429_RETRIES: "4"
@@ -152,6 +157,28 @@ jobs:
       - uses: actions/checkout@v7.0.0
         with:
           ref: main
+      - name: Restore latest public dataset before merging refreshed regions
+        id: public-data
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            data/generated/game-sample.json
+            data/generated/latest-prices*.json
+            data/generated/price-history*.json
+            data/generated/price-history*.json.gz
+            data/generated/itad-history*.json
+            data/generated/itad-full-history*.json
+            data/generated/pending-releases.json
+            data/generated/catalog-expansion.json
+            data/generated/steam-sale-refresh-cursor-*.json
+          key: barateam-public-data-${{ github.run_id }}-publish
+          restore-keys: |
+            barateam-public-data-
+      - name: Require durable public dataset
+        if: steps.public-data.outputs.cache-matched-key == ''
+        run: |
+          echo "No public dataset restored; refusing to publish an outdated checked-in catalog" >&2
+          exit 1
       - uses: actions/download-artifact@v4
         with:
           pattern: steam-sale-cache-*
