@@ -198,6 +198,7 @@ jobs:
             data/generated/itad-history*.json
             data/generated/itad-full-history*.json
             data/generated/pending-releases.json
+            data/generated/catalog-expansion.json
             data/generated/steam-sale-refresh-cursor-*.json
           key: barateam-public-data-${{ github.run_id }}-${{ matrix.region }}
           restore-keys: |
