@@ -3,6 +3,11 @@ name: Daily full price refresh
 on:
   workflow_dispatch:
     inputs:
+      microsoft_catalog_audit:
+        description: "Scan the entire remaining catalog for Microsoft PC games and refresh Microsoft prices only"
+        required: false
+        type: boolean
+        default: false
       target_game_ids:
         description: "Optional comma-separated game IDs for a targeted refresh"
         required: false
@@ -56,12 +61,14 @@ jobs:
   release-automation:
     name: Discover and promote new games
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: ${{ inputs.microsoft_catalog_audit && 75 || 45 }}
     continue-on-error: true
     env:
       GLITCHPRICE_PUBLIC_CACHE_SOURCE: file
       RELEASE_DISCOVERY_COUNT: "20"
       RELEASE_PROMOTE_MODE: "fast"
+      MICROSOFT_DISCOVERY_LIMIT: ${{ inputs.microsoft_catalog_audit && '10000' || '150' }}
+      MICROSOFT_DISCOVERY_MAX_MS: ${{ inputs.microsoft_catalog_audit && '3600000' || '240000' }}
     steps:
       - uses: actions/checkout@v7.0.0
       - name: Restore latest public dataset
@@ -107,6 +114,7 @@ jobs:
         continue-on-error: true
         run: npx tsx scripts/discover-microsoft-games.ts
       - name: Preserve Microsoft discovery progress
+        if: always()
         uses: actions/cache/save@v4
         with:
           path: data/generated/microsoft-discovery.json
@@ -141,6 +149,8 @@ jobs:
       PRICE_REGION: ${{ matrix.region }}
       TARGET_PRICE_GAME_IDS: ${{ github.event.inputs.target_game_ids || '' }}
       PRICE_REFRESH_CONCURRENCY: "2"
+      PRICE_REFRESH_LIMIT: "10000"
+      MICROSOFT_REQUIRE_REFRESH_SUCCESS: ${{ inputs.microsoft_catalog_audit && '1' || '0' }}
       FULL_REFRESH_BATCH_SIZE: ${{ inputs.batch_size || '100' }}
       FULL_REFRESH_MAX_MS: ${{ inputs.max_ms || '19800000' }}
       FULL_REFRESH_MAX_BATCHES: ${{ github.event.inputs.max_batches || '' }}
@@ -185,7 +195,7 @@ jobs:
           cache: npm
       - run: npm ci
         if: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
-      - run: ${{ (github.event.inputs.weekend_games_only == 'true' || (github.event.inputs.target_game_ids || '') != '') && 'npm run worker:weekend-refresh' || 'npm run worker:full-refresh' }}
+      - run: ${{ inputs.microsoft_catalog_audit && 'npm run refresh:microsoft-prices' || ((github.event.inputs.weekend_games_only == 'true' || (github.event.inputs.target_game_ids || '') != '') && 'npm run worker:weekend-refresh' || 'npm run worker:full-refresh') }}
         if: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
       - name: Collect region cache
         if: ${{ always() && contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}

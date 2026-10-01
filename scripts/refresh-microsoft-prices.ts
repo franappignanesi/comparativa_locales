@@ -113,6 +113,9 @@ async function main(): Promise<void> {
       ]
     };
 
+    if (process.env.MICROSOFT_REQUIRE_REFRESH_SUCCESS === "1" && selectedGames.length > 0 && refreshed === 0) {
+      throw new Error(`Microsoft ${region.id}: no successful price refreshes; refusing to publish an upstream failure`);
+    }
     await writeJson(cachePath, compactLatestPrices(latest));
     if (refreshedRows.length) await appendLatestToHistory({ ...latest, prices: refreshedRows, errors });
     status.regions.push({

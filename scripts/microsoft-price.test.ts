@@ -67,4 +67,6 @@ test("Microsoft discovery state survives every daily artifact and cache handoff"
   assert.equal(publicCacheBlocks.length, 3);
   assert.ok(publicCacheBlocks.every((block) => !block.includes("microsoft-discovery.json")));
   assert.ok(workflow.includes("npx tsx scripts/discover-microsoft-games.ts"));
+  assert.ok(workflow.includes("MICROSOFT_DISCOVERY_LIMIT: ${{ inputs.microsoft_catalog_audit && '10000' || '150' }}"));
+  assert.ok(workflow.includes("inputs.microsoft_catalog_audit && 'npm run refresh:microsoft-prices'"));
 });

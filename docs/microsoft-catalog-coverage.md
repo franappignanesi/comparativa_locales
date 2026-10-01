@@ -21,3 +21,7 @@
 The first 150 searches returned 76 potential mappings; 69 also passed the stricter installation-package check. Six confirmed PC games had not previously been marked for Microsoft: Baldur's Gate 3, Hades II, Ready or Not, Final Fantasy VII Remake Intergrade, The Case of the Golden Idol and The Talos Principle 2.
 
 This is an incremental coverage audit, not a claim that every catalog game is sold in Microsoft. Translated or substantially renamed editions can still require manual review. Prices are refreshed separately by the existing region workers.
+
+## One-off full audit
+
+Dispatch `daily-price-refresh.yml` with `microsoft_catalog_audit=true` and all five regions. It searches all unchecked candidates (up to 10,000) with three workers, a one-hour search budget, checkpoints every 25 completed games, and a 30-second pause on HTTP 429. Then the existing Microsoft-only price refresher updates all eligible games in each region, retaining other stores' current prices and histories. The existing publish job deploys automatically. Daily discovery remains limited to 150 candidates and four minutes. Recently checked negatives are reused, and incomplete/error searches remain eligible for subsequent runs.
