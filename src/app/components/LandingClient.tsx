@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
+import { LegalLinks } from "@/app/components/LegalLinks";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, Cpu, Gauge, Trophy } from "lucide-react";
@@ -293,6 +294,7 @@ export function LandingClient({
       <footer className="landingFooter">
         <strong>BARATEAM</strong>
         <p>© 2026 BARATEAM. CREADO POR SHUX. PARA CONSULTAS ESCRIBIR A SHUXTEAM@GMAIL.COM O @SHUXTEAM EN INSTAGRAM</p>
+        <LegalLinks />
       </footer>
     </main>
   );

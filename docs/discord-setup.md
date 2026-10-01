@@ -8,6 +8,9 @@ Discord data uses dedicated Neon tables, never app_json_state (the existing main
 
 ## Developer Portal
 
+Public Privacy Policy: https://www.shuxteam.com/privacidad
+Public Terms of Service: https://www.shuxteam.com/terminos
+
 1. Create the BARATEAM application using an existing administrator account.
 2. OAuth2: register EXACTLY https://www.shuxteam.com/api/user/discord/callback.
 3. Copy Application ID and generate the OAuth2 Client Secret.

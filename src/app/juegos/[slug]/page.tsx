@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LegalLinks } from "@/app/components/LegalLinks";
 import { notFound } from "next/navigation";
 import { getGameSeoData, gameStructuredData } from "@/lib/game-seo";
 import { pageMetadata, serializeJsonLd, SITE_URL, STORE_NAMES } from "@/lib/seo";
@@ -39,6 +40,6 @@ export default async function GamePage({ params }: Props) {
     </section>
     {data.weekend ? <WeekendRecommendation game={data.weekend} gameId={game.id} /> : null}
     {related.length ? <section><h2>Más juegos para comparar</h2><ul className="seoGameList">{related.map((item) => <li key={item.id}><Link prefetch={false} href={`/juegos/${item.id}`}>{item.title}</Link></li>)}</ul></section> : null}
-    <footer className="seoFooter">© 2026 BARATEAM. Creado por Shux. Consultas: shuxteam@gmail.com o @shuxteam en Instagram.</footer>
+    <footer className="seoFooter"><p>© 2026 BARATEAM. Creado por Shux. Consultas: shuxteam@gmail.com o @shuxteam en Instagram.</p><LegalLinks /></footer>
   </main>;
 }

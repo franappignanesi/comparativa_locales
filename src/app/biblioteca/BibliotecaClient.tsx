@@ -20,6 +20,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { LegalLinks } from "@/app/components/LegalLinks";
 import { useSearchParams } from "next/navigation";
 import { RegionSelector } from "@/app/components/RegionSelector";
 import { GoogleUser, UserMenu, WishlistGame } from "@/app/components/UserMenu";
@@ -638,6 +639,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
       <footer className="footer">
         <Link href="/juegos">Catálogo completo de juegos</Link>
         <p>© 2026 BARATEAM. CREADO POR SHUX. PARA CONSULTAS ESCRIBIR A SHUXTEAM@GMAIL.COM O @SHUXTEAM EN INSTAGRAM</p>
+        <LegalLinks />
       </footer>
 
       {selectedRow ? (
