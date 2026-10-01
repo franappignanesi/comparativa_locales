@@ -52,3 +52,9 @@ test("pack prices use verified identity and never a base-game title lookup", asy
     assert.equal(calls, 1);
   } finally { globalThis.fetch = original; }
 });
+test("packs cannot fall through to guessed store slugs or Microsoft automatic matching", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const prices = await readFile("src/lib/prices.ts", "utf8");
+  assert.ok(prices.indexOf('game.productKind === "pack" && store !== "steam"') < prices.indexOf('if (!game.availableStores.includes(store))'));
+  assert.ok((await readFile("scripts/discover-microsoft-games.ts", "utf8")).includes('game.productKind !== "pack"'));
+});

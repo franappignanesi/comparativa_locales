@@ -7,6 +7,7 @@ Objetivo: hasta 5.000 fichas, sin inflar el catálogo con DLC, demos o ediciones
 - Juegos: al menos 500 reseñas en SteamSpy, ordenados por volumen y valoración. SteamSpy sirve para relevancia, no para precios regionales.
 - Packs: colecciones conocidas y packages oficiales asociados a franquicias populares. No se admiten bundles personalizados de Steam ni multipacks de copias del mismo juego.
 - Validación: ficha Steam, Windows, producto pago disponible, identidad Steam app/sub exacta en ITAD, título canónico equivalente y precio actual Steam. No se usa búsqueda aproximada para asignar precios a packs.
+- Packs: si falta un precio verificado, no se deducen slugs de otras tiendas. Microsoft se deja para mapeos de contenido revisados explícitamente, sin búsqueda automática por título para packs.
 - Cada tanda de packs debe tener al menos 70% con precio en otra tienda soportada, bajo la misma identidad de producto en ITAD. Ante discrepancias de contenido, queda para revisión manual.
 - Hasta 150 packs nuevos, hasta 200 incorporaciones por corrida y 5.000 fichas totales. No se completa el cupo con coincidencias inseguras.
 

@@ -12,6 +12,7 @@ async function main() {
   const targets = process.env.MICROSOFT_DISCOVERY_GAME_IDS?.split(",");
   const cutoff = Date.now() - 30 * 86400000;
   const selected = sample.broadSample.filter((game) =>
+    game.productKind !== "pack" &&
     !game.identifiers.microsoftProductId && !game.identifiers.microsoftUrl && !state.matches[game.id] &&
     (!targets || targets.includes(game.id)) && (!state.checkedAt[game.id] || Date.parse(state.checkedAt[game.id]) < cutoff)
   ).sort((a, b) => Number(b.expectedStores.includes("microsoft")) - Number(a.expectedStores.includes("microsoft"))).slice(0, limit);

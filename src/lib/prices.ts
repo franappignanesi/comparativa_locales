@@ -194,6 +194,11 @@ async function buildPriceRows(
           return;
         }
 
+        if (game.productKind === "pack" && store !== "steam") {
+          storePrices[store] = withFreshness(normalizePrice({ ...unavailable(game, store, "Pack sin precio actual de identidad verificada"), fetchedAt }, exchangeRate));
+          return;
+        }
+
         if (!game.availableStores.includes(store)) {
           storePrices[store] = withFreshness(normalizePrice({ ...unavailable(game, store, "No esperado en la muestra"), fetchedAt }, exchangeRate));
           return;
