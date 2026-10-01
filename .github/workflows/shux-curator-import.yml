@@ -2,8 +2,9 @@ name: Import Shux weekend games
 
 on:
   schedule:
-    # Saturday 22:00 UTC = Saturday 19:00 Argentina (UTC-3).
-    - cron: "0 22 * * 6"
+    # Saturday/Sunday 19:00 Argentina, then Monday 16:30 before the digest fallback.
+    - cron: "0 22 * * 0,6"
+    - cron: "30 19 * * 1"
   workflow_dispatch:
 
 permissions:

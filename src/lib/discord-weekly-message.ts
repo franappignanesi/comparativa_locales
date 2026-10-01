@@ -1,5 +1,5 @@
 import { DISCORD_SITE } from "./discord-config";
-import { discordText } from "./discord-messages";
+import { argentinaDate, discordDigestPeriod, discordText } from "./discord-messages";
 import { discordPriceFresh } from "./discord-notifications";
 import { STORE_NAMES } from "./seo";
 import { STORES, type LatestPrices, type NormalizedPrice, type SampleGame } from "./types";
@@ -16,6 +16,14 @@ const discount = (quote: Quote) => {
 };
 function publicUrl(value: string | null | undefined) {
   try { const url = new URL(value ?? ""); return url.protocol === "https:" && !url.username && !url.password ? url.href : null; } catch { return null; }
+}
+export function latestDiscordWeekendGame(weekend: WeekendGame[]) {
+  return [...weekend].filter((game) => publicUrl(game.videoUrl))
+    .sort((a, b) => (b.reviewDate ?? "").localeCompare(a.reviewDate ?? ""))[0];
+}
+export function hasCurrentDiscordWeekendGame(weekend: WeekendGame[], now = new Date()) {
+  const date = latestDiscordWeekendGame(weekend)?.reviewDate;
+  return Boolean(date && /^\d{4}-\d{2}-\d{2}$/.test(date) && date >= discordDigestPeriod(now) && date <= argentinaDate(now));
 }
 function quotes(row: Row, latest: LatestPrices): Quote[] {
   return STORES.flatMap((store) => {
@@ -40,8 +48,7 @@ function cheaper(quotes: Quote[]) {
 export function buildDiscordWeeklyMessage(latest: LatestPrices, catalog: SampleGame[], weekend: WeekendGame[], popularity: Map<string, number>, recent: Set<string>): DiscordPayload {
   const used = new Set<string>();
   const embeds: NonNullable<DiscordPayload["embeds"]> = [];
-  const recommendation = [...weekend].filter((game) => publicUrl(game.videoUrl))
-    .sort((a, b) => (b.reviewDate ?? "").localeCompare(a.reviewDate ?? ""))[0];
+  const recommendation = latestDiscordWeekendGame(weekend);
   if (recommendation) {
     const match = catalog.find((game) => game.identifiers.steamAppId === recommendation.steamAppId);
     const row = latest.prices.find((game) => game.gameId === match?.id);

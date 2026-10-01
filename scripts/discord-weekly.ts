@@ -12,14 +12,19 @@ async function main() {
   const { discordSendsEnabled, discordWebhookUrl } = await import("../src/lib/discord-config");
   const { readDiscordPrices } = await import("../src/lib/discord-notifications");
   const { enqueueDiscord, getRecentDiscordBargains } = await import("../src/lib/discord-store");
-  const { discordWeek } = await import("../src/lib/discord-messages");
-  const { buildDiscordWeeklyMessage } = await import("../src/lib/discord-weekly-message");
+  const { discordDigestPeriod } = await import("../src/lib/discord-messages");
+  const { buildDiscordWeeklyMessage, hasCurrentDiscordWeekendGame } = await import("../src/lib/discord-weekly-message");
   const { getGameSample } = await import("../src/lib/sample-builder");
   const { getWeekendGames } = await import("../src/lib/weekend-games");
   const { getWishlistRanking } = await import("../src/lib/user-store");
+  const weekend = getWeekendGames();
+  if (process.env.DISCORD_WEEKLY_REQUIRE_CURRENT_JDF === "1" && !hasCurrentDiscordWeekendGame(weekend)) {
+    await report("Todavía no hay Juego del finde con video para este ciclo. No se publicó el resumen; queda el respaldo del lunes.", false);
+    return;
+  }
   const latest = await readDiscordPrices("AR");
   const popularity = new Map((await getWishlistRanking()).map((game) => [game.gameId, game.saves]));
-  const payload = buildDiscordWeeklyMessage(latest, (await getGameSample()).broadSample, getWeekendGames(), popularity, await getRecentDiscordBargains());
+  const payload = buildDiscordWeeklyMessage(latest, (await getGameSample()).broadSample, weekend, popularity, await getRecentDiscordBargains());
   if (process.argv.includes("--preview") || !discordSendsEnabled() || process.env.DISCORD_WEEKLY_ENABLED !== "1") {
     console.log(JSON.stringify({ preview: true, ...payload }, null, 2));
     await report("Vista previa: no se envió ningún mensaje a Discord.", false); return;
@@ -31,7 +36,7 @@ async function main() {
     payload.weeklyTest = true;
     payload.content = `🧪 **Prueba del resumen semanal**\n${payload.content}`;
   }
-  const result = await enqueueDiscord(testRun ? `weekly-test:${testRun}` : `weekly:${discordWeek()}`, "weekly", "weekly", "weekly", payload);
+  const result = await enqueueDiscord(testRun ? `weekly-test:${testRun}` : `weekly:${discordDigestPeriod()}`, "weekly", "weekly", "weekly", payload);
   await report(result.shouldDispatch
     ? "Resumen en cola para envío. Revisá el resultado del paso «Publish queued digest» para confirmar la entrega."
     : result.status === "sent"

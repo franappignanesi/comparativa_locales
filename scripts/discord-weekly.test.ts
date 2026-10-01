@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { buildDiscordWeeklyMessage } from "../src/lib/discord-weekly-message";
+import { buildDiscordWeeklyMessage, hasCurrentDiscordWeekendGame } from "../src/lib/discord-weekly-message";
+import { discordDigestPeriod } from "../src/lib/discord-messages";
 import type { LatestPrices, NormalizedPrice, SampleGame, StoreId } from "../src/lib/types";
 import type { WeekendGame } from "../src/lib/weekend-games";
 
@@ -21,6 +22,22 @@ function data(): LatestPrices {
 }
 const weekend: WeekendGame = { steamAppId: 10, title: "JDF", coverUrl: "https://cdn.example/cover.jpg", videoUrl: "https://www.instagram.com/reel/abc/", reviewDate: "2026-09-27", reviewDateLabel: "", review: "", mentorUrl: "https://store.steampowered.com/curator/1" };
 const catalog = [{ id: "jdf", identifiers: { steamAppId: 10 } }] as SampleGame[];
+test("weekend and Monday fallback share one cycle, including year boundaries", () => {
+  for (const date of ["2026-10-02T20:00:00Z", "2026-10-03T22:00:00Z", "2026-10-04T22:00:00Z", "2026-10-05T20:15:00Z"]) {
+    assert.equal(discordDigestPeriod(new Date(date)), "2026-10-02");
+  }
+  assert.equal(discordDigestPeriod(new Date("2026-10-09T02:00:00Z")), "2026-10-02");
+  assert.equal(discordDigestPeriod(new Date("2026-10-09T03:00:00Z")), "2026-10-09");
+  assert.equal(discordDigestPeriod(new Date("2027-01-04T20:15:00Z")), "2027-01-01");
+});
+test("import events only publish a current video recommendation, not edits to old reviews", () => {
+  const now = new Date("2026-10-05T19:30:00Z");
+  assert.equal(hasCurrentDiscordWeekendGame([weekend], now), false);
+  assert.equal(hasCurrentDiscordWeekendGame([{ ...weekend, reviewDate: "2026-10-02" }], now), true);
+  assert.equal(hasCurrentDiscordWeekendGame([{ ...weekend, reviewDate: "2026-10-06" }], now), false);
+  assert.equal(hasCurrentDiscordWeekendGame([{ ...weekend, reviewDate: null }], now), false);
+  assert.equal(hasCurrentDiscordWeekendGame([{ ...weekend, reviewDate: "2026-10-03", videoUrl: "" }], now), false);
+});
 test("weekly hierarchy, native money, card links, image and nonrepeating sections", () => {
   const payload = buildDiscordWeeklyMessage(data(), catalog, [weekend], new Map(), new Set(["bargain0"]));
   const embeds = payload.embeds!;

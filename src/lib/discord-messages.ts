@@ -33,3 +33,9 @@ export function discordWeek(now = new Date()) {
   date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 6) % 7);
   return date.toISOString().slice(0, 10);
 }
+// A weekend and its Monday fallback belong to the same Friday-start editorial cycle.
+export function discordDigestPeriod(now = new Date()) {
+  const date = new Date(`${argentinaDate(now)}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 2) % 7);
+  return date.toISOString().slice(0, 10);
+}
