@@ -1,12 +1,16 @@
 "use client";
 
-import { AlertTriangle, Check, Send, X } from "lucide-react";
-import { useState } from "react";
+import { AlertTriangle, Check, ChevronDown, MessageSquare, Plus, Send, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { GameSuggestionForm } from "./GameSuggestionForm";
 import type { GoogleUser } from "./UserMenu";
 
 const CATEGORIES = ["Precios mal cargados", "Funcion rota", "Bug visual", "Otro"] as const;
 
 export function ProblemReportButton({ user }: { user: GoogleUser | null }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [suggestionOpen, setSuggestionOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("Precios mal cargados");
   const [description, setDescription] = useState("");
@@ -14,6 +18,14 @@ export function ProblemReportButton({ user }: { user: GoogleUser | null }) {
   const [sent, setSent] = useState(false);
   const [loginRequired, setLoginRequired] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    function dismiss(event: MouseEvent) { if (!root.current?.contains(event.target as Node)) setMenuOpen(false); }
+    function escape(event: KeyboardEvent) { if (event.key === "Escape") { setMenuOpen(false); setSuggestionOpen(false); setOpen(false); } }
+    document.addEventListener("mousedown", dismiss);
+    document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("mousedown", dismiss); document.removeEventListener("keydown", escape); };
+  }, []);
 
   async function submitReport() {
     if (!description.trim() || submitting) return;
@@ -71,11 +83,16 @@ export function ProblemReportButton({ user }: { user: GoogleUser | null }) {
   }
 
   return (
-    <div className="problemReport">
-      <button className="problemReportButton" type="button" onClick={handleOpen} aria-label="Reportar problema" title="Reportar problema">
-        <AlertTriangle size={15} />
-        <span>Reportar problema</span>
+    <div className="problemReport" ref={root}>
+      <button className="problemReportButton" type="button" onClick={() => { setMenuOpen(!menuOpen); setOpen(false); setSuggestionOpen(false); }} aria-label="Sugerencias" title="Sugerencias" aria-expanded={menuOpen}>
+        <MessageSquare size={15} />
+        <span>Sugerencias</span><ChevronDown size={13} />
       </button>
+      {menuOpen ? <div className="suggestionsMenu">
+        <button type="button" onClick={() => { setMenuOpen(false); handleOpen(); }}><AlertTriangle size={16} />Reportar un problema</button>
+        <button type="button" onClick={() => { setMenuOpen(false); setSuggestionOpen(true); }}><Plus size={16} />Proponer un juego faltante</button>
+      </div> : null}
+      {suggestionOpen ? <GameSuggestionForm loggedIn={!!user} onClose={() => setSuggestionOpen(false)} /> : null}
       {open ? (
         <div className={sent ? "problemReportPanel sent" : "problemReportPanel"} role="dialog" aria-label="Reportar problema">
           <div className="problemReportHeader">

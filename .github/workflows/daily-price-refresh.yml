@@ -116,6 +116,13 @@ jobs:
             echo "Steam top sellers backfill enabled"
           fi
       - run: npm run worker:release-automation
+      - name: Process community game suggestions
+        continue-on-error: true
+        timeout-minutes: 7
+        env:
+          ITAD_API_KEY: ${{ secrets.ITAD_API_KEY }}
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+        run: npx tsx scripts/process-game-suggestions.ts
       - name: Expand curated catalog safely
         if: inputs.catalog_expansion || (github.event_name == 'schedule' && vars.CATALOG_EXPANSION_PAUSED != '1')
         continue-on-error: true
@@ -362,3 +369,7 @@ jobs:
           fi
       - name: Deploy refreshed production artifact
         run: vercel deploy --archive=tgz --prod --token="$VERCEL_TOKEN"
+      - name: Confirm community games published
+        continue-on-error: true
+        timeout-minutes: 7
+        run: npx tsx scripts/process-game-suggestions.ts --confirm-published

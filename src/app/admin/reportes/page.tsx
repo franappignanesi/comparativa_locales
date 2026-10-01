@@ -4,6 +4,7 @@ import { BarChart3, Bell, CheckCircle2, ChevronDown, Circle, ExternalLink, Histo
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ProblemReportButton } from "@/app/components/ProblemReportButton";
+import { AdminGameSuggestions } from "@/app/components/AdminGameSuggestions";
 import { RegionSelector } from "@/app/components/RegionSelector";
 import { GoogleUser, UserMenu } from "@/app/components/UserMenu";
 import { fetchWishlistAlerts, persistSession, readStoredUser, type WishlistAlert } from "@/app/components/userPersistence";
@@ -29,6 +30,7 @@ export default function AdminReportsPage() {
   const [resolveDraft, setResolveDraft] = useState<ResolveDraft>({ reportId: "", notify: null, message: "" });
   const [loading, setLoading] = useState(true);
   const [libraryMenuOpen, setLibraryMenuOpen] = useState(false);
+  const [tab, setTab] = useState<"reports" | "suggestions">("reports");
 
   useEffect(() => {
     const savedRegion = window.localStorage.getItem("glitchprice-region") as RegionId | null;
@@ -190,6 +192,10 @@ export default function AdminReportsPage() {
             <h1>Reportes de problema</h1>
           </div>
         </header>
+        {isAdmin ? <div className="adminReportTabs" role="tablist" aria-label="Reportes y sugerencias">
+          <button type="button" role="tab" aria-selected={tab === "reports"} onClick={() => setTab("reports")}>Reportes</button>
+          <button type="button" role="tab" aria-selected={tab === "suggestions"} onClick={() => setTab("suggestions")}>Juegos sugeridos</button>
+        </div> : null}
 
         {!user ? (
           <section className="adminNotice">
@@ -202,7 +208,7 @@ export default function AdminReportsPage() {
           <section className="adminNotice">
             <p>Esta seccion solo esta disponible para cuentas administradoras.</p>
           </section>
-        ) : loading ? (
+        ) : tab === "suggestions" ? <AdminGameSuggestions /> : loading ? (
           <p className="loading">Cargando reportes...</p>
         ) : (
           <>

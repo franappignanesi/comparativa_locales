@@ -303,6 +303,35 @@ select {
   position: relative;
 }
 
+.suggestionsMenu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 90; width: min(280px, calc(100vw - 28px)); padding: 6px; background: #161616; border: 1px solid #454545; border-radius: 6px; box-shadow: 0 12px 32px #0008; }
+.suggestionsMenu button { display: flex; align-items: center; gap: 9px; width: 100%; padding: 12px 8px; text-align: left; background: transparent; border: 0; color: #fff; }
+.suggestionsMenu button:hover, .suggestionsMenu button:focus-visible { background: #333; }
+.modalActions:has(.weekendTag) .problemReportButton > svg:last-child { display: none; }
+.gameSuggestionPanel input { width: 100%; min-width: 0; padding: 10px; border: 1px solid #555; border-radius: 4px; color: #fff; background: #171717; }
+.gameSuggestionPanel { max-height: min(680px, 80dvh); overflow-y: auto; }
+.suggestionChecking { display: flex; gap: 8px; align-items: center; }
+.suggestionSpinner { animation: suggestionSpin 1s linear infinite; }
+@keyframes suggestionSpin { to { transform: rotate(360deg); } }
+.suggestionPreview { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.suggestionPreview img { width: 100px; aspect-ratio: 460 / 215; object-fit: cover; border-radius: 4px; }
+.suggestionPreview strong { overflow-wrap: anywhere; }
+.adminReportTabs { display: flex; gap: 2px; margin-bottom: 24px; border-bottom: 1px solid #444; }
+.adminReportTabs button { padding: 12px 16px; background: transparent; color: #ddd; border: 0; border-bottom: 2px solid transparent; }
+.adminReportTabs button[aria-selected="true"] { color: var(--primary); border-bottom-color: var(--primary); }
+.suggestionAdminToolbar { display: flex; align-items: center; gap: 12px; padding-bottom: 16px; flex-wrap: wrap; }
+.suggestionAdminToolbar p { flex: 1 1 320px; font-size: 13px; color: #bbb; }
+.suggestionAdminToolbar button, .suggestionAdminActions button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 12px; background: #202020; color: #eee; border: 1px solid #555; border-radius: 4px; }
+.suggestionAdminToolbar button:disabled, .suggestionAdminActions button:disabled { opacity: .5; }
+.suggestionAdminRow { display: flex; align-items: start; gap: 18px; padding: 18px 0; border-top: 1px solid #333; }
+.suggestionAdminRow > img { width: 120px; aspect-ratio: 460 / 215; object-fit: cover; border-radius: 4px; }
+.suggestionAdminRow > div:not(.suggestionAdminActions) { flex: 1; min-width: 0; display: grid; gap: 7px; overflow-wrap: anywhere; }
+.suggestionAdminRow small { color: #aaa; }
+.suggestionAdminRow a { display: inline-flex; align-items: center; gap: 5px; color: #80dace; }
+.suggestionStatus { font-size: 12px; color: #f5d168; }
+.suggestionAdminActions { display: flex; flex-direction: column; gap: 8px; }
+@media (max-width: 640px) { .suggestionAdminRow { flex-wrap: wrap; gap: 12px; } .suggestionAdminRow > img { width: 90px; } .suggestionAdminActions { flex-direction: row; flex-wrap: wrap; width: 100%; } .gameSuggestionPanel { max-height: 75dvh; } }
+@media (prefers-reduced-motion: reduce) { .suggestionSpinner { animation: none; } }
+
 .problemReportButton {
   min-height: 34px;
   border: 1px solid rgba(248, 200, 19, 0.68);
@@ -4538,6 +4567,7 @@ select option {
   }
 
   .problemReportPanel,
+  .suggestionsMenu,
   .userDropdown,
   .regionMenu {
     position: fixed;
