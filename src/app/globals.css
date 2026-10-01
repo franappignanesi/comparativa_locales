@@ -13,6 +13,10 @@
 .weekendFeatured .gameCard { border-color: #72d7b3; box-shadow: 0 0 0 2px #72d7b32b; }
 .weekendFeatured .gameHero { min-height: 130px; height: 130px; }
 .weekendFeatured .gameHeroText h3 { font-size: 20px; letter-spacing: 0; }
+.weekendFeatured .priceTiles { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+.weekendFeatured .priceTile { min-height: 110px; padding: 14px 10px; gap: 6px; }
+.weekendFeatured .priceTile strong { font-size: 20px; }
+.weekendFeatured .storeName { font-size: 11px; letter-spacing: 0; }
 @media (max-width: 1000px) { .weekendFeaturedHeading { flex-direction: column; gap: 4px; } }
 @media (max-width: 700px) {
   .catalogOverview { grid-template-columns: minmax(0, 1fr); gap: 20px; }
