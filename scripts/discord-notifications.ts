@@ -46,14 +46,25 @@ async function main() {
         } else {
           if (process.env.DISCORD_WEEKLY_ENABLED !== "1") { await finishDiscordJob(job, "blocked"); blocked++; continue; }
           await readDiscordPrices("AR");
-          await sendDiscordWebhook({ content: job.payload.content, embeds: job.payload.embeds });
+          await sendDiscordWebhook({ content: job.payload.content, embeds: job.payload.embeds }, { test: job.payload.weeklyTest === true });
         }
         await finishDiscordJob(job, "sent"); sent++;
       } catch (error) {
         failures++;
         const apiError = error instanceof DiscordApiError ? error : null;
         console.error("[discord-worker] delivery failed", { kind: job.kind, status: apiError?.status ?? null, providerCode: apiError?.providerCode ?? null, reason: apiError?.reason ?? "unconfirmed", ambiguous: apiError?.ambiguous ?? true });
-        const status = apiError?.ambiguous ? "uncertain" : apiError && [429, 401, 503].includes(apiError.status) ? "pending" : "blocked";
+        const exhaustedTrial = apiError?.reason === "weekly_test_daily_limit";
+        if (apiError?.reason === "weekly_daily_limit" || exhaustedTrial) {
+          const message = exhaustedTrial
+            ? "Se alcanzó el límite de 3 pruebas manuales por día. No se enviará esta prueba más tarde. El cupo se reinicia a las 21:00 de Argentina."
+            : "Se alcanzó el límite de 2 envíos normales por día. Para probar cambios de formato, usá test_publish. El cupo se reinicia a las 21:00 de Argentina.";
+          console.error(message);
+          if (process.env.GITHUB_STEP_SUMMARY) {
+            const { appendFile } = await import("node:fs/promises");
+            await appendFile(process.env.GITHUB_STEP_SUMMARY, `\n**No se envió el mensaje:** ${message}\n`);
+          }
+        }
+        const status = exhaustedTrial ? "blocked" : apiError?.ambiguous ? "uncertain" : apiError && [429, 401, 503].includes(apiError.status) ? "pending" : "blocked";
         await finishDiscordJob(job, status, Math.max(60, apiError?.retryAfter || 3600));
         if (!apiError || apiError.status === 401 || apiError.status === 429 || apiError.status === 503 || failures >= 3) break;
       }

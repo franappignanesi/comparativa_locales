@@ -2,11 +2,15 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { argentinaDate, buildDiscordWishlistMessage, discordAlertSignature, discordText, discordWeek } from "../src/lib/discord-messages";
 import { boundedDiscordSetting, discordRecipientAllowed, discordSameOrigin, discordSendsEnabled, discordWebhookUrl } from "../src/lib/discord-config";
-import { DiscordApiError, discordRequest, resetDiscordBudget, sendDiscordDm, sendDiscordWebhook } from "../src/lib/discord-api";
+import { DiscordApiError, discordRequest, discordWeeklyBudget, resetDiscordBudget, sendDiscordDm, sendDiscordWebhook } from "../src/lib/discord-api";
 import { discordTestFailure } from "../src/lib/discord-test-errors";
 import type { WishlistAlert } from "../src/lib/wishlist-alerts";
 
 const alert: WishlistAlert = { userId: "private-user", region: "AR", gameId: "game", gameTitle: "Juego @everyone", store: "steam", type: "price_drop", message: "Bajó 50%", triggeredAt: "2026-10-01T00:00:00Z", currentOfficialPrice: 10, currentCurrency: "USD", currentArsPrice: 10000 };
+test("manual weekly trials have a separate bounded budget from scheduled sends", () => {
+  assert.deepEqual(discordWeeklyBudget(false), { key: "weekly-global", limit: 2, reason: "weekly_daily_limit" });
+  assert.deepEqual(discordWeeklyBudget(true), { key: "weekly-test-global", limit: 3, reason: "weekly_test_daily_limit" });
+});
 test("webhook URLs accept Discord variants but reject unrelated targets", () => {
   const path = "/api/webhooks/123456789012345678/test_token";
   assert.equal(discordWebhookUrl(` https://discord.com${path}\n`)?.search, "?wait=true");

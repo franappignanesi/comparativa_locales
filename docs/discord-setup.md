@@ -46,6 +46,7 @@ The SHUX weekly digest uses three colored embeds: latest dated Juego del finde w
 Games in the cheaper-than-Steam section are excluded for 60 days after a confirmed send. This small state lives in `discord_weekly_bargains`, separately from prunable pricing state, and is committed atomically with outbox completion. Previews and failed sends do not consume cooldowns. No repeats between digest sections; fewer results are preferable to filling with invalid offers. Existing weekly idempotency remains: rerunning a sent week does not post another message.
 
 Manual format trial: start a NEW workflow run on main, uncheck `preview` and check `test_publish`. This posts one extra message labeled as a test to the configured SHUX channel, subject to the same safety caps. Its idempotency key uses the GitHub run ID, so re-running that same trial cannot duplicate it. Leave `test_publish` unchecked for normal publishing. Workflow summaries explicitly distinguish preview, already-published and queued; a green run alone is not a delivery confirmation.
+Normal webhook sends are capped at 2 attempts per UTC day; explicit manual trials have a separate cap of 3 attempts per UTC day (reset at 21:00 Argentina). This flag is set only by the trusted workflow's manual input, not a public endpoint. An exhausted test is blocked instead of queued for a surprise delivery later. Provider rate limits and ambiguous-delivery protection remain unchanged.
 
 ## User flow
 

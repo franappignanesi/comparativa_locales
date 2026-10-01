@@ -85,7 +85,7 @@ export async function consumeDiscordState(state: string, userSub: string) {
   const result = await rows("DELETE FROM discord_oauth_states WHERE state_hash=$1 AND user_sub=$2 AND expires_at>NOW() RETURNING user_sub", [discordHash(state), userSub]);
   return result.length === 1;
 }
-export type DiscordPayload = { content?: string; embeds?: Array<Record<string, unknown>>; bargainGameIds?: string[]; signatures?: string[]; region?: string; prices?: Array<{ gameId: string; store: string; currency: string; price: number; type: string; thresholdUsd?: number | null }> };
+export type DiscordPayload = { content?: string; embeds?: Array<Record<string, unknown>>; weeklyTest?: boolean; bargainGameIds?: string[]; signatures?: string[]; region?: string; prices?: Array<{ gameId: string; store: string; currency: string; price: number; type: string; thresholdUsd?: number | null }> };
 export async function getRecentDiscordBargains() {
   await ready();
   const result = await rows("SELECT game_id FROM discord_weekly_bargains WHERE sent_at>NOW()-INTERVAL '60 days'");

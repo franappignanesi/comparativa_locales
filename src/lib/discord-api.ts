@@ -32,11 +32,18 @@ export async function sendDiscordDm(recipient: string, payload: { content?: stri
   if (!/^\d{17,22}$/.test(String(dm.id))) throw new DiscordApiError(502);
   return discordRequest(`/channels/${dm.id}/messages`, { ...payload, nonce: nonce.slice(0, 25), enforce_nonce: true, allowed_mentions: { parse: [] } });
 }
-export async function sendDiscordWebhook(payload: { content?: string; embeds?: Array<Record<string, unknown>> }) {
+export function discordWeeklyBudget(test: boolean) {
+  return test ? { key: "weekly-test-global", limit: 3, reason: "weekly_test_daily_limit" } : { key: "weekly-global", limit: 2, reason: "weekly_daily_limit" };
+}
+export async function sendDiscordWebhook(payload: { content?: string; embeds?: Array<Record<string, unknown>> }, options: { test?: boolean } = {}) {
   if (!discordSendsEnabled() || !await discordControlEnabled()) throw new DiscordApiError(503, 3600, false, undefined, "sending_paused");
   const url = discordWebhookUrl(process.env.DISCORD_WEEKLY_WEBHOOK_URL);
   if (!url) throw new DiscordApiError(503, 3600, false, undefined, "invalid_webhook_url");
-  if (!await discordRateLimit("weekly-global", 2, 86400)) throw new DiscordApiError(429, 3600);
+  const budget = discordWeeklyBudget(options.test === true);
+  if (!await discordRateLimit(budget.key, budget.limit, 86400)) {
+    const untilReset = Math.ceil((86400000 - Date.now() % 86400000) / 1000);
+    throw new DiscordApiError(429, untilReset, false, undefined, budget.reason);
+  }
   let response: Response;
   try { response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...payload, allowed_mentions: { parse: [] } }), signal: AbortSignal.timeout(12000), redirect: "error" }); }
   catch { throw new DiscordApiError(0, 0, true); }

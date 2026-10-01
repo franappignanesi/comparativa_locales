@@ -27,7 +27,10 @@ async function main() {
   if (!discordWebhookUrl(process.env.DISCORD_WEEKLY_WEBHOOK_URL)) throw new Error("Invalid webhook URL");
   const testRun = process.env.DISCORD_WEEKLY_TEST_RUN;
   if (testRun && !/^\d+$/.test(testRun)) throw new Error("Invalid test run");
-  if (testRun) payload.content = `🧪 **Prueba del resumen semanal**\n${payload.content}`;
+  if (testRun) {
+    payload.weeklyTest = true;
+    payload.content = `🧪 **Prueba del resumen semanal**\n${payload.content}`;
+  }
   const result = await enqueueDiscord(testRun ? `weekly-test:${testRun}` : `weekly:${discordWeek()}`, "weekly", "weekly", "weekly", payload);
   await report(result.shouldDispatch
     ? "Resumen en cola para envío. Revisá el resultado del paso «Publish queued digest» para confirmar la entrega."
