@@ -45,6 +45,7 @@ The weekly workflow restores the existing public cache, performs no scraping, an
 ## User flow
 
 Google login > Profile > Connect Discord > approve identify permission > send confirmation test > explicitly enable private alerts.
+The profile links to https://discord.gg/NF88UabRc and explains shared-server membership and DM privacy requirements. Joining is voluntary; the OAuth identify flow never silently adds users to a guild.
 Connecting never enables alerts automatically. Two test attempts per account per UTC day, one grouped wishlist digest per Discord recipient per Argentina calendar day. No free-form recipient IDs or message contents are accepted from the browser.
 Existing wishlist thresholds, stores and region are used. Up to 10 game/store offers per digest. MD delivery may fail because of Discord privacy, server membership or blocking; never promise guaranteed delivery.
 

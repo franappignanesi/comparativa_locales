@@ -9,7 +9,9 @@
 .catalogOverviewLeft { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
 .discordSettings { padding: 18px 0; border-top: 1px solid var(--line); }
 .discordSettingsActions { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
-.discordSettingsActions button { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 4px; padding: 10px 12px; background: var(--surface-card); color: var(--text); cursor: pointer; }
+.discordSettingsActions button, .discordSettingsActions a { display: inline-flex; align-items: center; justify-content: center; gap: 8px; max-width: 100%; border: 1px solid var(--line); border-radius: 4px; padding: 10px 12px; background: var(--surface-card); color: var(--text); cursor: pointer; text-decoration: none; font-size: 13px; line-height: 1.5; }
+.discordSettingsActions svg { flex-shrink: 0; }
+.discordSettingsActions a:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .discordSettingsActions button:disabled { opacity: .5; cursor: default; }
 .discordOptIn { display: flex; align-items: flex-start; gap: 9px; font-size: 13px; line-height: 1.5; }
 .discordOptIn input { margin-top: 3px; flex-shrink: 0; accent-color: #ffcf00; }
