@@ -20,6 +20,7 @@ export type GameCategory =
   | "multiplayer pago";
 
 export type StoreIdentifiers = {
+  itadId?: string | null;
   steamAppId?: number | null;
   steamSubId?: number | null;
   epicSlug?: string | null;
@@ -30,6 +31,7 @@ export type StoreIdentifiers = {
 };
 
 export type GameCandidate = {
+  productKind?: "game" | "pack";
   isFree?: boolean;
   title: string;
   edition: "standard";
@@ -105,6 +107,8 @@ export type LatestPrices = {
   usdToTargetTimestamp?: string | null;
   digitalVatRate?: number;
   prices: Array<{
+    itadId?: string | null;
+    productKind?: "game" | "pack";
     isFree?: boolean;
     weekendGame?: WeekendGame;
     gameId: string;

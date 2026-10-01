@@ -17,7 +17,7 @@ export const REGIONS: RegionConfig[] = [
   {
     id: "AR",
     label: "Argentina",
-    flagSrc: "/flags/arg.png",
+    flagSrc: "/flags/arg-small.webp",
     currency: "ARS",
     steamCc: "AR",
     epicCountry: "AR",
@@ -29,7 +29,7 @@ export const REGIONS: RegionConfig[] = [
   {
     id: "MX",
     label: "México",
-    flagSrc: "/flags/mex.png",
+    flagSrc: "/flags/mex-small.webp",
     currency: "MXN",
     steamCc: "MX",
     epicCountry: "MX",
@@ -41,7 +41,7 @@ export const REGIONS: RegionConfig[] = [
   {
     id: "ES",
     label: "España",
-    flagSrc: "/flags/esp.png",
+    flagSrc: "/flags/esp-small.webp",
     currency: "EUR",
     steamCc: "ES",
     epicCountry: "ES",
@@ -53,7 +53,7 @@ export const REGIONS: RegionConfig[] = [
   {
     id: "PE",
     label: "Perú",
-    flagSrc: "/flags/peru.png",
+    flagSrc: "/flags/peru-small.webp",
     currency: "PEN",
     steamCc: "PE",
     epicCountry: "PE",
@@ -65,7 +65,7 @@ export const REGIONS: RegionConfig[] = [
   {
     id: "CL",
     label: "Chile",
-    flagSrc: "/flags/chile.png",
+    flagSrc: "/flags/chile-small.webp",
     currency: "CLP",
     steamCc: "CL",
     epicCountry: "CL",

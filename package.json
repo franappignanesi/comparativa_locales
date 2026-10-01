@@ -9,6 +9,7 @@
     "start": "next start",
     "build:game-sample": "tsx scripts/build-game-sample.ts",
     "catalog:discover-steam": "tsx scripts/discover-steam-candidates.ts",
+    "catalog:curate": "tsx scripts/expand-curated-catalog.ts",
     "catalog:enrich-steam-tags": "tsx scripts/enrich-steam-tags.ts",
     "catalog:promote-discovered": "tsx scripts/promote-discovered-candidates.ts",
     "releases:discover": "tsx scripts/discover-steam-releases.ts",

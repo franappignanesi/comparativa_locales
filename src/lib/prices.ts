@@ -213,6 +213,8 @@ async function buildPriceRows(
     );
 
     return {
+      itadId: game.identifiers.itadId,
+      productKind: game.productKind,
       gameId: game.id,
       gameTitle: game.title,
       coverUrl: game.coverUrl ?? null,

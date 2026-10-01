@@ -3,6 +3,11 @@ name: Daily full price refresh
 on:
   workflow_dispatch:
     inputs:
+      catalog_expansion:
+        description: "Run curated expansion toward 5000 in validated batches (max 12 batches, 70% multi-store packs)"
+        required: false
+        type: boolean
+        default: false
       microsoft_catalog_audit:
         description: "Scan the entire remaining catalog for Microsoft PC games and refresh Microsoft prices only"
         required: false
@@ -61,7 +66,7 @@ jobs:
   release-automation:
     name: Discover and promote new games
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ inputs.microsoft_catalog_audit && 75 || 45 }}
+    timeout-minutes: ${{ inputs.catalog_expansion && 180 || (inputs.microsoft_catalog_audit && 75 || 45) }}
     continue-on-error: true
     env:
       GLITCHPRICE_PUBLIC_CACHE_SOURCE: file
@@ -82,6 +87,7 @@ jobs:
             data/generated/itad-history*.json
             data/generated/itad-full-history*.json
             data/generated/pending-releases.json
+            data/generated/catalog-expansion.json
             data/generated/steam-sale-refresh-cursor-*.json
           key: barateam-public-data-${{ github.run_id }}-catalog
           restore-keys: |
@@ -110,6 +116,12 @@ jobs:
             echo "Steam top sellers backfill enabled"
           fi
       - run: npm run worker:release-automation
+      - name: Expand curated catalog safely
+        if: inputs.catalog_expansion || (github.event_name == 'schedule' && vars.CATALOG_EXPANSION_PAUSED != '1')
+        continue-on-error: true
+        env:
+          ITAD_API_KEY: ${{ secrets.ITAD_API_KEY }}
+        run: npm run catalog:curate -- ${{ inputs.catalog_expansion && '--until-target' || '' }}
       - name: Discover missing Microsoft PC games
         continue-on-error: true
         run: npx tsx scripts/discover-microsoft-games.ts
@@ -130,6 +142,14 @@ jobs:
             data/generated/game-sample.json
             data/generated/pending-releases.json
             data/generated/microsoft-discovery.json
+            data/generated/catalog-expansion.json
+      - name: Upload curated incorporation report
+        if: always() && (inputs.catalog_expansion || github.event_name == 'schedule')
+        uses: actions/upload-artifact@v4
+        with:
+          name: curated-incorporations
+          path: docs/catalog/incorporaciones.md
+          retention-days: 30
 
   refresh-region:
     name: Refresh ${{ matrix.region }}
@@ -281,6 +301,7 @@ jobs:
             data/generated/itad-history*.json
             data/generated/itad-full-history*.json
             data/generated/pending-releases.json
+            data/generated/catalog-expansion.json
             data/generated/steam-sale-refresh-cursor-*.json
           key: barateam-public-data-${{ github.run_id }}
       - name: Evaluate wishlist notifications

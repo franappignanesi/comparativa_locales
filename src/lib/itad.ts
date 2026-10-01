@@ -93,8 +93,7 @@ export async function fetchItadStoreLows(latest: LatestPrices): Promise<ItadHist
   const exchangeRate = await getExchangeRate(region);
   const shopIds = await fetchShopIds(key, region, errors);
   const supportedStores = STORES.filter((store) => shopIds[store] != null && store !== "microsoft");
-  const titles = latest.prices.map((row) => row.gameTitle);
-  const lookup = await postItad<ItadLookup>("/lookup/id/title/v1", key, {}, titles);
+  const lookup = await lookupItadIds(latest.prices.map(row => ({ title: row.gameTitle, identifiers: { itadId: row.itadId }, productKind: row.productKind })), key, errors);
   const idToGame = new Map<string, { gameId: string; gameTitle: string }>();
 
   for (const row of latest.prices) {
@@ -185,7 +184,7 @@ export async function fetchItadFullHistoryForGames(latest: LatestPrices, gameIds
   const shopIds = await fetchShopIds(key, region, errors);
   const supportedStores = STORES.filter((store) => shopIds[store] != null && store !== "microsoft");
   const selectedRows = latest.prices.filter((row) => gameIds.has(row.gameId));
-  const lookup = await postItad<ItadLookup>("/lookup/id/title/v1", key, {}, selectedRows.map((row) => row.gameTitle));
+  const lookup = await lookupItadIds(selectedRows.map(row => ({ title: row.gameTitle, identifiers: { itadId: row.itadId }, productKind: row.productKind })), key, errors);
   const idToGame = new Map<string, { gameId: string; gameTitle: string }>();
 
   for (const row of selectedRows) {
@@ -352,15 +351,17 @@ async function fetchShopIds(key: string, country: string, errors: string[]): Pro
   }
 }
 
-async function lookupItadIds(games: SampleGame[], key: string, errors: string[]): Promise<ItadLookup> {
+export async function lookupItadIds(games: Array<{ title: string; identifiers?: SampleGame["identifiers"]; productKind?: "game" | "pack" }>, key: string, errors: string[]): Promise<ItadLookup> {
   const lookup: ItadLookup = {};
-  for (const chunk of chunkArray(games.map((game) => game.title), 200)) {
+  const unresolved = games.filter(game => !game.identifiers?.itadId && !game.identifiers?.steamSubId && game.productKind !== "pack");
+  for (const chunk of chunkArray(unresolved.map((game) => game.title), 200)) {
     try {
       Object.assign(lookup, await postItad<ItadLookup>("/lookup/id/title/v1", key, {}, chunk));
     } catch (error) {
       errors.push(error instanceof Error ? error.message : "Error resolviendo IDs ITAD");
     }
   }
+  for (const game of games) if (game.identifiers?.itadId) lookup[game.title] = game.identifiers.itadId;
   return lookup;
 }
 

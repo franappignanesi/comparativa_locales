@@ -833,5 +833,44 @@
       "steamAppId": 2761100
     },
     "confidence": "high"
+  },
+  {
+    "title": "Machine Party",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Indie"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/4108000/00ae7d0e0fd0ad72635bddb1dd80ee68cc94eed5/header_292x136.jpg?t=1786561627",
+    "releaseYear": 2026,
+    "notes": "Shux Juego del finde. Verified Steam app 4108000.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 4108000
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Date Everything!",
+    "edition": "standard",
+    "category": "AA",
+    "primaryTag": "Simulation",
+    "steamTags": [
+      "Simulation"
+    ],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2201320/ab3232570bb8f41f23d39545e6c34f54b0bd4fdf/header_292x136.jpg?t=1786456292",
+    "releaseYear": 2025,
+    "notes": "Shux Juego del finde. Verified Steam app 2201320.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2201320
+    },
+    "confidence": "high"
   }
 ]

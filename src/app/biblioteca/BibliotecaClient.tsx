@@ -42,6 +42,7 @@ import type { AnalysisSummary, GameAnalysis } from "@/lib/analysis";
 import { formatGameCategory } from "@/lib/categories";
 import { FALLBACK_USD_TO_ARS, formatArs } from "@/lib/normalize";
 import { STORE_LOGOS } from "@/lib/store-assets";
+import { GameCover } from "@/app/components/GameCover";
 import type { LatestPrices, NormalizedPrice, PriceHistoryReport, StoreId } from "@/lib/types";
 import { STORES } from "@/lib/types";
 import type { CatalogResponse } from "@/lib/catalog";
@@ -501,7 +502,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
                 <div className="mobileSearchSuggestions">
                   {games.slice(0, 6).map((row) => (
                     <button key={row.gameId} type="button" className="mobileSearchSuggestion" onClick={() => setSelectedGameId(row.gameId)}>
-                      {row.coverUrl ? <img src={row.coverUrl} alt="" loading="lazy" /> : <span className="mobileSearchCoverFallback" />}
+                      {row.coverUrl ? <GameCover src={row.coverUrl} sizes="64px" /> : <span className="mobileSearchCoverFallback" />}
                       <span>
                         <strong>{row.gameTitle}</strong>
                         <small>{[row.releaseYear, formatCategory(displayGameCategory(row))].filter(Boolean).join(" · ")}</small>
@@ -753,7 +754,7 @@ function GameCard({
           if (event.key === "Enter" || event.key === " ") onOpen();
         }}
       >
-        {row.coverUrl ? <img src={row.coverUrl} alt="" loading="lazy" /> : <div className="coverFallback" />}
+        {row.coverUrl ? <GameCover src={row.coverUrl} sizes="(max-width: 700px) calc(100vw - 32px), (max-width: 1100px) 45vw, 380px" /> : <div className="coverFallback" />}
         {bestDiscount ? (
           <span className={`discountRibbon discountRibbon-${bestDiscount.store}`} aria-label={`Descuento ${bestDiscount.discountPct}%`}>
             -{bestDiscount.discountPct}%
@@ -773,6 +774,7 @@ function GameCard({
         </button>
         <div className="gameHeroOverlay" />
         <div className="gameHeroText">
+          {row.productKind === "pack" ? <span className="packTag">PACK / COLECCIÓN</span> : null}
           <h3><a className="gameTitleLink" href={`/juegos/${row.gameId}`} onClick={(event) => { event.stopPropagation(); if (!event.ctrlKey && !event.metaKey && !event.shiftKey && event.button === 0) { event.preventDefault(); onOpen(); } }} onKeyDown={(event) => event.stopPropagation()}>{row.gameTitle}</a></h3>
           <button
             className={category === displayGameCategory(row) ? "categoryFilter active" : "categoryFilter"}

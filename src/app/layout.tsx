@@ -1,9 +1,18 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import { Analytics } from "@vercel/analytics/next";
 import { EngagementTracker } from "@/app/components/EngagementTracker";
 import "./globals.css";
 import "./seo.css";
 import { SITE_URL, pageMetadata, serializeJsonLd, siteStructuredData } from "@/lib/seo";
+
+const montserrat = localFont({
+  src: "./fonts/montserrat-latin.woff2",
+  variable: "--font-montserrat",
+  weight: "100 900",
+  display: "swap",
+  adjustFontFallback: "Arial"
+});
 
 export const metadata: Metadata = {
   ...pageMetadata("BARATEAM | Comparador de precios de juegos", "Compará precios y ofertas de juegos para PC entre tiendas oficiales con BARATEAM, una herramienta de Shux.", "/"),
@@ -28,11 +37,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es-AR">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      </head>
+    <html lang="es-AR" className={montserrat.variable}>
       <body>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(siteStructuredData) }} />
         {children}

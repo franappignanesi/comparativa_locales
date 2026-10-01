@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
+import { GameCover } from "@/app/components/GameCover";
 import { LegalLinks } from "@/app/components/LegalLinks";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -216,8 +217,8 @@ export function LandingClient({
             const winnerStore = bestEnabledStore(row, enabledStores);
             const winner = winnerStore ? row.prices[winnerStore] : null;
             return (
-              <Link href="/biblioteca" className="arbitrageCard" key={row.gameId}>
-                {row.coverUrl ? <img src={row.coverUrl} alt="" /> : <span className="arbitrageFallback" />}
+              <Link href={`/juegos/${encodeURIComponent(row.gameId)}`} className="arbitrageCard" key={row.gameId}>
+                {row.coverUrl ? <GameCover src={row.coverUrl} sizes="(max-width: 700px) 45vw, (max-width: 1100px) 30vw, 240px" /> : <span className="arbitrageFallback" />}
                 <span className="diffBadge">
                   {analysis?.differenceVsSteam == null
                     ? "sin dato"
