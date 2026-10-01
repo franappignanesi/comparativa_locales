@@ -3,6 +3,7 @@ import { readFile, mkdir, writeFile, rename } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { parseSteamReviewDate } from "../src/lib/weekend-games";
+import dateOverrides from "../data/shux-weekend-date-overrides.json";
 
 const curatorId = 35362522;
 const sourceUrl = `https://store.steampowered.com/curator/${curatorId}-ShuxTeam/`;
@@ -18,6 +19,11 @@ export interface CuratorReview {
   reviewDateLabel: string;
   reviewDate: string | null;
   review: string;
+}
+
+export function applyCuratorDateOverrides(reviews: CuratorReview[]): CuratorReview[] {
+  const dates: Record<string, string> = dateOverrides;
+  return reviews.map((review) => ({ ...review, reviewDate: dates[String(review.steamAppId)] ?? review.reviewDate }));
 }
 
 export function extractVideoUrl(href: string | undefined): string | null {
@@ -115,7 +121,8 @@ export async function importCurator() {
     if (!current) reviews.set(review.steamAppId, review);
     else if (review.reviewDate && current.reviewDateLabel === review.reviewDateLabel) current.reviewDate = review.reviewDate;
   });
-  const records = [...reviews.values()];
+  // Original video dates take precedence over the later date of a backfilled Steam review.
+  const records = applyCuratorDateOverrides([...reviews.values()]);
   const changed = JSON.stringify(records) !== JSON.stringify(previous?.reviews);
   if (changed) {
     await atomicWrite(outputPath, JSON.stringify({ curatorId, sourceUrl, updatedAt: new Date().toISOString(), reviews: records }, null, 2) + "\n");

@@ -1,6 +1,16 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { extractVideoUrl, parseReviews } from "./import-shux-curator";
+import { applyCuratorDateOverrides, extractVideoUrl, parseReviews, type CuratorReview } from "./import-shux-curator";
+
+test("backfilled weekend games retain original dates across future imports", () => {
+  const ids = [674520, 2201320, 4108000, 4001890, 108600, 123];
+  const reviews = ids.map((steamAppId) => ({ steamAppId, reviewDate: "2026-10-01", reviewDateLabel: "1 de octubre" })) as CuratorReview[];
+  const corrected = applyCuratorDateOverrides(reviews);
+  assert.deepEqual(corrected.map((review) => review.reviewDate), ["2026-09-20", "2026-09-13", "2026-09-05", "2026-08-29", "2026-08-22", "2026-10-01"]);
+  assert.equal(corrected[0].reviewDateLabel, "1 de octubre");
+  assert.equal(reviews[0].reviewDate, "2026-10-01");
+  assert.deepEqual(applyCuratorDateOverrides(corrected), corrected);
+});
 
 test("Steam's nested anchors keep the correct game and video together", () => {
   const html = `<div class="recommendation">

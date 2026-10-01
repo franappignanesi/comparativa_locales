@@ -1,8 +1,63 @@
 {
   "curatorId": 35362522,
   "sourceUrl": "https://store.steampowered.com/curator/35362522-ShuxTeam/",
-  "updatedAt": "2026-09-30T23:18:28.600Z",
+  "updatedAt": "2026-10-01T07:06:50.193Z",
   "reviews": [
+    {
+      "steamAppId": 108600,
+      "title": "Project Zomboid",
+      "steamUrl": "https://store.steampowered.com/app/108600/",
+      "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/108600/header_292x136.jpg?t=1787740093",
+      "videoUrl": "https://www.instagram.com/shuxteam/reel/DcWLtU2vHoO/",
+      "reviewType": "recommended",
+      "reviewDateLabel": "30 de septiembre",
+      "reviewDate": "2026-08-22",
+      "review": "uno de los juegos mas inmersivos y tensos en cuanto a apocalipsis, realmente la experiencia mejora con amigos pero mandarte te va a hacer crecer el pelo en el pecho a 1000x"
+    },
+    {
+      "steamAppId": 4001890,
+      "title": "How to Fish",
+      "steamUrl": "https://store.steampowered.com/app/4001890/",
+      "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/4001890/45c4ddff4901e32c4b8b643e1b97d0d01898d299/header_292x136.jpg?t=1788788717",
+      "videoUrl": "https://www.instagram.com/shuxteam/reel/Dcov0Sfpe3b/",
+      "reviewType": "recommended",
+      "reviewDateLabel": "30 de septiembre",
+      "reviewDate": "2026-08-29",
+      "review": "tal vez no la mejor manera de aprender a pescar, pero las risas no van a faltar. en este juego literal pescas, si. pero con escopetas, snipers, bombas, literal reventas todo. jajas incluidas."
+    },
+    {
+      "steamAppId": 4108000,
+      "title": "Machine Party",
+      "steamUrl": "https://store.steampowered.com/app/4108000/",
+      "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/4108000/00ae7d0e0fd0ad72635bddb1dd80ee68cc94eed5/header_292x136.jpg?t=1786561627",
+      "videoUrl": "https://www.instagram.com/shuxteam/reel/Dc6DZbAPDn6/",
+      "reviewType": "recommended",
+      "reviewDateLabel": "30 de septiembre",
+      "reviewDate": "2026-09-05",
+      "review": "el mario party turbio, literal parece una pelicula de saw (el juego del miedo) por la cantidad de trampas turbinas y peligros quer tenes que sortear, por demas... ganarle a tus amigos."
+    },
+    {
+      "steamAppId": 2201320,
+      "title": "Date Everything!",
+      "steamUrl": "https://store.steampowered.com/app/2201320/",
+      "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2201320/ab3232570bb8f41f23d39545e6c34f54b0bd4fdf/header_292x136.jpg?t=1786456292",
+      "videoUrl": "https://www.instagram.com/shuxteam/reel/DdOvhC8vI8q/",
+      "reviewType": "recommended",
+      "reviewDateLabel": "30 de septiembre",
+      "reviewDate": "2026-09-13",
+      "review": "te gusta decorar? de gustan tus muebles? bueno, podes demostrarles tu verdadero amor, literal podes salir con cualquier objeto de tu casa y realmente las interacciones son de lo mas interesantes"
+    },
+    {
+      "steamAppId": 674520,
+      "title": "Fight'N Rage",
+      "steamUrl": "https://store.steampowered.com/app/674520/",
+      "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/674520/header_292x136.jpg?t=1676503282",
+      "videoUrl": "https://www.instagram.com/shuxteam/reel/Ddhy1fEt9PV/",
+      "reviewType": "recommended",
+      "reviewDateLabel": "30 de septiembre",
+      "reviewDate": "2026-09-20",
+      "review": "juegazo beat em up uruguayo con un estilo retro muy llamativo, sistema de combos lo hacen destacar en gameplay y una banda sonora tremendisima. ideal para reventar joystick con un pana."
+    },
     {
       "steamAppId": 3669870,
       "title": "CONTROL Resonant",

@@ -2,12 +2,17 @@
 
 Fuente: [Mentor de ShuxTeam](https://store.steampowered.com/curator/35362522-ShuxTeam/).
 
-189 reseñas; 179 con enlace a video. Se incluyen las reseñas informativas y negativas, identificadas por tipo.
+194 reseñas; 184 con enlace a video. Se incluyen las reseñas informativas y negativas, identificadas por tipo.
 
 La fecha completa se obtiene de la etiqueta de Steam: cuando omite el año, corresponde al año de la consulta. Los juegos retirados se conservan en importaciones posteriores.
 
 | Juego | Fecha en Steam | Tipo | Video | Steam App ID |
 | --- | --- | --- | --- | --- |
+| [Project Zomboid](https://store.steampowered.com/app/108600/) | 30 de septiembre | Recomendado | [Ver video](https://www.instagram.com/shuxteam/reel/DcWLtU2vHoO/) | 108600 |
+| [How to Fish](https://store.steampowered.com/app/4001890/) | 30 de septiembre | Recomendado | [Ver video](https://www.instagram.com/shuxteam/reel/Dcov0Sfpe3b/) | 4001890 |
+| [Machine Party](https://store.steampowered.com/app/4108000/) | 30 de septiembre | Recomendado | [Ver video](https://www.instagram.com/shuxteam/reel/Dc6DZbAPDn6/) | 4108000 |
+| [Date Everything!](https://store.steampowered.com/app/2201320/) | 30 de septiembre | Recomendado | [Ver video](https://www.instagram.com/shuxteam/reel/DdOvhC8vI8q/) | 2201320 |
+| [Fight'N Rage](https://store.steampowered.com/app/674520/) | 30 de septiembre | Recomendado | [Ver video](https://www.instagram.com/shuxteam/reel/Ddhy1fEt9PV/) | 674520 |
 | [CONTROL Resonant](https://store.steampowered.com/app/3669870/) | 28 de septiembre | Recomendado | [Ver video](https://www.instagram.com/p/DdyrVjvTy8G/) | 3669870 |
 | [No More Room in Hell 2](https://store.steampowered.com/app/292000/) | 15 de agosto | Recomendado | [Ver video](https://www.instagram.com/p/DcEVanQPbkk/) | 292000 |
 | [Killing Floor 3](https://store.steampowered.com/app/1430190/) | 2 de agosto | Recomendado | [Ver video](https://www.instagram.com/p/Dbiymv7PPQl/) | 1430190 |
