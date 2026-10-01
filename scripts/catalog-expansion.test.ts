@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { chooseCatalogAdditions, catalogIdentity, EXCLUDED_PRODUCT, isPackTitle } from "../src/lib/catalog-expansion";
+import { chooseCatalogAdditions, catalogIdentity, EXCLUDED_PRODUCT, isPackTitle, normalizedCatalogTitle } from "../src/lib/catalog-expansion";
 import { lookupItadIds } from "../src/lib/itad";
 import type { GameCandidate } from "../src/lib/types";
 
@@ -9,6 +9,9 @@ function game(id: number, pack = false, comparable = false): GameCandidate {
 }
 test("package identities never collide with app IDs", () => {
   assert.notEqual(catalogIdentity(game(1)), catalogIdentity(game(1, true)));
+});
+test("trademark symbols do not create duplicate collection cards", () => {
+  assert.equal(normalizedCatalogTitle("Command & Conquer™ Remastered Collection"), normalizedCatalogTitle("Command & Conquer Remastered Collection"));
 });
 test("does not add duplicates, unverified identities or DLC", () => {
   const unverified = game(2); delete unverified.identifiers.itadId;

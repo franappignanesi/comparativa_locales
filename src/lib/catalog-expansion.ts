@@ -12,7 +12,7 @@ export function catalogIdentity(game: GameCandidate): string {
 }
 
 export function normalizedCatalogTitle(title: string): string {
-  return title.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  return title.replace(/[™®©]/g, "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
 
 export function chooseCatalogAdditions(candidates: GameCandidate[], existing: GameCandidate[], limit: number): GameCandidate[] {

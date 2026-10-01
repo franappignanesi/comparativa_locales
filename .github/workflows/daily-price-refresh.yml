@@ -156,7 +156,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 355
     needs: release-automation
-    if: always()
+    if: ${{ !cancelled() }}
     strategy:
       fail-fast: false
       max-parallel: 1

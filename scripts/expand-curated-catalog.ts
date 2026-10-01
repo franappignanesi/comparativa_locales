@@ -18,14 +18,34 @@ let requests = 0;
 let upstreamBlocked = false;
 let proposals: Proposal[] = [];
 let before = 0;
+let nextSteamRequest = 0;
 
 async function json<T>(url: string, body?: unknown, key?: string): Promise<T> {
-  if (Date.now() > deadline || ++requests > 500) throw Error("Catalog discovery budget exhausted; resume next batch");
-  const response = await fetch(url, { method: body ? "POST" : "GET", signal: AbortSignal.timeout(15000), headers: {
-    accept: "application/json", ...(body ? { "content-type": "application/json" } : {}), ...(key ? { "ITAD-API-Key": key } : {})
-  }, ...(body ? { body: JSON.stringify(body) } : {}) });
-  if (!response.ok) throw Error(`Upstream HTTP ${response.status} (${new URL(url).hostname})`);
-  return await response.json() as T;
+  const host = new URL(url).hostname;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (Date.now() > deadline || ++requests > 500) throw Error("Catalog discovery budget exhausted; resume next batch");
+    if (host === "store.steampowered.com") {
+      await new Promise(resolve => setTimeout(resolve, Math.max(0, nextSteamRequest - Date.now())));
+      nextSteamRequest = Date.now() + 3000;
+    }
+    const response = await fetch(url, { method: body ? "POST" : "GET", signal: AbortSignal.timeout(15000), headers: {
+      accept: "application/json", ...(body ? { "content-type": "application/json" } : {}), ...(key ? { "ITAD-API-Key": key } : {})
+    }, ...(body ? { body: JSON.stringify(body) } : {}) });
+    if (response.status === 429 && attempt < 2) {
+      const retry = response.headers.get("retry-after");
+      const requestedDelay = retry && /^\d+$/.test(retry) ? Number(retry) * 1000 : Math.max(0, Date.parse(retry ?? "") - Date.now()) || 0;
+      const delay = Math.max(300000, requestedDelay);
+      if (Date.now() + delay + 15000 < deadline) {
+        console.log(JSON.stringify({ event: "catalog_upstream_backoff", host, seconds: delay / 1000, attempt: attempt + 1 }));
+        await response.arrayBuffer();
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+    }
+    if (!response.ok) throw Error(`Upstream HTTP ${response.status} (${host})`);
+    return await response.json() as T;
+  }
+  throw Error(`Upstream HTTP 429 (${host})`);
 }
 
 async function checkpoint() {
