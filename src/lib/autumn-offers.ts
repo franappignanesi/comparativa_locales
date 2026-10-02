@@ -16,7 +16,8 @@ export function steamOfferDiscount(row: Row): number {
   const price = row.prices.steam;
   if (!price?.available || price.isStale || price.originalFinalPrice == null || price.originalFinalPrice <= 0) return 0;
   const base = price.originalBasePrice;
-  return Math.max(0, Math.min(100, Math.round(base && base > price.originalFinalPrice ? (1 - price.originalFinalPrice / base) * 100 : price.discountPct ?? 0)));
+  const discount = typeof price.discountPct === "number" && Number.isFinite(price.discountPct) ? price.discountPct : base && base > price.originalFinalPrice ? (1 - price.originalFinalPrice / base) * 100 : 0;
+  return Math.max(0, Math.min(100, Math.round(discount)));
 }
 
 export function steamAtHistoricalLow(row: Row, low: HistoricalLow | undefined): boolean {

@@ -47,6 +47,9 @@ test("bundle extraction uses its own purchase block, not a discounted included g
   assert.equal(price.discountPct, 90);
   assert.equal(price.currency, "USD");
   assert.equal(parseSteamBundle(game, html, REGIONS[1]).currency, "MXN");
+  const withPermanentDiscount = parseSteamBundle(game, html.replace('"m_rgItems"', '"m_nDiscountPct":10,"m_rgItems"').replace('data-price-final="500"', 'data-price-final="500" data-discount="88"'));
+  assert.equal(withPermanentDiscount.basePrice, 45);
+  assert.equal(withPermanentDiscount.discountPct, 88);
   assert.throws(() => parseSteamBundle(game, '<div data-price-final="500"></div>'));
   assert.throws(() => parseSteamBundle(game, html.replace('data-price-final="500"', 'data-price-final="9000"')));
 });
