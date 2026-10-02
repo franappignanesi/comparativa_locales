@@ -22,6 +22,7 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
   const [showCoverSubtitle, setShowCoverSubtitle] = useState(true);
   const [includeCover, setIncludeCover] = useState(false);
   const [coverImages, setCoverImages] = useState(true);
+  const [coverLayout, setCoverLayout] = useState<"tiles" | "strips">("tiles");
   const [showCallout, setShowCallout] = useState(true);
   const [coverCallout, setCoverCallout] = useState("DESLIZÁ Y COMPARÁ PRECIOS");
   const [backgroundGames, setBackgroundGames] = useState<PublicationBackgroundGame[]>([]);
@@ -68,6 +69,7 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
         setShowCoverSubtitle(saved.showCoverSubtitle !== false);
         if (typeof saved.coverSubtitle === "string") setCoverSubtitle(saved.coverSubtitle.slice(0, 120));
         setCoverImages(saved.coverImages !== false);
+        setCoverLayout(saved.coverLayout === "strips" ? "strips" : "tiles");
         setShowCallout(saved.showCallout !== false);
         if (typeof saved.coverCallout === "string") setCoverCallout(saved.coverCallout.slice(0, 80));
         setIncludeCta(saved.includeCta !== false);
@@ -88,10 +90,10 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
   useEffect(() => {
     if (!restored.current) return;
     // Store only editorial choices; prices are always reloaded from the protected API.
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ version: 1, region, includeCover, coverTitle, coverSubtitle, showCoverSubtitle, coverImages, showCallout, coverCallout, includeCta, ctaQuestion, options,
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ version: 1, region, includeCover, coverTitle, coverSubtitle, showCoverSubtitle, coverImages, coverLayout, showCallout, coverCallout, includeCta, ctaQuestion, options,
       items: drafts.map(draft => ({ id: draft.game.id, headline: draft.headline, description: draft.description })) })); }
     catch { /* Storage may be unavailable in private browsing. */ }
-  }, [drafts, region, includeCover, coverTitle, coverSubtitle, showCoverSubtitle, coverImages, showCallout, coverCallout, includeCta, ctaQuestion, options]);
+  }, [drafts, region, includeCover, coverTitle, coverSubtitle, showCoverSubtitle, coverImages, coverLayout, showCallout, coverCallout, includeCta, ctaQuestion, options]);
 
   useEffect(() => {
     if (!includeCta) return;
@@ -248,6 +250,10 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
             <label><input type="checkbox" checked={showCoverSubtitle} onChange={event => setShowCoverSubtitle(event.target.checked)} />Mostrar epígrafe de portada</label>
             {showCoverSubtitle ? <label>Epígrafe de portada<input maxLength={120} value={coverSubtitle ?? `${drafts.length} juegos para tu próxima partida.`} onChange={event => setCoverSubtitle(event.target.value)} /></label> : null}
             <label><input type="checkbox" checked={coverImages} onChange={event => setCoverImages(event.target.checked)} />Mostrar portadas de juegos</label>
+            {coverImages ? <div className={styles.layoutModes} role="group" aria-label="Composición de portadas">
+              <label><input type="radio" name="cover-layout" value="tiles" checked={coverLayout === "tiles"} onChange={() => setCoverLayout("tiles")} />Mosaico</label>
+              <label><input type="radio" name="cover-layout" value="strips" checked={coverLayout === "strips"} onChange={() => setCoverLayout("strips")} />Divisiones verticales</label>
+            </div> : null}
             <label><input type="checkbox" checked={showCallout} onChange={event => setShowCallout(event.target.checked)} />Mostrar invitación a deslizar</label>
             {showCallout ? <label>Invitación a deslizar<input maxLength={80} value={coverCallout} onChange={event => setCoverCallout(event.target.value)} /></label> : null}</> : null}
         </fieldset>
@@ -278,7 +284,7 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
         </div> : null}</div>
         {selected ? <div ref={viewport} className={styles.viewport}>
           <div style={{ transform: `scale(${width / 1080})`, transformOrigin: "top left" }}>
-            {preview === "cover" && includeCover ? <PublicationCover drafts={drafts} title={coverTitle} subtitle={coverSubtitle ?? undefined} showSubtitle={showCoverSubtitle} showImages={coverImages} showCallout={showCallout} callout={coverCallout} total={total} /> : preview === "cta" && includeCta ? <PublicationCta drafts={drafts} question={ctaQuestion} total={total} backgroundGames={backgroundGames} /> : <PublicationPoster draft={selected} options={options} index={drafts.indexOf(selected) + 1 + Number(includeCover)} total={total} />}
+            {preview === "cover" && includeCover ? <PublicationCover drafts={drafts} title={coverTitle} subtitle={coverSubtitle ?? undefined} showSubtitle={showCoverSubtitle} showImages={coverImages} layout={coverLayout} showCallout={showCallout} callout={coverCallout} total={total} /> : preview === "cta" && includeCta ? <PublicationCta drafts={drafts} question={ctaQuestion} total={total} backgroundGames={backgroundGames} /> : <PublicationPoster draft={selected} options={options} index={drafts.indexOf(selected) + 1 + Number(includeCover)} total={total} />}
           </div>
         </div> : <div className={styles.empty}><ImagePlus size={32} /><p>Elegí un juego</p></div>}
         <div className={styles.actions}>
@@ -291,7 +297,7 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
       </div>
     </div>
     <div className={styles.exportRoot} ref={exports} aria-hidden="true">
-      {includeCover && drafts.length ? <div data-publication-export="cover"><PublicationCover drafts={drafts} title={coverTitle} subtitle={coverSubtitle ?? undefined} showSubtitle={showCoverSubtitle} showImages={coverImages} showCallout={showCallout} callout={coverCallout} total={total} /></div> : null}
+      {includeCover && drafts.length ? <div data-publication-export="cover"><PublicationCover drafts={drafts} title={coverTitle} subtitle={coverSubtitle ?? undefined} showSubtitle={showCoverSubtitle} showImages={coverImages} layout={coverLayout} showCallout={showCallout} callout={coverCallout} total={total} /></div> : null}
       {drafts.map((draft, index) => <div key={draft.game.id} data-publication-export={`game-${draft.game.id}`}><PublicationPoster draft={draft} options={options} index={index + 1 + Number(includeCover)} total={total} /></div>)}
       {includeCta && drafts.length ? <div data-publication-export="cta"><PublicationCta drafts={drafts} question={ctaQuestion} total={total} backgroundGames={backgroundGames} /></div> : null}
     </div>

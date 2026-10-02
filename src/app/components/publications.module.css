@@ -26,10 +26,12 @@
 .settings { display: grid; gap: 10px; padding: 18px 0; margin: 0; border: 0; border-bottom: 1px solid var(--line); }
 .settings label { font-size: 13px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .settings input[type="checkbox"] { accent-color: var(--primary); }
-.settings input:not([type="checkbox"]), .settings textarea, .caption textarea { width: 100%; min-width: 0; color: var(--text); padding: 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface-card); }
+.settings input:not([type="checkbox"]):not([type="radio"]), .settings textarea, .caption textarea { width: 100%; min-width: 0; color: var(--text); padding: 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface-card); }
 .settings textarea { resize: vertical; line-height: 1.6; }
 .settings small { color: var(--muted); }
 .settings legend { padding: 16px 0 0; font-size: 15px; font-weight: 800; color: var(--primary); }
+.layoutModes { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.layoutModes input { accent-color: var(--primary); }
 .preview { position: sticky; top: 100px; max-width: 540px; }
 .previewBar { display: flex; justify-content: space-between; align-items: center; min-height: 40px; margin-bottom: 10px; gap: 8px; font-size: 12px; color: var(--muted); }
 .previewBar button { font-size: 12px; }
@@ -96,6 +98,10 @@
 .generator :global(.publicationCoverImages > div) { position: relative; overflow: hidden; background: #252525; border-radius: 6px; }
 .generator :global(.publicationCoverImages img) { width: 100%; height: 100%; object-fit: cover; }
 .generator :global(.publicationCoverImages strong) { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px; background: #111111ed; color: #fff; font-size: 23px; line-height: 1.3; overflow-wrap: anywhere; }
+.generator :global(.publicationCoverStrips) { grid-template-rows: minmax(0, 1fr); gap: 4px; overflow: hidden; border-radius: 6px; }
+.generator :global(.publicationCoverStrips > div) { min-width: 0; border-radius: 0; }
+.generator :global(.publicationCoverStrips img) { display: block; object-position: center center; }
+.generator :global(.publicationCoverImages > div > span) { display: grid; place-items: center; width: 100%; height: 100%; padding: 8px; font-size: 20px; text-align: center; overflow-wrap: anywhere; }
 .generator :global(.publicationCoverCallout) { display: flex; align-items: center; justify-content: space-between; gap: 24px; font-weight: 900; font-size: 32px; border-bottom: 2px solid #ffcf00; }
 .generator :global(.publicationCoverCallout strong) { min-width: 0; max-height: 76px; line-height: 1.2; overflow-wrap: anywhere; }
 .generator :global(.publicationCoverCallout span) { flex-shrink: 0; }
