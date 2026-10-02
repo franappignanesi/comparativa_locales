@@ -4,6 +4,7 @@ import { AutumnNavLink } from "@/app/components/AutumnNavLink";
 import { BarChart3, ChevronDown, History, Library, ShieldAlert, Star } from "lucide-react";
 import Link from "next/link";
 import { ReleaseBadge } from "@/app/components/ReleaseBadge";
+import { MobilePrimaryNav } from "@/app/components/MobilePrimaryNav";
 import { useEffect, useRef, useState } from "react";
 import { RegionSelector } from "@/app/components/RegionSelector";
 import { GoogleUser, UserMenu, WishlistGame } from "@/app/components/UserMenu";
@@ -140,6 +141,7 @@ export default function ComparativaClient({ initialPayload }: { initialPayload: 
             <ReleaseBadge />
           </div>
         </nav>
+        <MobilePrimaryNav current="comparison" />
         <main className="page">
           <p className="loading">Cargando comparativa...</p>
         </main>
@@ -180,6 +182,8 @@ export default function ComparativaClient({ initialPayload }: { initialPayload: 
           <UserMenu user={user} onUserChange={handleUserChange} onSignOut={handleSignOut} />
         </div>
       </nav>
+
+      <MobilePrimaryNav current="comparison" />
 
       <aside className="sideNav">
         <div className="sideHeader">

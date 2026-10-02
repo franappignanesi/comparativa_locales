@@ -21,6 +21,7 @@ import type { LucideIcon } from "lucide-react";
 import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ReleaseBadge } from "@/app/components/ReleaseBadge";
+import { MobilePrimaryNav } from "@/app/components/MobilePrimaryNav";
 import { LegalLinks } from "@/app/components/LegalLinks";
 import { useRouter, useSearchParams } from "next/navigation";
 import { RegionSelector } from "@/app/components/RegionSelector";
@@ -451,12 +452,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
         </div>
       </nav>
 
-      <nav className="mobilePrimaryNav" aria-label="Secciones principales">
-        <Link href="/">Inicio</Link>
-        <Link href="/biblioteca" aria-current={!autumn ? "page" : undefined}>Biblioteca</Link>
-        <Link href="/ofertas-de-otono" className="mobileAutumnLink" aria-current={autumn ? "page" : undefined}><Leaf size={14} />Ofertas de otoño</Link>
-        <Link href="/comparativa-general">Comparativa</Link>
-      </nav>
+      <MobilePrimaryNav current={autumn ? "autumn" : "library"} />
 
       <aside className="sideNav">
         <div className="sideHeader">

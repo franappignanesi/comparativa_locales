@@ -4667,6 +4667,10 @@ select option {
 }
 
 @media (max-width: 900px) {
+  .featuredCharts.compactCharts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .brandBar {
     position: sticky;
   }
