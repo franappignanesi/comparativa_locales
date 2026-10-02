@@ -46,8 +46,8 @@ export function formatWeekendDate(game: WeekendGame): string {
 export function instagramEmbedUrl(videoUrl: string): string | null {
   try {
     const url = new URL(videoUrl);
-    if (!["instagram.com", "www.instagram.com"].includes(url.hostname)) return null;
-    const match = url.pathname.match(/^\/(?:p|reel|reels)\/([A-Za-z0-9_-]+)\/?$/);
+    if (url.protocol !== "https:" || url.username || url.password || !["instagram.com", "www.instagram.com"].includes(url.hostname)) return null;
+    const match = url.pathname.match(/^\/(?:[A-Za-z0-9_.]+\/)?(?:p|reel|reels)\/([A-Za-z0-9_-]+)\/?$/);
     return match ? `https://www.instagram.com/p/${match[1]}/embed/` : null;
   } catch { return null; }
 }

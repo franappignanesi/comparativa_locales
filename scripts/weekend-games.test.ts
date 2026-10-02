@@ -20,5 +20,9 @@ test("Steam dates support explicit years, current year and year rollover", () =>
 test("Instagram embeds accept post and reel links without accepting arbitrary frames", () => {
   assert.equal(instagramEmbedUrl("https://www.instagram.com/reel/abc_123/?utm_source=ig_web"), "https://www.instagram.com/p/abc_123/embed/");
   assert.equal(instagramEmbedUrl("https://instagram.com/p/abc/"), "https://www.instagram.com/p/abc/embed/");
+  assert.equal(instagramEmbedUrl("https://www.instagram.com/shuxteam/reel/DcWLtU2vHoO/"), "https://www.instagram.com/p/DcWLtU2vHoO/embed/");
+  assert.equal(instagramEmbedUrl("https://www.instagram.com/shuxteam/p/abc/?igsh=example"), "https://www.instagram.com/p/abc/embed/");
+  assert.equal(instagramEmbedUrl("https://www.instagram.com/stories/shuxteam/123/"), null);
+  assert.equal(instagramEmbedUrl("https://attacker@www.instagram.com/p/abc/"), null);
   assert.equal(instagramEmbedUrl("https://instagram.com.attacker.example/p/abc/"), null);
 });

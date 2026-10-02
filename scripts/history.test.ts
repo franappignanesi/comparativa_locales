@@ -13,6 +13,21 @@ import type { PriceHistoryEntry } from "../src/lib/types";
 
 const entry = (timestamp: string, price: number): PriceHistoryEntry => ({ gameId: "test", store: "steam", timestamp, originalCurrency: "USD", originalFinalPrice: price, originalBasePrice: 50, arsFinalPrice: price * 1000, arsBasePrice: 50000, discountPct: 0, source: "snapshot" });
 
+test("chart collapses daily repetitions without losing sale transitions or latest observation", () => {
+  const prices = [50, 50, 50, 25, 25, 25, 50];
+  const observations = prices.map((price, index) => entry(`2026-10-0${index + 1}T12:00:00Z`, price));
+  const chart = historyChartObservations(observations, new Date("2026-10-01"), new Date("2026-10-08"));
+  assert.deepEqual(chart.map(point => point.timestamp), [observations[0], observations[2], observations[3], observations[5], observations[6]].map(point => point.timestamp));
+  assert.equal(observations.length, 7);
+});
+
+test("chart compression is per store and retains both ends of constant series", () => {
+  const observations = [1, 2, 3, 4].flatMap(day => [entry(`2026-10-0${day}T12:00:00Z`, 50), { ...entry(`2026-10-0${day}T13:00:00Z`, day === 3 ? 30 : 50), store: "epic" as const }]);
+  const chart = historyChartObservations(observations, new Date("2026-10-01"), new Date("2026-10-05"));
+  assert.equal(chart.filter(point => point.store === "steam").length, 2);
+  assert.equal(chart.filter(point => point.store === "epic").length, 4);
+});
+
 test("incremental imports retain prior series and other games, with durable progress", () => {
   const before = entry("2026-06-01T12:00:00Z", 50);
   const after = entry("2026-10-01T12:00:00Z", 25);
