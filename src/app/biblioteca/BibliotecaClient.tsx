@@ -53,6 +53,7 @@ import { WEEKEND_FILTER } from "@/lib/weekend-games";
 import { WeekendRecommendation, WeekendTag } from "@/app/components/WeekendRecommendation";
 import { WeekendShowcase } from "@/app/components/WeekendShowcase";
 import { PopularWishlist } from "@/app/components/PopularWishlist";
+import { AutumnSelectionVideo } from "@/app/components/AutumnSelectionVideo";
 import { AutumnNavLink } from "@/app/components/AutumnNavLink";
 import { AutumnLeafBudget } from "@/app/components/AutumnLeafBudget";
 import { AUTUMN_FILTER, steamAtHistoricalLow, steamOfferDiscount } from "@/lib/autumn-offers";
@@ -526,9 +527,10 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
           {loading ? <div className="catalogRefreshIndicator" role="status"><span />Actualizando precios...</div> : null}
           {!enabledStores.includes("steam") ? <p role="status">Activá Steam en tus tiendas para ver sus ofertas.</p> : <>
             <div className="gameGrid" id="autumn-selection-games">
-              {(payload.autumnSelection ?? []).slice(0, autumnExpanded ? undefined : 4).map(row => renderCatalogCard(row, true))}
+              <AutumnSelectionVideo />
+              {(payload.autumnSelection ?? []).slice(0, autumnExpanded ? undefined : 3).map(row => renderCatalogCard(row, true))}
             </div>
-            {(payload.autumnSelection?.length ?? 0) > 4 ? <div className="autumnExpand"><button type="button" className="button" aria-expanded={autumnExpanded} aria-controls="autumn-selection-games" onClick={() => {
+            {(payload.autumnSelection?.length ?? 0) > 3 ? <div className="autumnExpand"><button type="button" className="button" aria-expanded={autumnExpanded} aria-controls="autumn-selection-games" onClick={() => {
               if (autumnExpanded) document.getElementById("autumn-selection-title")?.scrollIntoView({ behavior: "smooth", block: "start" });
               setAutumnExpanded(current => !current);
             }}><ChevronDown size={18} className={autumnExpanded ? "expanded" : ""} />{autumnExpanded ? "Ver menos" : "Ver todos"}</button></div> : null}

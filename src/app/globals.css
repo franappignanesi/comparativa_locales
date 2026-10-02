@@ -2475,6 +2475,13 @@ select option {
 .autumnSectionHeading h2 { font-size: 22px; margin: 8px 0; color: #ffd1bc; }
 .autumnSectionHeading p { margin: 0; line-height: 1.5; }
 .autumnEyebrow { color: #79dfd0; font-size: 12px; font-weight: 800; }
+.autumnVideoCard { min-width: 0; overflow: hidden; border: 1px solid #635143; border-radius: 6px; background: #171514; display: flex; flex-direction: column; }
+.autumnVideoPlayer { position: relative; aspect-ratio: 16 / 9; width: 100%; background: #080808; }
+.autumnVideoPlayer iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.autumnVideoCopy { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 14px; padding: 18px 14px; }
+.autumnVideoCopy h3 { margin: 0; font-size: 18px; line-height: 1.35; color: #ffd1bc; overflow-wrap: anywhere; }
+.autumnVideoCopy a { display: inline-flex; align-items: center; gap: 8px; color: #79dfd0; font-size: 13px; font-weight: 700; }
+.autumnVideoCopy a:focus-visible { outline: 2px solid #79dfd0; outline-offset: 4px; }
 .autumnExpand { display: flex; justify-content: center; margin-top: 22px; }
 .autumnExpand button { display: inline-flex; gap: 8px; align-items: center; }
 .autumnExpand svg { transition: transform 180ms ease; }
@@ -2538,17 +2545,17 @@ select option {
 .communitySkeleton > div { height: 215px; border-radius: 6px; background: #252321; animation: loadingPulse 1.5s ease-in-out infinite; }
 @media (max-width: 1250px) {
   .catalogCards .gameGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .autumnSelection.collapsed .gameCard:nth-child(n+4) { display: none; }
+  .autumnSelection.collapsed .gameGrid > :nth-child(n+4) { display: none; }
   .communityRail { grid-auto-columns: calc((100% - 24px) / 3); }
 }
 @media (max-width: 1000px) {
   .catalogCards .gameGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .autumnSelection.collapsed .gameCard:nth-child(n+3) { display: none; }
+  .autumnSelection.collapsed .gameGrid > :nth-child(n+3) { display: none; }
 }
 @media (max-width: 700px) {
   .catalogCards .gameGrid { grid-template-columns: minmax(0, 1fr); }
   .autumnSelection { padding: 12px; }
-  .autumnSelection.collapsed .gameCard:nth-child(n+2) { display: none; }
+  .autumnSelection.collapsed .gameGrid > :nth-child(n+2) { display: none; }
   .autumnSectionHeading { margin-bottom: 12px; }
   .autumnExpand { margin-top: 12px; }
   .communityHeading { align-items: flex-start; flex-direction: column; gap: 10px; }
