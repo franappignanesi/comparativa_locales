@@ -20,6 +20,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { ReleaseBadge } from "@/app/components/ReleaseBadge";
 import { LegalLinks } from "@/app/components/LegalLinks";
 import { useSearchParams } from "next/navigation";
 import { RegionSelector } from "@/app/components/RegionSelector";
@@ -403,7 +404,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
       <nav className="brandBar">
         <div className="brandCluster">
           <Link className="brand" href="/">BARATEAM</Link>
-          <span className="betaBadge">BETA</span>
+          <ReleaseBadge />
         </div>
         <div className="navTools">
           <ProblemReportButton user={user} />

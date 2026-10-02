@@ -2,6 +2,7 @@
 
 import { BarChart3, Bell, ChevronDown, History, Library, Mail, MonitorSmartphone, Settings, ShieldAlert } from "lucide-react";
 import Link from "next/link";
+import { ReleaseBadge } from "@/app/components/ReleaseBadge";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { RegionSelector } from "@/app/components/RegionSelector";
@@ -124,7 +125,7 @@ export default function ProfilePage() {
       <nav className="brandBar">
         <div className="brandCluster">
           <Link className="brand" href="/">BARATEAM</Link>
-          <span className="betaBadge">BETA</span>
+          <ReleaseBadge />
         </div>
         <div className="navTools">
           <ProblemReportButton user={user} />

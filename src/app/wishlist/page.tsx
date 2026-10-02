@@ -2,6 +2,7 @@
 
 import { BarChart3, Bell, BellOff, ChevronDown, Gamepad2, History, Library, ShieldAlert, X } from "lucide-react";
 import Link from "next/link";
+import { ReleaseBadge } from "@/app/components/ReleaseBadge";
 import { useEffect, useState } from "react";
 import { RegionSelector } from "@/app/components/RegionSelector";
 import { GoogleUser, UserMenu, WishlistGame } from "@/app/components/UserMenu";
@@ -95,7 +96,7 @@ export default function WishlistPage() {
       <nav className="brandBar">
         <div className="brandCluster">
           <Link className="brand" href="/">BARATEAM</Link>
-          <span className="betaBadge">BETA</span>
+          <ReleaseBadge />
         </div>
         <div className="navTools">
           <ProblemReportButton user={user} />

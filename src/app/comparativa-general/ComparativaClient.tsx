@@ -2,6 +2,7 @@
 
 import { BarChart3, ChevronDown, History, Library, ShieldAlert, Star } from "lucide-react";
 import Link from "next/link";
+import { ReleaseBadge } from "@/app/components/ReleaseBadge";
 import { useEffect, useRef, useState } from "react";
 import { RegionSelector } from "@/app/components/RegionSelector";
 import { GoogleUser, UserMenu, WishlistGame } from "@/app/components/UserMenu";
@@ -135,7 +136,7 @@ export default function ComparativaClient({ initialPayload }: { initialPayload: 
             <Link className="brand" href="/">
               BARATEAM
             </Link>
-            <span className="betaBadge">BETA</span>
+            <ReleaseBadge />
           </div>
         </nav>
         <main className="page">
@@ -165,7 +166,7 @@ export default function ComparativaClient({ initialPayload }: { initialPayload: 
           <Link className="brand" href="/">
             BARATEAM
           </Link>
-          <span className="betaBadge">BETA</span>
+          <ReleaseBadge />
         </div>
         <div className="navTools">
           <ProblemReportButton user={user} />

@@ -2,6 +2,7 @@
 
 import { BarChart3, Bell, CheckCircle2, ChevronDown, Circle, ExternalLink, History, Library, ShieldAlert } from "lucide-react";
 import Link from "next/link";
+import { ReleaseBadge } from "@/app/components/ReleaseBadge";
 import { useEffect, useMemo, useState } from "react";
 import { ProblemReportButton } from "@/app/components/ProblemReportButton";
 import { AdminGameSuggestions } from "@/app/components/AdminGameSuggestions";
@@ -133,7 +134,7 @@ export default function AdminReportsPage() {
       <nav className="brandBar">
         <div className="brandCluster">
           <Link className="brand" href="/">BARATEAM</Link>
-          <span className="betaBadge">BETA</span>
+          <ReleaseBadge />
         </div>
         <div className="navTools">
           <ProblemReportButton user={user} />

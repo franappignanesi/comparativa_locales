@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
+import { ReleaseBadge } from "@/app/components/ReleaseBadge";
 import { GameCover } from "@/app/components/GameCover";
 import { LegalLinks } from "@/app/components/LegalLinks";
 import type { ReactNode } from "react";
@@ -118,7 +119,7 @@ export function LandingClient({
           <Link href="/" className="landingBrand">
             BARATEAM
           </Link>
-          <span className="betaBadge">BETA</span>
+          <ReleaseBadge />
         </div>
         <div className="landingNavTools">
           <RegionSelector value={region} onChange={setRegion} />

@@ -224,18 +224,70 @@ select {
   text-decoration: none;
 }
 
-.betaBadge {
-  min-height: 20px;
+.releaseBadge {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  border: 1px solid rgba(248, 200, 19, 0.58);
-  border-radius: 999px;
-  background: rgba(248, 200, 19, 0.12);
+  flex-shrink: 0;
+}
+
+.releaseBadgeButton {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 150ms ease;
+}
+.releaseBadgeButton:hover { transform: rotate(-12deg); }
+.releaseBadgeButton:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
+.releaseBadgeNotice {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  z-index: 10001;
+  pointer-events: none;
+}
+.releaseBadgeNotice > span {
+  display: block;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--surface-lowest);
   color: var(--primary-soft);
-  padding: 0 8px;
-  font-size: 10px;
+  border: 1px solid var(--primary);
+  font-size: 18px;
   font-weight: 900;
-  letter-spacing: 0.08em;
+  animation: releaseNotice 1600ms ease both;
+}
+.releaseConfetti { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 10000; }
+.releaseConfetti i {
+  position: absolute;
+  width: 7px;
+  height: 11px;
+  animation: releaseConfetti 1050ms ease-out both;
+}
+@keyframes releaseNotice {
+  0% { opacity: 0; transform: translate(-50%, 6px) scale(0.7); }
+  15%, 75% { opacity: 1; transform: translate(-50%, 0) rotate(-8deg) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -6px) scale(1); }
+}
+@keyframes releaseConfetti {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0deg); }
+  5% { opacity: 1; }
+  45% { opacity: 1; transform: translate(calc(var(--confetti-x) * 0.7), var(--confetti-rise)) rotate(180deg); }
+  100% { opacity: 0; transform: translate(var(--confetti-x), var(--confetti-fall)) rotate(620deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .releaseBadgeButton { transition: none; }
+  .releaseBadgeButton:hover { transform: none; }
+  .releaseBadgeNotice > span { animation: none; transform: translateX(-50%); }
+  .releaseConfetti { display: none; }
 }
 
 .storeTabs {
