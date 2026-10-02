@@ -3,6 +3,9 @@ name: Deploy application with current price data
 on:
   workflow_dispatch:
     inputs:
+      history_backfill_limit:
+        description: "Optional bounded history-only import per region before publishing (0 disables)"
+        default: "0"
       history_recovery_caches:
         description: "Comma-separated exact legacy cache keys; merge observations without changing current prices"
         default: ""
@@ -124,8 +127,14 @@ jobs:
       - name: Merge historical observations and restore current prices
         if: inputs.history_recovery_cache != '' && steps.public-data.outputs.cache-matched-key != ''
         run: npx tsx scripts/recover-price-history.ts
+      - name: Import missing full price histories
+        if: inputs.history_backfill_limit != '' && inputs.history_backfill_limit != '0' && steps.public-data.outputs.cache-matched-key != ''
+        env:
+          ITAD_API_KEY: ${{ secrets.ITAD_API_KEY }}
+          HISTORY_BACKFILL_LIMIT: ${{ inputs.history_backfill_limit }}
+          HISTORY_BACKFILL_MAX_MS: "180000"
+        run: npx tsx scripts/backfill-price-history.ts
       - name: Compact price history
-        # Recovery is explicit and never runs on ordinary pushes or refreshes.
         if: steps.public-data.outputs.cache-matched-key != '' && inputs.history_recovery_caches == ''
         env:
           PRICE_HISTORY_GZIP_ONLY: "1"
@@ -146,7 +155,7 @@ jobs:
           PRICE_HISTORY_GZIP_ONLY: "1"
         run: npm run worker:compact-price-history
       - name: Preserve recovered history for future refreshes
-        if: (inputs.history_recovery_cache != '' || inputs.history_recovery_caches != '') && steps.public-data.outputs.cache-matched-key != ''
+        if: (inputs.history_recovery_cache != '' || inputs.history_recovery_caches != '' || (inputs.history_backfill_limit != '' && inputs.history_backfill_limit != '0')) && steps.public-data.outputs.cache-matched-key != ''
         uses: actions/cache/save@v4
         with:
           path: |
@@ -178,4 +187,6 @@ jobs:
         run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
       - name: Deploy current application and dataset
         if: steps.public-data.outputs.cache-matched-key != ''
-        run: vercel deploy --archive=tgz --prod --token="$VERCEL_TOKEN"
+        run: |
+          npx tsx scripts/compact-price-history.ts --deploy-only
+          vercel deploy --archive=tgz --prod --token="$VERCEL_TOKEN"

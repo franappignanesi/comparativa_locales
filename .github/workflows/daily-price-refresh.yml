@@ -225,7 +225,17 @@ jobs:
         if: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
       - run: ${{ inputs.microsoft_catalog_audit && 'npm run refresh:microsoft-prices' || ((github.event.inputs.weekend_games_only == 'true' || (github.event.inputs.target_game_ids || '') != '') && 'npm run worker:weekend-refresh' || 'npm run worker:full-refresh') }}
         if: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
+      - name: Complete historical observations gradually
+        if: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) && (github.event.inputs.target_game_ids || '') == '' && !inputs.microsoft_catalog_audit }}
+        continue-on-error: true
+        timeout-minutes: 6
+        env:
+          HISTORY_BACKFILL_LIMIT: "500"
+          HISTORY_BACKFILL_MAX_MS: "180000"
+        run: npx tsx scripts/backfill-price-history.ts
       - name: Collect region cache
+        # Historical imports are bounded and cannot prevent current prices from publishing.
+        # This step is kept separate from the price refresh itself.
         if: ${{ always() && contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
         shell: bash
         run: |
@@ -235,10 +245,12 @@ jobs:
             cp data/generated/latest-prices.json price-cache/data/generated/latest-prices.json
             cp data/generated/price-history.json price-cache/data/generated/price-history.json
             cp data/generated/itad-history.json price-cache/data/generated/itad-history.json 2>/dev/null || true
+            cp data/generated/itad-full-history.json price-cache/data/generated/itad-full-history.json 2>/dev/null || true
           else
             cp "data/generated/latest-prices-${PRICE_REGION}.json" "price-cache/data/generated/latest-prices-${PRICE_REGION}.json"
             cp "data/generated/price-history-${PRICE_REGION}.json" "price-cache/data/generated/price-history-${PRICE_REGION}.json"
             cp "data/generated/itad-history-${PRICE_REGION}.json" "price-cache/data/generated/itad-history-${PRICE_REGION}.json" 2>/dev/null || true
+            cp "data/generated/itad-full-history-${PRICE_REGION}.json" "price-cache/data/generated/itad-full-history-${PRICE_REGION}.json" 2>/dev/null || true
           fi
           cp "data/generated/github-full-refresh-status-${PRICE_REGION}.json" "price-cache/data/generated/github-full-refresh-status-${PRICE_REGION}.json" 2>/dev/null || true
       - uses: actions/upload-artifact@v4
@@ -368,7 +380,9 @@ jobs:
             exit 1
           fi
       - name: Deploy refreshed production artifact
-        run: vercel deploy --archive=tgz --prod --token="$VERCEL_TOKEN"
+        run: |
+          npx tsx scripts/compact-price-history.ts --deploy-only
+          vercel deploy --archive=tgz --prod --token="$VERCEL_TOKEN"
       - name: Confirm community games published
         continue-on-error: true
         timeout-minutes: 7

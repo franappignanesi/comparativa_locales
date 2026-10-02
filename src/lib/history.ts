@@ -3,6 +3,7 @@ import { fetchItadFullHistoryForGames, fetchItadStoreLows } from "./itad";
 import { DEFAULT_REGION, REGIONS, type RegionId } from "./regions";
 import type { HistoricalLow, LatestPrices, PriceHistoryEntry, PriceHistoryReport, StoreId } from "./types";
 import { STORES } from "./types";
+import { mergeFullHistoryArchive } from "./history-backfill";
 
 type PriceHistoryFile = {
   timestamp: string | null;
@@ -16,6 +17,7 @@ type ItadHistoryFile = {
   matchedGames: number;
   errors: string[];
   entries: PriceHistoryEntry[];
+  checkedGames?: Record<string, string>;
 };
 
 const emptyHistory: PriceHistoryFile = { timestamp: null, entries: [] };
@@ -81,7 +83,7 @@ export async function getPriceHistoryReport(
   const cachedFullEntries = filterEntriesByGameIds(cachedFull.entries, options.gameIds);
   const baseEntries = [...ownEntries, ...itadEntries, ...cachedFullEntries];
   const fullHistoryGameIds = options.includeFullItad && options.gameIds
-    ? isFullHistoryCacheFresh(cachedFull.timestamp) ? gameIdsMissingHistory(cachedFullEntries, options.gameIds) : options.gameIds
+    ? fullHistoryGameIdsToRefresh(cachedFull, options.gameIds)
     : new Set<string>();
   const fullItad = fullHistoryGameIds.size ? await getFullItadHistory(latest, fullHistoryGameIds) : emptyItad;
   const entries = normalizeHistoricalEntries(
@@ -122,10 +124,19 @@ export function isFullHistoryCacheFresh(timestamp: string | null): boolean {
   return age >= 0 && age < FULL_HISTORY_CACHE_MAX_AGE_MS;
 }
 
+export function fullHistoryGameIdsToRefresh(cached: ItadHistoryFile, gameIds: Set<string>): Set<string> {
+  const missing = gameIdsMissingHistory(cached.entries, gameIds);
+  for (const gameId of gameIds) {
+    const timestamp = cached.checkedGames ? cached.checkedGames[gameId] ?? null : cached.timestamp;
+    if (!isFullHistoryCacheFresh(timestamp)) missing.add(gameId);
+  }
+  return missing;
+}
+
 async function getFullItadHistory(latest: LatestPrices, gameIds: Set<string>): Promise<ItadHistoryFile> {
   const filePath = itadFullHistoryPath(parseRegion(latest.region));
   const cached = await readJson<ItadHistoryFile>(filePath, emptyItad);
-  const missingGameIds = isFullHistoryCacheFresh(cached.timestamp) ? gameIdsMissingHistory(cached.entries, gameIds) : gameIds;
+  const missingGameIds = fullHistoryGameIdsToRefresh(cached, gameIds);
   if (!missingGameIds.size) return cached;
 
   let fetched: ItadHistoryFile;
@@ -138,19 +149,17 @@ async function getFullItadHistory(latest: LatestPrices, gameIds: Set<string>): P
       : { ...emptyItad, enabled: Boolean(process.env.ITAD_API_KEY), errors: [message] };
   }
 
-  const merged = {
-    timestamp: fetched.timestamp ?? cached.timestamp,
-    enabled: cached.enabled || fetched.enabled,
-    source: fetched.enabled ? fetched.source : cached.source,
-    matchedGames: Math.max(cached.matchedGames, fetched.matchedGames),
-    errors: [...cached.errors, ...fetched.errors],
-    entries: mergeHistoryEntries(cached.entries, fetched.entries)
-  };
+  const checkedGames = !fetched.errors.length && fetched.enabled
+    ? Object.fromEntries([...missingGameIds].map(gameId => [gameId, new Date().toISOString()]))
+    : {};
+  const merged = mergeFullHistoryArchive(cached, { ...fetched, checkedGames });
   await writeHistoryCacheBestEffort(filePath, merged);
   return merged;
 }
 
 async function writeHistoryCacheBestEffort(filePath: string, data: ItadHistoryFile): Promise<void> {
+  // Vercel uses the fetch cache; durable JSON imports are written by the bounded worker.
+  if (process.env.VERCEL && process.env.GLITCHPRICE_PUBLIC_CACHE_SOURCE !== "operational") return;
   try {
     await writeJson(filePath, data);
   } catch (error) {

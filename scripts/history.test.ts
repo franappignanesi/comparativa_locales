@@ -5,12 +5,28 @@ import os from "node:os";
 import path from "node:path";
 import { gzipSync } from "node:zlib";
 import { readJson } from "../src/lib/cache";
-import { compactOwnHistory, gameIdsMissingHistory, isFullHistoryCacheFresh } from "../src/lib/history";
+import { compactOwnHistory, gameIdsMissingHistory, isFullHistoryCacheFresh, fullHistoryGameIdsToRefresh } from "../src/lib/history";
 import { historyChartObservations } from "../src/lib/history-chart";
 import { steamAppIdFromUrl } from "../src/lib/itad";
+import { mergeFullHistoryArchive, type FullHistoryArchive } from "../src/lib/history-backfill";
 import type { PriceHistoryEntry } from "../src/lib/types";
 
 const entry = (timestamp: string, price: number): PriceHistoryEntry => ({ gameId: "test", store: "steam", timestamp, originalCurrency: "USD", originalFinalPrice: price, originalBasePrice: 50, arsFinalPrice: price * 1000, arsBasePrice: 50000, discountPct: 0, source: "snapshot" });
+
+test("incremental imports retain prior series and other games, with durable progress", () => {
+  const before = entry("2026-06-01T12:00:00Z", 50);
+  const after = entry("2026-10-01T12:00:00Z", 25);
+  const current: FullHistoryArchive = { timestamp: null, enabled: true, source: "test", matchedGames: 1, errors: [], entries: [before], checkedGames: { other: "2026-09-30T12:00:00Z" } };
+  const merged = mergeFullHistoryArchive(current, { ...current, entries: [before, after], checkedGames: { test: "2026-10-01T12:00:00Z" } });
+  assert.deepEqual(merged.entries, [before, after]);
+  assert.deepEqual(Object.keys(merged.checkedGames!).sort(), ["other", "test"]);
+});
+
+test("refreshing one game cannot make another game's old history look fresh", () => {
+  const now = new Date().toISOString();
+  const cached: FullHistoryArchive = { timestamp: now, enabled: true, source: "test", matchedGames: 1, errors: [], entries: [entry("2026-06-01T12:00:00Z", 50), entry("2026-09-01T12:00:00Z", 25)], checkedGames: { other: now, test: "2026-06-01T12:00:00Z" } };
+  assert.deepEqual([...fullHistoryGameIdsToRefresh(cached, new Set(["test"]))], ["test"]);
+});
 
 test("an old full-history cache cannot suppress newly available observations", () => {
   assert.equal(isFullHistoryCacheFresh(new Date(Date.now() - 1000).toISOString()), true);

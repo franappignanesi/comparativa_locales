@@ -400,7 +400,8 @@ async function getItad<T>(path: string, key: string, params: Record<string, stri
   const url = itadUrl(path, key, params);
   const response = await fetch(url, {
     headers: { accept: "application/json", "ITAD-API-Key": key },
-    ...(path === "/games/history/v2" ? { next: { revalidate: 86400 }, signal: AbortSignal.timeout(15000) } : {})
+    signal: AbortSignal.timeout(15000),
+    ...(path === "/games/history/v2" ? { next: { revalidate: 86400 } } : {})
   });
   if (!response.ok) throw new Error(`ITAD ${path} HTTP ${response.status}`);
   return (await response.json()) as T;
@@ -411,6 +412,7 @@ async function postItad<T>(path: string, key: string, params: Record<string, str
   const response = await fetch(url, {
     method: "POST",
     headers: { accept: "application/json", "content-type": "application/json", "ITAD-API-Key": key },
+    signal: AbortSignal.timeout(30000),
     body: JSON.stringify(body)
   });
   if (!response.ok) throw new Error(`ITAD ${path} HTTP ${response.status}`);

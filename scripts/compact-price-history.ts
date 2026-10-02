@@ -24,7 +24,7 @@ main().catch((error) => {
 async function main(): Promise<void> {
   const generatedDir = dataPath("generated");
   const files = (await fs.readdir(generatedDir).catch(() => []))
-    .filter((file) => /^price-history(?:-[A-Z]{2})?\.json$/.test(file))
+    .filter((file) => /^(?:price-history|itad-full-history)(?:-[A-Z]{2})?\.json$/.test(file))
     .sort();
   const results = [];
 
@@ -40,7 +40,7 @@ async function main(): Promise<void> {
     const after = await fileSize(filePath);
     const gzipPath = `${filePath}.gz`;
     const gzipSize = await writeGzip(filePath, gzipPath);
-    if (process.env.PRICE_HISTORY_GZIP_ONLY === "1") {
+    if ((process.env.PRICE_HISTORY_GZIP_ONLY === "1" && file.startsWith("price-history")) || process.argv.includes("--deploy-only")) {
       await fs.unlink(filePath).catch(() => undefined);
     }
     results.push({ file, entries: compacted.entries.length, before, after, gzip: gzipSize, saved: before - after });
@@ -50,7 +50,6 @@ async function main(): Promise<void> {
 }
 
 function compactEntry(entry: PriceHistoryEntry): PriceHistoryEntry {
-  if (entry.source !== "snapshot") return entry;
   return {
     gameId: entry.gameId,
     store: entry.store,
@@ -61,7 +60,8 @@ function compactEntry(entry: PriceHistoryEntry): PriceHistoryEntry {
     arsFinalPrice: entry.arsFinalPrice ?? null,
     arsBasePrice: entry.arsBasePrice ?? null,
     discountPct: entry.discountPct ?? null,
-    source: "snapshot"
+    source: entry.source,
+    ...(entry.kind ? { kind: entry.kind } : {})
   };
 }
 

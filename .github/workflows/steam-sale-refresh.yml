@@ -249,4 +249,6 @@ jobs:
             exit 1
           fi
       - name: Deploy refreshed production artifact
-        run: vercel deploy --archive=tgz --prod --token="$VERCEL_TOKEN"
+        run: |
+          npx tsx scripts/compact-price-history.ts --deploy-only
+          vercel deploy --archive=tgz --prod --token="$VERCEL_TOKEN"
