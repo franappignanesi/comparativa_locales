@@ -28,6 +28,14 @@ async function main() {
   const ids: Record<string, string | null> = await json("https://api.isthereanydeal.com/lookup/id/shop/61/v1", apps.map(row => `app/${row.item.steamAppId}`));
   const reports: Array<Record<string, unknown>> = [];
   const verifiedIds = new Set<string>();
+  const storeIds: Record<number, string> = {};
+  const shopNames: Record<string, string[]> = { epic: ["Epic Game Store", "Epic Games Store"], gog: ["GOG"], humble: ["Humble Store", "Humble Bundle"] };
+  const shops = await json("https://api.isthereanydeal.com/service/shops/v1?country=AR");
+  for (const shop of shops) {
+    const store = Object.keys(shopNames).find(store => shopNames[store].includes(shop.name ?? shop.title));
+    if (store) storeIds[shop.id] = store;
+  }
+  if (Object.keys(storeIds).length !== 3) throw Error("Cannot resolve all official shop identities");
   for (const { item, game } of selected) {
     const id = item.steamAppId ? ids[`app/${item.steamAppId}`] : null;
     const row: Record<string, unknown> = { title: item.title, gameId: game!.id, steam: steamIdentity(item), identifiers: game!.identifiers,
@@ -56,23 +64,24 @@ async function main() {
     console.log(JSON.stringify({ title: item.title, identityVerified: row.identityVerified, microsoft: row.microsoft }));
   }
   for (const region of REGIONS) {
-    const prices = await json(`https://api.isthereanydeal.com/games/prices/v3?country=${region.id}&shops=16,35,37&vouchers=false`, [...verifiedIds]);
+    const prices = await json(`https://api.isthereanydeal.com/games/prices/v3?country=${region.id}&shops=${Object.keys(storeIds).join(",")}&vouchers=false`, [...verifiedIds]);
     for (const row of reports.filter(row => row.identityVerified)) {
       const stores = row.stores as Record<string, unknown>;
       const offers = prices.find((price: { id: string }) => price.id === row.itadId)?.deals ?? [];
       stores[region.id] = offers.flatMap((offer: { shop: { id: number }; price?: { amount: number; currency: string }; url?: string }) => {
-        if (!offer.url || !offer.price || offer.price.amount <= 0) return [];
+        const store = storeIds[offer.shop.id];
+        if (!store || !offer.url || !offer.price || offer.price.amount <= 0) return [];
         try {
           const link = parseSuggestionLink(offer.url);
-          if (({ 16: "epic", 35: "gog", 37: "humble" } as Record<number, string>)[offer.shop.id] !== link.store) return [];
+          if (store !== link.store) return [];
           return [{ store: link.store, identifier: link.storeId, url: link.url, price: offer.price }];
-        } catch { return []; }
+        } catch { return [{ store, identifier: null, url: offer.url, price: offer.price, needsCanonicalLink: true }]; }
       });
     }
   }
   await mkdir("artifacts", { recursive: true });
   await writeFile("artifacts/autumn-store-audit.json", JSON.stringify({ checkedAt: new Date().toISOString(),
-    notes: "No verified deal is not proof of absence. Microsoft matches require a matching PC purchase; console products are rejected. No catalog files modified.", games: reports }, null, 2));
+    notes: "No verified deal is not proof of absence. Microsoft matches require a matching PC purchase; console products are rejected. No catalog files modified.", storeIds, games: reports }, null, 2));
   console.log(JSON.stringify({ audited: reports.length, verifiedItad: verifiedIds.size, report: "artifacts/autumn-store-audit.json" }));
 }
 main().catch(error => { console.error(error instanceof Error ? error.message : "Audit failed"); process.exitCode = 1; });
