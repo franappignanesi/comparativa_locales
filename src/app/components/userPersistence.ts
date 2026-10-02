@@ -100,20 +100,28 @@ export async function addWishlistItem(userId: string, item: WishlistGame): Promi
   return wishlist;
 }
 
-export async function updateWishlistItem(userId: string, gameId: string, updates: Partial<WishlistGame>): Promise<WishlistGame[]> {
+export async function updateWishlistItem(userId: string, gameId: string, updates: Partial<WishlistGame>, options: { requireRemote?: boolean } = {}): Promise<WishlistGame[]> {
   const response = await fetch("/api/user/wishlist", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
+    ...(options.requireRemote ? { signal: AbortSignal.timeout(15000) } : {}),
     body: JSON.stringify({
       gameId,
       notificationEnabled: updates.notificationEnabled,
       notificationPreferences: updates.notificationPreferences
     })
   }).catch(() => null);
-  if (!response) return updateLocalWishlistItem(userId, gameId, updates);
+  if (!response) {
+    if (options.requireRemote) throw new Error("No pudimos confirmar el guardado. Intentá nuevamente.");
+    return updateLocalWishlistItem(userId, gameId, updates);
+  }
   await assertAuthenticated(response);
-  if (!response.ok) return updateLocalWishlistItem(userId, gameId, updates);
+  if (!response.ok) {
+    if (options.requireRemote) throw new Error("No pudimos guardar las preferencias. Intentá nuevamente.");
+    return updateLocalWishlistItem(userId, gameId, updates);
+  }
   const payload = (await response.json()) as { wishlist?: WishlistGame[] };
+  if (options.requireRemote && !payload.wishlist?.some(item => item.gameId === gameId)) throw new Error("No pudimos confirmar las preferencias del juego. Intentá nuevamente.");
   const wishlist = payload.wishlist ?? updateLocalWishlistItem(userId, gameId, updates);
   writeLocalWishlist(userId, wishlist);
   return wishlist;

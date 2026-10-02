@@ -1698,6 +1698,8 @@ select option {
   background: rgba(17, 14, 5, 0.98);
   box-shadow: 0 20px 55px rgba(0, 0, 0, 0.45);
   padding: 12px;
+  max-height: calc(100dvh - 28px);
+  overflow-y: auto;
 }
 
 .bellPreferencesMenu strong {
@@ -1721,12 +1723,14 @@ select option {
 .bellPreferencesMenu label:nth-of-type(-n + 2) {
   grid-template-columns: 16px minmax(0, 1fr);
 }
+.bellThresholdRow { display: grid; grid-template-columns: minmax(0, 1fr) 86px; align-items: center; gap: 9px; }
+.bellThresholdRow > label { grid-template-columns: 16px minmax(0, 1fr); }
 
 .bellPreferencesMenu input[type="checkbox"] {
   accent-color: var(--primary);
 }
 
-.bellPreferencesMenu input[type="number"] {
+.bellPreferencesMenu input[type="text"] {
   min-width: 0;
   height: 30px;
   border: 1px solid rgba(255, 232, 172, 0.18);
@@ -1748,6 +1752,10 @@ select option {
   font-size: 11px;
   font-weight: 800;
 }
+.bellPreferencesMenu > .bellPreferencesSave { display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--primary); color: var(--primary-ink); border-color: var(--primary); }
+.bellPreferencesMenu > button:disabled { opacity: .6; cursor: wait; }
+.bellPreferencesMenu input:disabled { opacity: .55; }
+.bellPreferencesError { margin: 0; color: var(--bad); font-size: 11px; line-height: 1.5; }
 
 .profilePage {
   display: grid;

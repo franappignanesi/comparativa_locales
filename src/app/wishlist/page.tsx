@@ -1,7 +1,7 @@
 "use client";
 import { AutumnNavLink } from "@/app/components/AutumnNavLink";
 
-import { BarChart3, Bell, BellOff, ChevronDown, Gamepad2, History, Library, ShieldAlert, X } from "lucide-react";
+import { BarChart3, Bell, BellOff, ChevronDown, Gamepad2, History, Library, ShieldAlert, X, Save, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { ReleaseBadge } from "@/app/components/ReleaseBadge";
 import { useEffect, useState } from "react";
@@ -13,6 +13,7 @@ import { deleteWishlistItem, fetchWishlist, fetchWishlistAlerts, persistSession,
 import { formatGameCategory } from "@/lib/categories";
 import { DEFAULT_REGION, type RegionId } from "@/lib/regions";
 import { isAdminEmail } from "@/lib/admin";
+import { parseWishlistThreshold } from "@/lib/wishlist-threshold";
 
 type BellMenuState = {
   game: WishlistGame;
@@ -82,15 +83,15 @@ export default function WishlistPage() {
   }
 
   async function updatePreferences(game: WishlistGame, updates: Partial<NonNullable<WishlistGame["notificationPreferences"]>>) {
-    if (!user) return;
+    if (!user) throw new Error("Iniciá sesión nuevamente para guardar las preferencias.");
     const current = game.notificationPreferences ?? DEFAULT_PREFERENCES;
     const nextWishlist = await updateWishlistItem(user.sub, game.gameId, {
       notificationPreferences: { ...current, ...updates }
-    });
+    }, { requireRemote: true });
     setWishlist(nextWishlist);
-    setWishlistAlerts(await fetchWishlistAlerts(user.sub, region));
+    void fetchWishlistAlerts(user.sub, region).then(setWishlistAlerts).catch(() => undefined);
     const nextGame = nextWishlist.find((item) => item.gameId === game.gameId);
-    if (nextGame) setBellMenu((currentMenu) => (currentMenu ? { ...currentMenu, game: nextGame } : currentMenu));
+    if (nextGame) setBellMenu((currentMenu) => (currentMenu?.game.gameId === game.gameId ? { ...currentMenu, game: nextGame } : currentMenu));
   }
 
   return (
@@ -221,7 +222,7 @@ export default function WishlistPage() {
           </section>
         )}
 
-        {bellMenu ? <BellPreferencesMenu menu={bellMenu} onUpdate={updatePreferences} onClose={() => setBellMenu(null)} /> : null}
+        {bellMenu ? <BellPreferencesMenu key={bellMenu.game.gameId} menu={bellMenu} onUpdate={updatePreferences} onClose={() => setBellMenu(current => current?.game.gameId === bellMenu.game.gameId ? null : current)} /> : null}
       </main>
     </div>
   );
@@ -233,47 +234,78 @@ function BellPreferencesMenu({
   onClose
 }: {
   menu: NonNullable<BellMenuState>;
-  onUpdate: (game: WishlistGame, updates: Partial<NonNullable<WishlistGame["notificationPreferences"]>>) => void;
+  onUpdate: (game: WishlistGame, updates: Partial<NonNullable<WishlistGame["notificationPreferences"]>>) => Promise<void>;
   onClose: () => void;
 }) {
-  const preferences = menu.game.notificationPreferences ?? DEFAULT_PREFERENCES;
+  const [preferences, setPreferences] = useState(menu.game.notificationPreferences ?? DEFAULT_PREFERENCES);
+  const [threshold, setThreshold] = useState(String(preferences.belowUsdValue ?? ""));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  async function save(event: React.FormEvent) {
+    event.preventDefault();
+    if (saving) return;
+    const price = parseWishlistThreshold(threshold);
+    if (preferences.belowUsd && price == null) {
+      setError("Ingresá un precio mayor que cero, con hasta dos decimales.");
+      return;
+    }
+    setSaving(true); setError("");
+    try {
+      await onUpdate(menu.game, { ...preferences, belowUsdValue: price });
+      onClose();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "No pudimos guardar las preferencias. Intentá nuevamente.");
+    } finally { setSaving(false); }
+  }
   return (
-    <div
+    <form
       className="bellPreferencesMenu"
-      style={{ left: menu.x, top: menu.y }}
+      style={{ left: `clamp(14px, ${menu.x}px, max(14px, calc(100vw - 334px)))`, top: `clamp(14px, ${menu.y}px, max(14px, calc(100dvh - 280px)))` }}
       onClick={(event) => event.stopPropagation()}
-      role="menu"
+      onSubmit={save}
+      onKeyDown={event => { if (event.key === "Escape" && !saving) onClose(); }}
+      role="dialog"
       aria-label={`Preferencias de ${menu.game.title}`}
     >
       <strong>Preferencias</strong>
       <label>
-        <input type="checkbox" checked={preferences.priceDrop} onChange={(event) => onUpdate(menu.game, { priceDrop: event.target.checked })} />
+        <input type="checkbox" disabled={saving} checked={preferences.priceDrop} onChange={(event) => setPreferences(current => ({ ...current, priceDrop: event.target.checked }))} />
         Notificar cuando baje de precio
       </label>
       <label>
         <input
           type="checkbox"
           checked={preferences.historicalLow}
-          onChange={(event) => onUpdate(menu.game, { historicalLow: event.target.checked })}
+          disabled={saving}
+          onChange={(event) => setPreferences(current => ({ ...current, historicalLow: event.target.checked }))}
         />
         Notificar cuando alcance mínimo
       </label>
-      <label>
-        <input type="checkbox" checked={preferences.belowUsd} onChange={(event) => onUpdate(menu.game, { belowUsd: event.target.checked })} />
-        Notificar cuando baje de USD
+      <div className="bellThresholdRow">
+        <label>
+          <input type="checkbox" disabled={saving} checked={preferences.belowUsd} onChange={(event) => setPreferences(current => ({ ...current, belowUsd: event.target.checked }))} />
+          Notificar cuando baje de USD
+        </label>
         <input
-          type="number"
-          min="0"
-          step="0.01"
-          value={preferences.belowUsdValue ?? ""}
+          type="text"
+          inputMode="decimal"
+          aria-label="Precio máximo en USD para notificar"
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? "wishlist-preferences-error" : undefined}
+          disabled={saving || !preferences.belowUsd}
+          value={threshold}
           placeholder="0.00"
-          onChange={(event) => onUpdate(menu.game, { belowUsdValue: event.target.value ? Number(event.target.value) : null })}
+          onChange={(event) => { setThreshold(event.target.value); setError(""); }}
         />
-      </label>
-      <button type="button" onClick={onClose}>
-        Cerrar
+      </div>
+      {error ? <p id="wishlist-preferences-error" className="bellPreferencesError" role="alert">{error}</p> : null}
+      <button type="submit" className="bellPreferencesSave" disabled={saving}>
+        {saving ? <LoaderCircle size={14} /> : <Save size={14} />}{saving ? "Guardando..." : "Guardar"}
       </button>
-    </div>
+      <button type="button" onClick={onClose} disabled={saving}>
+        Cancelar
+      </button>
+    </form>
   );
 }
 
