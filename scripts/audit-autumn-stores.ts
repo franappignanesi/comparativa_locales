@@ -26,6 +26,8 @@ async function main() {
   if (selected.some(row => !row.game)) throw Error("A selection identity is missing from the live catalog");
   const apps = selected.filter(row => row.item.steamAppId);
   const ids: Record<string, string | null> = await json("https://api.isthereanydeal.com/lookup/id/shop/61/v1", apps.map(row => `app/${row.item.steamAppId}`));
+  // Collection contents were compared against the official Steam/Epic listings.
+  const collectionIds: Record<string, string | null> = await json("https://api.isthereanydeal.com/lookup/id/title/v1", ["Destiny 2: The Collection"]);
   const reports: Array<Record<string, unknown>> = [];
   const verifiedIds = new Set<string>();
   const storeIds: Record<number, string> = {};
@@ -37,17 +39,19 @@ async function main() {
   }
   if (Object.keys(storeIds).length !== 3) throw Error("Cannot resolve all official shop identities");
   for (const { item, game } of selected) {
-    const id = item.steamAppId ? ids[`app/${item.steamAppId}`] : null;
+    const verifiedCollection = item.steamBundleId === 72233;
+    const id = item.steamAppId ? ids[`app/${item.steamAppId}`] : verifiedCollection ? collectionIds["Destiny 2: The Collection"] : null;
     const row: Record<string, unknown> = { title: item.title, gameId: game!.id, steam: steamIdentity(item), identifiers: game!.identifiers,
       itadId: id, identityVerified: false, stores: {}, microsoft: { status: "unverified" } };
     reports.push(row);
-    if (!item.steamAppId) { row.note = "Steam-specific bundle: do not substitute individual games or another collection without comparing all contents."; continue; }
+    if (!item.steamAppId && !verifiedCollection) { row.note = "Steam-specific bundle: do not substitute individual games or another collection without comparing all contents."; continue; }
     if (id) {
       const info = await json(`https://api.isthereanydeal.com/games/info/v2?id=${encodeURIComponent(id)}`);
-      const exact = info.appid === item.steamAppId || normalizedCatalogTitle(info.title) === normalizedCatalogTitle(game!.title);
-      row.itadTitle = info.title; row.identityVerified = exact && info.type === "game";
+      const exact = (item.steamAppId && info.appid === item.steamAppId) || normalizedCatalogTitle(info.title) === normalizedCatalogTitle(game!.title);
+      row.itadTitle = info.title; row.itadType = info.type; row.identityVerified = Boolean(exact) && (verifiedCollection || info.type === "game");
       if (row.identityVerified) verifiedIds.add(id);
     }
+    if (verifiedCollection) continue;
     try {
       const existing = game!.identifiers.microsoftProductId;
       const productId = existing ?? await discoverMicrosoftProduct(game!, REGIONS[0]);
