@@ -243,8 +243,6 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
 
   useEffect(() => {
     if (!selectedGameId || !payload) return;
-    const loadedEntries = payload.history.entriesByGame[selectedGameId]?.filter((entry) => entry.arsFinalPrice != null && entry.arsFinalPrice > 0) ?? [];
-    if (loadedEntries.length >= 2) return;
     const attemptKey = `${region}:${selectedGameId}`;
     if (historyAttemptsRef.current.has(attemptKey)) return;
     historyAttemptsRef.current.add(attemptKey);
