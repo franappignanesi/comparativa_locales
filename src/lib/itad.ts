@@ -184,7 +184,17 @@ export async function fetchItadFullHistoryForGames(latest: LatestPrices, gameIds
   const shopIds = await fetchShopIds(key, region, errors);
   const supportedStores = STORES.filter((store) => shopIds[store] != null && store !== "microsoft");
   const selectedRows = latest.prices.filter((row) => gameIds.has(row.gameId));
-  const lookup = await lookupItadIds(selectedRows.map(row => ({ title: row.gameTitle, identifiers: { itadId: row.itadId }, productKind: row.productKind })), key, errors);
+  const steamRows = selectedRows.filter(row => !row.itadId && row.productKind !== "pack" && steamAppIdFromUrl(row.prices.steam?.url));
+  const lookup = await lookupItadIds(selectedRows.filter(row => !steamRows.includes(row)).map(row => ({ title: row.gameTitle, identifiers: { itadId: row.itadId }, productKind: row.productKind })), key, errors);
+  if (steamRows.length) {
+    try {
+      const identities = steamRows.map(row => `app/${steamAppIdFromUrl(row.prices.steam?.url)}`);
+      const resolved = await postItad<ItadLookup>("/lookup/id/shop/61/v1", key, {}, identities);
+      steamRows.forEach((row, index) => { if (resolved[identities[index]]) lookup[row.gameTitle] = resolved[identities[index]]; });
+    } catch (error) {
+      errors.push(error instanceof Error ? error.message : "Error resolviendo identidad Steam del historial");
+    }
+  }
   const idToGame = new Map<string, { gameId: string; gameTitle: string }>();
 
   for (const row of selectedRows) {
@@ -227,6 +237,15 @@ export async function fetchItadFullHistoryForGames(latest: LatestPrices, gameIds
     errors,
     entries
   };
+}
+
+export function steamAppIdFromUrl(value: string | null | undefined): number | null {
+  try {
+    const url = new URL(value ?? "");
+    if (url.hostname !== "store.steampowered.com") return null;
+    const match = url.pathname.match(/^\/app\/(\d+)(?:\/|$)/);
+    return match ? Number(match[1]) : null;
+  } catch { return null; }
 }
 
 export async function fetchItadCurrentPrices(

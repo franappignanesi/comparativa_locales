@@ -7,6 +7,7 @@ import { gzipSync } from "node:zlib";
 import { readJson } from "../src/lib/cache";
 import { compactOwnHistory, gameIdsMissingHistory, isFullHistoryCacheFresh } from "../src/lib/history";
 import { historyChartObservations } from "../src/lib/history-chart";
+import { steamAppIdFromUrl } from "../src/lib/itad";
 import type { PriceHistoryEntry } from "../src/lib/types";
 
 const entry = (timestamp: string, price: number): PriceHistoryEntry => ({ gameId: "test", store: "steam", timestamp, originalCurrency: "USD", originalFinalPrice: price, originalBasePrice: 50, arsFinalPrice: price * 1000, arsBasePrice: 50000, discountPct: 0, source: "snapshot" });
@@ -15,6 +16,12 @@ test("an old full-history cache cannot suppress newly available observations", (
   assert.equal(isFullHistoryCacheFresh(new Date(Date.now() - 1000).toISOString()), true);
   assert.equal(isFullHistoryCacheFresh(new Date(Date.now() - 2 * 86400000).toISOString()), false);
   assert.equal(isFullHistoryCacheFresh(null), false);
+});
+
+test("missing historical identities use the exact Steam application, never a pack or another domain", () => {
+  assert.equal(steamAppIdFromUrl("https://store.steampowered.com/app/1237970/Titanfall_2/"), 1237970);
+  assert.equal(steamAppIdFromUrl("https://store.steampowered.com/bundle/72233/"), null);
+  assert.equal(steamAppIdFromUrl("https://example.com/app/1237970/"), null);
 });
 
 test("prices across several stores on one day are not a complete historical series", () => {
