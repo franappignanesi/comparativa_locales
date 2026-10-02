@@ -819,6 +819,7 @@ select {
 .regionButton {
   width: 36px;
   height: 36px;
+  padding: 0;
   display: grid;
   place-items: center;
   border: 1px solid rgba(255, 232, 172, 0.22);
@@ -829,6 +830,7 @@ select {
 }
 
 .regionButton img {
+  display: block;
   width: 24px;
   height: 24px;
   border-radius: 999px;
@@ -5117,7 +5119,7 @@ select option {
   .landingBrand { font-size: 18px; letter-spacing: 0; }
   .landingNav .releaseBadgeButton { width: 28px; height: 32px; font-size: 24px; }
   .landingNavTools { margin-left: auto; flex-wrap: nowrap; gap: 6px; }
-  .landingNavTools .regionButton { width: 30px; height: 32px; }
+  .landingNavTools .regionButton { width: 30px; height: 30px; }
   .landingNavTools .regionButton img { width: 22px; height: 22px; }
   .landingNavButton { min-height: 34px; padding-inline: 7px; font-size: 9px; letter-spacing: 0; white-space: nowrap; }
   .landingSection { padding-inline: 16px; margin-bottom: 48px; }
