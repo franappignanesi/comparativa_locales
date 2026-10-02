@@ -1244,7 +1244,7 @@ function PriceHistoryChart({
   const dateSpan = Math.max(1, maxDate - minDate);
   const visibleTicks = monthTicks(startDate, endDate);
   const yTicks = [0, 1, 2, 3].map((index) => minValue + (span / 3) * index);
-  const opacityForStore = (store: StoreId) => (!focusedStore || focusedStore === store ? 1 : 0.1);
+  const opacityForStore = (store: StoreId) => (!focusedStore || focusedStore === store ? 1 : 0.4);
 
   function x(timestamp: string): number {
     return padX + ((Date.parse(timestamp) - minDate) / dateSpan) * (width - padX * 2);
