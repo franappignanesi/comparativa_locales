@@ -3,7 +3,7 @@
 import { ArrowDown, ArrowUp, Copy, Download, ImagePlus, LoaderCircle, Plus, RefreshCw, Search, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { REGIONS, type RegionId } from "@/lib/regions";
-import { MAX_PUBLICATION_GAMES, publicationCaption, type PublicationDraft, type PublicationGame } from "@/lib/social-publications";
+import { MAX_PUBLICATION_IMAGES, publicationGameLimit, publicationCaption, type PublicationDraft, type PublicationGame } from "@/lib/social-publications";
 import { PublicationCover, PublicationCta, PublicationPoster, type PosterOptions, type PublicationBackgroundGame } from "./PublicationPoster";
 import styles from "./publications.module.css";
 
@@ -18,6 +18,8 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
   const [drafts, setDrafts] = useState<PublicationDraft[]>([]);
   const [active, setActive] = useState("");
   const [coverTitle, setCoverTitle] = useState("Ofertas para viciar");
+  const [coverSubtitle, setCoverSubtitle] = useState<string | null>(null);
+  const [showCoverSubtitle, setShowCoverSubtitle] = useState(true);
   const [includeCover, setIncludeCover] = useState(false);
   const [coverImages, setCoverImages] = useState(true);
   const [showCallout, setShowCallout] = useState(true);
@@ -39,7 +41,8 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
   const stale = hasStale && !options.hideStale;
   const outputDrafts = drafts.map(draft => ({ ...draft, game: { ...draft.game, prices: draft.game.prices.filter(price => !price.stale) } }));
   const missingPrices = outputDrafts.some(draft => !draft.game.prices.some(price => price.amount != null));
-  const total = drafts.length + Number(includeCover) + Number(includeCta);
+  const total = drafts.length ? drafts.length + Number(includeCover) + Number(includeCta) : 0;
+  const maxGames = publicationGameLimit(includeCover, includeCta);
   const caption = publicationCaption(outputDrafts, coverTitle) + (includeCta && ctaQuestion.trim() ? `\n\n${ctaQuestion.trim()}` : "");
 
   useEffect(() => {
@@ -52,7 +55,7 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
         if (saved.version !== 1 || !REGIONS.some(region => region.id === saved.region) || !Array.isArray(saved.items)) return;
         setBusy("Restaurando borrador...");
         const items: PublicationDraft[] = [];
-        for (const item of saved.items.slice(0, MAX_PUBLICATION_GAMES)) {
+        for (const item of saved.items.slice(0, publicationGameLimit(saved.includeCover === true, saved.includeCta !== false))) {
           if (cancelled) return;
           if (typeof item?.id !== "string" || item.id.length > 200 || items.some(draft => draft.game.id === item.id)) continue;
           const game = await loadGame(item.id, saved.region);
@@ -62,6 +65,8 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
         if (cancelled) return;
         setDrafts(items); setRegion(saved.region); setActive(items[0]?.game.id ?? "");
         setIncludeCover(saved.includeCover === true);
+        setShowCoverSubtitle(saved.showCoverSubtitle !== false);
+        if (typeof saved.coverSubtitle === "string") setCoverSubtitle(saved.coverSubtitle.slice(0, 120));
         setCoverImages(saved.coverImages !== false);
         setShowCallout(saved.showCallout !== false);
         if (typeof saved.coverCallout === "string") setCoverCallout(saved.coverCallout.slice(0, 80));
@@ -83,10 +88,10 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
   useEffect(() => {
     if (!restored.current) return;
     // Store only editorial choices; prices are always reloaded from the protected API.
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ version: 1, region, includeCover, coverTitle, coverImages, showCallout, coverCallout, includeCta, ctaQuestion, options,
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ version: 1, region, includeCover, coverTitle, coverSubtitle, showCoverSubtitle, coverImages, showCallout, coverCallout, includeCta, ctaQuestion, options,
       items: drafts.map(draft => ({ id: draft.game.id, headline: draft.headline, description: draft.description })) })); }
     catch { /* Storage may be unavailable in private browsing. */ }
-  }, [drafts, region, includeCover, coverTitle, coverImages, showCallout, coverCallout, includeCta, ctaQuestion, options]);
+  }, [drafts, region, includeCover, coverTitle, coverSubtitle, showCoverSubtitle, coverImages, showCallout, coverCallout, includeCta, ctaQuestion, options]);
 
   useEffect(() => {
     if (!includeCta) return;
@@ -129,7 +134,7 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
   }
 
   async function addGame(game: SearchGame) {
-    if (busy || drafts.length >= MAX_PUBLICATION_GAMES || drafts.some(draft => draft.game.id === game.id)) return;
+    if (busy || drafts.length >= maxGames || drafts.some(draft => draft.game.id === game.id)) return;
     setBusy("Cargando juego..."); setError(""); setMessage("");
     try {
       const data = await loadGame(game.id, region);
@@ -165,6 +170,7 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
 
   async function download(all: boolean) {
     if (busy || !selected || stale || missingPrices) return;
+    if (total > MAX_PUBLICATION_IMAGES) { setError("El carrusel admite hasta 15 imágenes, incluyendo portada y cierre."); return; }
     if (includeCta && (all || preview === "cta") && !backgroundGames.length) {
       setError("El fondo de biblioteca todavía no está disponible. Esperá o desactivá el cierre."); return;
     }
@@ -224,11 +230,11 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
         <label className={styles.search}><Search size={17} /><input aria-label="Buscar juego para publicación" placeholder="Buscar juego..." value={query} maxLength={120} onChange={event => setQuery(event.target.value)} /></label>
         <div className={styles.results} aria-busy={searching}>
           {searching ? <span className={styles.status}><LoaderCircle size={16} />Buscando...</span> : results.length ? results.map(game =>
-            <button key={game.id} disabled={Boolean(busy) || drafts.length >= MAX_PUBLICATION_GAMES || drafts.some(draft => draft.game.id === game.id)} onClick={() => void addGame(game)} title={`Agregar ${game.title}`}>
+            <button key={game.id} disabled={Boolean(busy) || drafts.length >= maxGames || drafts.some(draft => draft.game.id === game.id)} onClick={() => void addGame(game)} title={`Agregar ${game.title}`}>
               <span>{game.title}</span><Plus size={16} />
             </button>) : <p>No encontramos juegos.</p>}
         </div>
-        <h3>Carrusel <span>{drafts.length}/{MAX_PUBLICATION_GAMES}</span></h3>
+        <h3>Carrusel <span>{total}/{MAX_PUBLICATION_IMAGES} imágenes</span></h3>
         <ol className={styles.queue}>{drafts.map((draft, index) => <li key={draft.game.id}>
           <button className={draft.game.id === selected?.game.id && preview === "game" ? styles.current : ""} disabled={Boolean(busy)} onClick={() => { setActive(draft.game.id); setPreview("game"); }}><span>{index + 1}. {draft.game.title}</span></button>
           <button disabled={Boolean(busy) || index === 0} title="Mover arriba" aria-label={`Mover ${draft.game.title} arriba`} onClick={() => move(index, -1)}><ArrowUp size={15} /></button>
@@ -237,8 +243,10 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
         </li>)}</ol>
         <fieldset disabled={Boolean(busy)} className={styles.settings}>
           <legend>Portada</legend>
-          <label><input type="checkbox" checked={includeCover} onChange={event => { setIncludeCover(event.target.checked); if (!event.target.checked && preview === "cover") setPreview("game"); }} />Incluir portada</label>
+          <label><input type="checkbox" checked={includeCover} disabled={!includeCover && total >= MAX_PUBLICATION_IMAGES} onChange={event => { setIncludeCover(event.target.checked); if (!event.target.checked && preview === "cover") setPreview("game"); }} />Incluir portada</label>
           {includeCover ? <><label>Título de portada<input maxLength={72} value={coverTitle} onChange={event => setCoverTitle(event.target.value)} /></label>
+            <label><input type="checkbox" checked={showCoverSubtitle} onChange={event => setShowCoverSubtitle(event.target.checked)} />Mostrar epígrafe de portada</label>
+            {showCoverSubtitle ? <label>Epígrafe de portada<input maxLength={120} value={coverSubtitle ?? `${drafts.length} juegos para tu próxima partida.`} onChange={event => setCoverSubtitle(event.target.value)} /></label> : null}
             <label><input type="checkbox" checked={coverImages} onChange={event => setCoverImages(event.target.checked)} />Mostrar portadas de juegos</label>
             <label><input type="checkbox" checked={showCallout} onChange={event => setShowCallout(event.target.checked)} />Mostrar invitación a deslizar</label>
             {showCallout ? <label>Invitación a deslizar<input maxLength={80} value={coverCallout} onChange={event => setCoverCallout(event.target.value)} /></label> : null}</> : null}
@@ -258,7 +266,7 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
         </fieldset>
         <fieldset disabled={Boolean(busy)} className={styles.settings}>
           <legend>Cierre</legend>
-          <label><input type="checkbox" checked={includeCta} onChange={event => { setIncludeCta(event.target.checked); if (!event.target.checked && preview === "cta") setPreview("game"); }} />Incluir cierre BARATEAM</label>
+          <label><input type="checkbox" checked={includeCta} disabled={!includeCta && total >= MAX_PUBLICATION_IMAGES} onChange={event => { setIncludeCta(event.target.checked); if (!event.target.checked && preview === "cta") setPreview("game"); }} />Incluir cierre BARATEAM</label>
           {includeCta ? <label>Pregunta para la audiencia (opcional)<input maxLength={120} value={ctaQuestion} onChange={event => setCtaQuestion(event.target.value)} /></label> : null}
         </fieldset>
       </div>
@@ -270,7 +278,7 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
         </div> : null}</div>
         {selected ? <div ref={viewport} className={styles.viewport}>
           <div style={{ transform: `scale(${width / 1080})`, transformOrigin: "top left" }}>
-            {preview === "cover" && includeCover ? <PublicationCover drafts={drafts} title={coverTitle} showImages={coverImages} showCallout={showCallout} callout={coverCallout} total={total} /> : preview === "cta" && includeCta ? <PublicationCta drafts={drafts} question={ctaQuestion} total={total} backgroundGames={backgroundGames} /> : <PublicationPoster draft={selected} options={options} index={drafts.indexOf(selected) + 1 + Number(includeCover)} total={total} />}
+            {preview === "cover" && includeCover ? <PublicationCover drafts={drafts} title={coverTitle} subtitle={coverSubtitle ?? undefined} showSubtitle={showCoverSubtitle} showImages={coverImages} showCallout={showCallout} callout={coverCallout} total={total} /> : preview === "cta" && includeCta ? <PublicationCta drafts={drafts} question={ctaQuestion} total={total} backgroundGames={backgroundGames} /> : <PublicationPoster draft={selected} options={options} index={drafts.indexOf(selected) + 1 + Number(includeCover)} total={total} />}
           </div>
         </div> : <div className={styles.empty}><ImagePlus size={32} /><p>Elegí un juego</p></div>}
         <div className={styles.actions}>
@@ -283,7 +291,7 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
       </div>
     </div>
     <div className={styles.exportRoot} ref={exports} aria-hidden="true">
-      {includeCover && drafts.length ? <div data-publication-export="cover"><PublicationCover drafts={drafts} title={coverTitle} showImages={coverImages} showCallout={showCallout} callout={coverCallout} total={total} /></div> : null}
+      {includeCover && drafts.length ? <div data-publication-export="cover"><PublicationCover drafts={drafts} title={coverTitle} subtitle={coverSubtitle ?? undefined} showSubtitle={showCoverSubtitle} showImages={coverImages} showCallout={showCallout} callout={coverCallout} total={total} /></div> : null}
       {drafts.map((draft, index) => <div key={draft.game.id} data-publication-export={`game-${draft.game.id}`}><PublicationPoster draft={draft} options={options} index={index + 1 + Number(includeCover)} total={total} /></div>)}
       {includeCta && drafts.length ? <div data-publication-export="cta"><PublicationCta drafts={drafts} question={ctaQuestion} total={total} backgroundGames={backgroundGames} /></div> : null}
     </div>

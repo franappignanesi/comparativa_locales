@@ -2,7 +2,10 @@ import { REGIONS, type RegionId } from "./regions";
 import { STORES, type HistoricalLow, type LatestPrices, type StoreId } from "./types";
 import { STORE_NAMES } from "./seo";
 
-export const MAX_PUBLICATION_GAMES = 10;
+export const MAX_PUBLICATION_IMAGES = 15;
+export function publicationGameLimit(includeCover: boolean, includeCta: boolean) {
+  return MAX_PUBLICATION_IMAGES - Number(includeCover) - Number(includeCta);
+}
 export type PublicationPrice = {
   store: StoreId; label: string; amount: number | null; currency: string | null;
   discount: number; historicalLow: boolean; cheapest: boolean; stale: boolean;

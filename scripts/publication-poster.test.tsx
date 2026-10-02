@@ -3,6 +3,7 @@ import test from "node:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PublicationCover, PublicationCta, PublicationPoster } from "../src/app/components/PublicationPoster";
 import type { PublicationDraft } from "../src/lib/social-publications";
+import { MAX_PUBLICATION_IMAGES, publicationGameLimit } from "../src/lib/social-publications";
 
 const draft: PublicationDraft = { headline: "Dishonored", description: "Para el finde", game: {
   id: "dishonored", title: "Dishonored", coverUrl: "/test.jpg", region: "AR", timestamp: null,
@@ -31,6 +32,20 @@ test("cover can reserve blank space and CTA can omit the question", () => {
 test("cover invitation is editable and optional", () => {
   assert.match(renderToStaticMarkup(<PublicationCover drafts={[draft]} title="Ofertas" callout="Mirá estas ofertas" />), /Mirá estas ofertas/);
   assert.doesNotMatch(renderToStaticMarkup(<PublicationCover drafts={[draft]} title="Ofertas" showCallout={false} />), /DESLIZÁ|→/);
+});
+
+test("cover subtitle is editable, optional, and defaults to the game count", () => {
+  assert.match(renderToStaticMarkup(<PublicationCover drafts={[draft]} title="Ofertas" />), /1 juegos para tu próxima partida/);
+  assert.match(renderToStaticMarkup(<PublicationCover drafts={[draft]} title="Ofertas" subtitle="Para viciar este finde" />), /Para viciar este finde/);
+  assert.doesNotMatch(renderToStaticMarkup(<PublicationCover drafts={[draft]} title="Ofertas" subtitle="Para viciar este finde" showSubtitle={false} />), /Para viciar este finde/);
+});
+
+test("carousel allows fifteen images including optional cover and closing", () => {
+  assert.equal(MAX_PUBLICATION_IMAGES, 15);
+  assert.equal(publicationGameLimit(false, false), 15);
+  assert.equal(publicationGameLimit(true, false), 14);
+  assert.equal(publicationGameLimit(false, true), 14);
+  assert.equal(publicationGameLimit(true, true), 13);
 });
 
 test("CTA uses distinct catalog covers and makes the question the primary message", () => {
