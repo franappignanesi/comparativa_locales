@@ -14,7 +14,7 @@ export type PublicationGame = {
   id: string; title: string; coverUrl: string | null; region: RegionId;
   timestamp: string | null; prices: PublicationPrice[];
 };
-export type PublicationDraft = { game: PublicationGame; headline: string; description: string };
+export type PublicationDraft = { game: PublicationGame; headline: string; description: string; coverPosition?: number };
 
 export function buildPublicationGame(row: LatestPrices["prices"][number], latest: LatestPrices, lows: Partial<Record<StoreId, HistoricalLow>>, region: RegionId, now = Date.now()): PublicationGame {
   const validMoney = (value: number | null | undefined) => typeof value === "number" && Number.isFinite(value) && value >= 0;

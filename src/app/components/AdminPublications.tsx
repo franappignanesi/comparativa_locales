@@ -61,7 +61,8 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
           if (typeof item?.id !== "string" || item.id.length > 200 || items.some(draft => draft.game.id === item.id)) continue;
           const game = await loadGame(item.id, saved.region);
           items.push({ game, headline: typeof item.headline === "string" ? item.headline.slice(0, 90) : game.title,
-            description: typeof item.description === "string" ? item.description.slice(0, 170) : "" });
+            description: typeof item.description === "string" ? item.description.slice(0, 170) : "",
+            coverPosition: typeof item.coverPosition === "number" && Number.isFinite(item.coverPosition) ? Math.max(0, Math.min(100, item.coverPosition)) : 50 });
         }
         if (cancelled) return;
         setDrafts(items); setRegion(saved.region); setActive(items[0]?.game.id ?? "");
@@ -91,7 +92,7 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
     if (!restored.current) return;
     // Store only editorial choices; prices are always reloaded from the protected API.
     try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ version: 1, region, includeCover, coverTitle, coverSubtitle, showCoverSubtitle, coverImages, coverLayout, showCallout, coverCallout, includeCta, ctaQuestion, options,
-      items: drafts.map(draft => ({ id: draft.game.id, headline: draft.headline, description: draft.description })) })); }
+      items: drafts.map(draft => ({ id: draft.game.id, headline: draft.headline, description: draft.description, coverPosition: draft.coverPosition })) })); }
     catch { /* Storage may be unavailable in private browsing. */ }
   }, [drafts, region, includeCover, coverTitle, coverSubtitle, showCoverSubtitle, coverImages, coverLayout, showCallout, coverCallout, includeCta, ctaQuestion, options]);
 
@@ -158,7 +159,7 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
     finally { setBusy(""); }
   }
 
-  function edit(updates: Partial<Pick<PublicationDraft, "headline" | "description">>) {
+  function edit(updates: Partial<Pick<PublicationDraft, "headline" | "description" | "coverPosition">>) {
     setDrafts(current => current.map(draft => draft.game.id === selected?.game.id ? { ...draft, ...updates } : draft));
   }
 
@@ -268,6 +269,10 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
           {selected ? <>
           <label>Título<input value={selected.headline} maxLength={90} onChange={event => edit({ headline: event.target.value })} /></label>
           <label>Descripción<textarea value={selected.description} maxLength={170} rows={3} onChange={event => edit({ description: event.target.value })} /><small>{selected.description.length}/170</small></label>
+          {includeCover && coverImages && coverLayout === "strips" ? <div className={styles.cropControl}>
+            <label>Encuadre de portada<input type="range" aria-label={`Encuadre de ${selected.game.title}`} min={0} max={100} step={1} value={selected.coverPosition ?? 50} onChange={event => { edit({ coverPosition: Number(event.target.value) }); setPreview("cover"); }} /></label>
+            <button type="button" title="Volver al centro" aria-label="Volver al centro" onClick={() => { edit({ coverPosition: 50 }); setPreview("cover"); }}><RefreshCw size={16} /></button>
+          </div> : null}
           </> : null}
         </fieldset>
         <fieldset disabled={Boolean(busy)} className={styles.settings}>

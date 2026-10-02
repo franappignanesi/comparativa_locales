@@ -58,6 +58,13 @@ test("vertical cover divisions include every selected game without the four-tile
   assert.equal((tiles.match(/src="\/game-/g) ?? []).length, 4);
 });
 
+test("manual stripe crops are independent and safely default to the center", () => {
+  const drafts = [{ ...draft, coverPosition: 20 }, { ...draft, game: { ...draft.game, id: "second" }, coverPosition: 80 }, { ...draft, game: { ...draft.game, id: "third" } }];
+  const html = renderToStaticMarkup(<PublicationCover drafts={drafts} title="Ofertas" layout="strips" />);
+  for (const position of [20, 80, 50]) assert.match(html, new RegExp(`object-position:${position}% center`));
+  assert.match(renderToStaticMarkup(<PublicationCover drafts={[{ ...draft, coverPosition: 200 }]} title="Ofertas" layout="strips" />), /object-position:100% center/);
+});
+
 test("CTA uses distinct catalog covers and makes the question the primary message", () => {
   const backgroundGames = Array.from({ length: 24 }, (_, index) => ({ id: `game-${index}`, title: `Game ${index}`, coverUrl: `/cover-${index}.jpg` }));
   const html = renderToStaticMarkup(<PublicationCta drafts={[draft]} question="¿Cuál elegís?" total={3} backgroundGames={backgroundGames} />);

@@ -45,8 +45,8 @@ export function PublicationCover({ drafts, title, subtitle, showSubtitle = true,
       <FittedText as="h2" text={title || "Ofertas para viciar"} max={112} min={40} />
       {showSubtitle && (subtitle ?? `${drafts.length} juegos para tu próxima partida.`).trim() ? <FittedText as="p" text={subtitle ?? `${drafts.length} juegos para tu próxima partida.`} max={30} min={20} /> : null}
     </div>
-    <div className={`publicationCoverImages ${layout === "strips" ? "publicationCoverStrips" : ""}`} style={layout === "strips" ? { gridTemplateColumns: `repeat(${Math.max(1, drafts.length)}, minmax(0, 1fr))` } : undefined}>{showImages ? (layout === "strips" ? drafts : drafts.slice(0, 4)).map(({ game }) => <div key={game.id}>
-      {game.coverUrl ? <img src={game.coverUrl} alt={layout === "strips" ? game.title : ""} /> : <span>{game.title}</span>}{layout === "tiles" ? <strong>{game.title}</strong> : null}
+    <div className={`publicationCoverImages ${layout === "strips" ? "publicationCoverStrips" : ""}`} style={layout === "strips" ? { gridTemplateColumns: `repeat(${Math.max(1, drafts.length)}, minmax(0, 1fr))` } : undefined}>{showImages ? (layout === "strips" ? drafts : drafts.slice(0, 4)).map(({ game, coverPosition }) => <div key={game.id}>
+      {game.coverUrl ? <img src={game.coverUrl} alt={layout === "strips" ? game.title : ""} style={layout === "strips" ? { objectPosition: `${Math.max(0, Math.min(100, Number.isFinite(coverPosition) ? coverPosition! : 50))}% center` } : undefined} /> : <span>{game.title}</span>}{layout === "tiles" ? <strong>{game.title}</strong> : null}
     </div>) : null}</div>
     <div className="publicationCoverCallout">{showCallout && callout.trim() ? <><FittedText as="strong" text={callout} max={32} min={20} /><span>→</span></> : null}</div>
     <PosterFooter date={publicationDate(drafts[0].game.timestamp)} />
