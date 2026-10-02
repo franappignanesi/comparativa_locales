@@ -42,6 +42,10 @@ test("all 27 selected identities resolve alongside existing games and additions 
   const outlast = updated.broadSample.find(game => game.identifiers.steamAppId === 1304930)!;
   assert.equal(outlast.identifiers.itadId, "018d937f-4385-73cd-abfc-dc95e5e04166");
   assert.equal(sample.broadSample.find(game => game.identifiers.steamAppId === 1304930)?.identifiers.itadId, undefined);
+  const pack = { ...outlast, id: "outlast-pack", productKind: "pack" as const,
+    identifiers: { steamAppId: 1304930, steamBundleId: 123 } };
+  const withPack = withSeasonalGames({ ...updated, broadSample: [...updated.broadSample, pack] });
+  assert.equal(withPack.broadSample.find(game => game.id === pack.id)?.identifiers.itadId, undefined);
 });
 
 test("bundle extraction uses its own purchase block, not a discounted included game", () => {
