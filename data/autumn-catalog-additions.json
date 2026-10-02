@@ -1,0 +1,165 @@
+[
+  {
+    "title": "Megabonk",
+    "edition": "standard",
+    "productKind": "game",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Casual",
+      "Indie"
+    ],
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405340/d06cb39a82a703e42541085fc61b42d80904b3f8/header.jpg?t=1760445338",
+    "releaseYear": 2025,
+    "notes": "Shux autumn sale selection. Verified Steam identity. Bundle price is for the complete set without previously owned items; Steam may personalize it.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3405340
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Quantic Dream Collection",
+    "edition": "standard",
+    "productKind": "pack",
+    "category": "AA",
+    "primaryTag": "Packs y colecciones",
+    "steamTags": [],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/bundles/14936/4xzcl4vo7ygm94rz/header.jpg?t=1592471599",
+    "releaseYear": 0,
+    "notes": "Shux autumn sale selection. Verified Steam identity. Bundle price is for the complete set without previously owned items; Steam may personalize it.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamBundleId": 14936
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Hozy",
+    "edition": "standard",
+    "productKind": "game",
+    "category": "AA",
+    "primaryTag": "Casual",
+    "steamTags": [
+      "Casual",
+      "Indie",
+      "Simulation"
+    ],
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3326230/d977e26287b433e8a6a1cd773d26c16daf612985/header_alt_assets_4.jpg?t=1790874997",
+    "releaseYear": 2026,
+    "notes": "Shux autumn sale selection. Verified Steam identity. Bundle price is for the complete set without previously owned items; Steam may personalize it.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3326230
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "REPLACED",
+    "edition": "standard",
+    "productKind": "game",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "Indie"
+    ],
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1663850/9079d7a26c8720ed0616f1bd7f912ccc22a535d4/header.jpg?t=1790232942",
+    "releaseYear": 2026,
+    "notes": "Shux autumn sale selection. Verified Steam identity. Bundle price is for the complete set without previously owned items; Steam may personalize it.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 1663850
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Dying Light: The Beast",
+    "edition": "standard",
+    "productKind": "game",
+    "category": "AA",
+    "primaryTag": "Action",
+    "steamTags": [
+      "Action",
+      "Adventure",
+      "RPG"
+    ],
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3008130/474a86847984d68aa1485734e450c0a86ada03b3/header.jpg?t=1789646537",
+    "releaseYear": 2025,
+    "notes": "Shux autumn sale selection. Verified Steam identity. Bundle price is for the complete set without previously owned items; Steam may personalize it.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 3008130
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Dreamcore",
+    "edition": "standard",
+    "productKind": "game",
+    "category": "AA",
+    "primaryTag": "Adventure",
+    "steamTags": [
+      "Adventure",
+      "Indie"
+    ],
+    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2453060/34eb7d1855bce2ee52c6b872ab8923c8372240c7/header.jpg?t=1785523754",
+    "releaseYear": 2025,
+    "notes": "Shux autumn sale selection. Verified Steam identity. Bundle price is for the complete set without previously owned items; Steam may personalize it.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamAppId": 2453060
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Cyberpunk 2077 + Phantom Liberty (Bundle)",
+    "edition": "standard",
+    "productKind": "pack",
+    "category": "AA",
+    "primaryTag": "Packs y colecciones",
+    "steamTags": [],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/bundles/32470/5htp7gjbzhjufq5c/67f4f047da1935d1efe1c4a4697011951be5b534/header_ratio.jpg?t=1746520128",
+    "releaseYear": 0,
+    "notes": "Shux autumn sale selection. Verified Steam identity. Bundle price is for the complete set without previously owned items; Steam may personalize it.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamBundleId": 32470
+    },
+    "confidence": "high"
+  },
+  {
+    "title": "Destiny 2: The Collection",
+    "edition": "standard",
+    "productKind": "pack",
+    "category": "AA",
+    "primaryTag": "Packs y colecciones",
+    "steamTags": [],
+    "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/bundles/72233/10mlyrwt89khh346/14798d43e99d07301dc3dca07b8d9b667454ddfc/header_ratio.jpg?t=1781235088",
+    "releaseYear": 0,
+    "notes": "Shux autumn sale selection. Verified Steam identity. Bundle price is for the complete set without previously owned items; Steam may personalize it.",
+    "expectedStores": [
+      "steam"
+    ],
+    "identifiers": {
+      "steamBundleId": 72233
+    },
+    "confidence": "high"
+  }
+]

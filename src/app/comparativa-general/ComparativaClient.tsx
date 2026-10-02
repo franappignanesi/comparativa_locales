@@ -1,4 +1,5 @@
 "use client";
+import { AutumnNavLink } from "@/app/components/AutumnNavLink";
 
 import { BarChart3, ChevronDown, History, Library, ShieldAlert, Star } from "lucide-react";
 import Link from "next/link";
@@ -206,6 +207,7 @@ export default function ComparativaClient({ initialPayload }: { initialPayload: 
               <Link href="/biblioteca/juego-del-finde" className="sideSubLink">Juego del finde</Link>
             </div>
           </div>
+          <AutumnNavLink />
           <Link href="/comparativa-general" className="sideLink active">
             <BarChart3 size={20} />
             Comparativa general

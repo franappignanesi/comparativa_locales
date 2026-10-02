@@ -23,6 +23,7 @@ export type StoreIdentifiers = {
   itadId?: string | null;
   steamAppId?: number | null;
   steamSubId?: number | null;
+  steamBundleId?: number | null;
   epicSlug?: string | null;
   gogSlug?: string | null;
   humbleSlug?: string | null;

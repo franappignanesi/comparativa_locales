@@ -52,8 +52,11 @@ import { WEEKEND_FILTER } from "@/lib/weekend-games";
 import { WeekendRecommendation, WeekendTag } from "@/app/components/WeekendRecommendation";
 import { WeekendShowcase } from "@/app/components/WeekendShowcase";
 import { PopularWishlist } from "@/app/components/PopularWishlist";
+import { AutumnNavLink } from "@/app/components/AutumnNavLink";
+import { AUTUMN_FILTER, steamAtHistoricalLow } from "@/lib/autumn-offers";
 
 type ApiPayload = {
+  autumnSelection?: CatalogResponse["autumnSelection"];
   featuredWeekend?: CatalogResponse["featuredWeekend"];
   weekend?: CatalogResponse["weekend"];
   latest: LatestPrices;
@@ -136,6 +139,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
   const [filter, setFilter] = useState(searchParams.get("filter") ?? initialFilter);
   const [sort, setSort] = useState(searchParams.get("sort") ?? initialSort);
   const [libraryMenuOpen, setLibraryMenuOpen] = useState(true);
+  const [autumnExpanded, setAutumnExpanded] = useState(false);
   const [region, setRegion] = useState<RegionId>(DEFAULT_REGION);
   const [loading, setLoading] = useState(!initialPayload);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -275,7 +279,8 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
   }
 
   const summary = payload.analysis.broad;
-  const selectedRow = selectedGameId ? payload.latest.prices.find((row) => row.gameId === selectedGameId) ?? (payload.featuredWeekend?.gameId === selectedGameId ? payload.featuredWeekend : null) ?? (extraSelectedRow?.gameId === selectedGameId ? extraSelectedRow : null) : null;
+  const selectedRow = selectedGameId ? payload.latest.prices.find((row) => row.gameId === selectedGameId) ?? payload.autumnSelection?.find(row => row.gameId === selectedGameId) ?? (payload.featuredWeekend?.gameId === selectedGameId ? payload.featuredWeekend : null) ?? (extraSelectedRow?.gameId === selectedGameId ? extraSelectedRow : null) : null;
+  const autumn = filter === AUTUMN_FILTER;
   const queryActive = query.trim().length > 0;
   const searchPending = query.trim() !== debouncedQuery.trim() || loading;
 
@@ -400,8 +405,19 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
     }
   }
 
+  function renderCatalogCard(row: PriceRow) {
+    return <GameCard key={row.gameId} row={row} analysis={summary.games[row.gameId]}
+      historyLows={payload!.history.lowsByGame[row.gameId] ?? {}} enabledStores={enabledStores}
+      steamFocus={autumn} wishlisted={wishlist.some(item => item.gameId === row.gameId)}
+      onToggleWishlist={() => toggleWishlist(row)} usdToArs={payload!.latest.usdToArs || FALLBACK_USD_TO_ARS}
+      usdToTarget={payload!.latest.usdToTarget || payload!.latest.usdToArs || FALLBACK_USD_TO_ARS}
+      displayCurrency={payload!.latest.currency ?? "ARS"} displayLocale={payload!.latest.locale ?? "es-AR"}
+      onOpen={() => setSelectedGameId(row.gameId)} category={category}
+      onCategoryClick={value => setCategory(category === value ? "todas" : value)} />;
+  }
+
   return (
-    <div className="appShell">
+    <div className={`appShell${autumn ? " autumnOffers" : ""}`}>
       <nav className="brandBar">
         <div className="brandCluster">
           <Link className="brand" href="/">BARATEAM</Link>
@@ -419,6 +435,13 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
         </div>
       </nav>
 
+      <nav className="mobilePrimaryNav" aria-label="Secciones principales">
+        <Link href="/">Inicio</Link>
+        <Link href="/biblioteca" aria-current={!autumn ? "page" : undefined}>Biblioteca</Link>
+        <Link href="/ofertas-de-otono" className="mobileAutumnLink" aria-current={autumn ? "page" : undefined}><Leaf size={14} />Ofertas de otoño</Link>
+        <Link href="/comparativa-general">Comparativa</Link>
+      </nav>
+
       <aside className="sideNav">
         <div className="sideHeader">
           <h2>Biblioteca</h2>
@@ -430,7 +453,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
             Inicio
           </Link>
           <div className={`sideGroup ${libraryMenuOpen ? "open" : ""}`}>
-            <button className="sideLink sideGroupToggle active" type="button" onClick={() => setLibraryMenuOpen((current) => !current)} aria-expanded={libraryMenuOpen}>
+            <button className={`sideLink sideGroupToggle${autumn ? "" : " active"}`} type="button" onClick={() => setLibraryMenuOpen((current) => !current)} aria-expanded={libraryMenuOpen}>
               <span>
                 <Library size={20} />
                 Biblioteca
@@ -452,6 +475,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
               <Link href="/biblioteca/juego-del-finde" className={filter === WEEKEND_FILTER ? "sideSubLink active" : "sideSubLink"}>Juego del finde</Link>
             </div>
           </div>
+          <AutumnNavLink active={autumn} />
           <Link href="/comparativa-general" className="sideLink">
             <BarChart3 size={20} />
             Comparativa general
@@ -468,13 +492,28 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
       <main className="page">
         {filter === WEEKEND_FILTER && payload.weekend ? <WeekendShowcase games={payload.weekend.games} offers={payload.weekend.offers} enabledStores={enabledStores} onOpen={openWeekendGame} /> : <header className="heroHeader">
           <div>
-            <h1>¡Compará precios de juegos!</h1>
+            <h1>{autumn ? "Ofertas de otoño" : "¡Compará precios de juegos!"}</h1>
           </div>
         </header>}
 
         {openingWeekendGame ? <div className="weekendOpeningIndicator" role="status"><span className="mobileSearchSpinner" />Abriendo juego...</div> : null}
         {weekendOpenError ? <p role="alert">No pudimos abrir el juego. Probá de nuevo en unos segundos.</p> : null}
         {filter === WEEKEND_FILTER ? <h2 className="weekendCatalogHeading">Todos nuestros juegos del finde</h2> : null}
+
+        {autumn ? <section className="autumnSelection" aria-labelledby="autumn-selection-title">
+          <div className="autumnSectionHeading"><span className="autumnEyebrow">SHUX × STEAM</span><h2 id="autumn-selection-title">SELECCIÓN DE OFERTAS SHUX</h2><p>¡Los juegos seleccionados de las ofertas de Steam para el video de Shux!</p></div>
+          {loading ? <div className="catalogRefreshIndicator" role="status"><span />Actualizando precios...</div> : null}
+          {!enabledStores.includes("steam") ? <p role="status">Activá Steam en tus tiendas para ver sus ofertas.</p> : <>
+            <div className="gameGrid" id="autumn-selection-games">
+              {(payload.autumnSelection ?? []).slice(0, autumnExpanded ? undefined : 6).map(renderCatalogCard)}
+            </div>
+            {(payload.autumnSelection?.length ?? 0) > 6 ? <div className="autumnExpand"><button type="button" className="button" aria-expanded={autumnExpanded} aria-controls="autumn-selection-games" onClick={() => {
+              if (autumnExpanded) document.getElementById("autumn-selection-title")?.scrollIntoView({ behavior: "smooth", block: "start" });
+              setAutumnExpanded(current => !current);
+            }}><ChevronDown size={18} className={autumnExpanded ? "expanded" : ""} />{autumnExpanded ? "Ver menos" : "Ver todos"}</button></div> : null}
+          </>}
+        </section> : null}
+        {autumn ? <h2 className="autumnAllHeading">Todas las ofertas</h2> : null}
 
         <section className={`toolbar ${queryActive ? "searchActive" : ""}`} aria-label="Controles">
           <label className="search">
@@ -533,6 +572,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
             <select value={filter} onChange={(event) => setFilter(event.target.value)} aria-label="Filtro">
               <option value="todos">Todos</option>
               <option value="ofertas">Ofertas 🎁</option>
+              <option value={AUTUMN_FILTER}>Ofertas de otoño</option>
               <option value="diferencias">Más baratos que Steam 👀</option>
               <option value="historicos">Mínimos históricos 📉</option>
               <option value={WEEKEND_FILTER}>Juego del finde</option>
@@ -553,7 +593,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
           </label>
         </section>
 
-        {filter !== WEEKEND_FILTER ? <section className={`catalogOverview ${queryActive ? "searchActive" : ""}`} aria-label="Resumen de la biblioteca">
+        {filter !== WEEKEND_FILTER && !autumn ? <section className={`catalogOverview ${queryActive ? "searchActive" : ""}`} aria-label="Resumen de la biblioteca">
           <div className="catalogOverviewLeft">
           <div className="cards catalogMetrics">
           <Metric title="Tienda más barata promedio" value={summary.cheapestAverageStore ? STORE_LABELS[summary.cheapestAverageStore] : "Sin datos"} />
@@ -591,24 +631,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
               Actualizando resultados...
             </div>
           ) : null}
-          {games.map((row) => (
-            <GameCard
-              key={row.gameId}
-              row={row}
-              analysis={summary.games[row.gameId]}
-              historyLows={payload.history.lowsByGame[row.gameId] ?? {}}
-              enabledStores={enabledStores}
-              wishlisted={wishlist.some((item) => item.gameId === row.gameId)}
-              onToggleWishlist={() => toggleWishlist(row)}
-              usdToArs={payload.latest.usdToArs || FALLBACK_USD_TO_ARS}
-              usdToTarget={payload.latest.usdToTarget || payload.latest.usdToArs || FALLBACK_USD_TO_ARS}
-              displayCurrency={payload.latest.currency ?? "ARS"}
-              displayLocale={payload.latest.locale ?? "es-AR"}
-              onOpen={() => setSelectedGameId(row.gameId)}
-              category={category}
-              onCategoryClick={(value) => setCategory(category === value ? "todas" : value)}
-            />
-          ))}
+          {games.map(renderCatalogCard)}
         </section>
 
         <div className="paginationFoot">
@@ -706,6 +729,7 @@ function BibliotecaLoading() {
 
 function GameCard({
   intro,
+  steamFocus = false,
   row,
   analysis,
   historyLows,
@@ -721,6 +745,7 @@ function GameCard({
   onCategoryClick
 }: {
   intro?: ReactNode;
+  steamFocus?: boolean;
   row: PriceRow;
   analysis: GameAnalysis | undefined;
   historyLows: PriceHistoryReport["lowsByGame"][string];
@@ -742,10 +767,10 @@ function GameCard({
   const visibleStores = activeWinner
     ? Array.from(new Set(["steam" as StoreId, activeWinner, ...pricedStores.filter((store) => store !== "steam" && store !== activeWinner)])).filter((store) => activeStores.includes(store)).slice(0, 5)
     : pricedStores.slice(0, 5);
-  const bestDiscount = bestDiscountOffer(row, activeStores);
+  const bestDiscount = bestDiscountOffer(row, steamFocus ? activeStores.filter(store => store === "steam") : activeStores);
 
   return (
-    <article className="gameCard">
+    <article className={`gameCard${steamFocus ? " autumnGameCard" : ""}`}>
       {intro}
       <div
         className="gameHero clickableHero"
@@ -792,6 +817,7 @@ function GameCard({
       </div>
 
       <div className="gameCardBody">
+        {steamFocus && steamAtHistoricalLow(row, historyLows.steam) ? <span className="autumnLowTag"><History size={13} />Mínimo histórico en Steam</span> : null}
         <div className="priceTiles">
           {visibleStores.length ? (
             visibleStores.map((store) => (
@@ -812,6 +838,7 @@ function GameCard({
         </div>
 
         <HistoricalLowStrip lows={historyLows} enabledStores={activeStores} usdToArs={usdToArs} usdToTarget={usdToTarget} displayCurrency={displayCurrency} displayLocale={displayLocale} onOpen={onOpen} />
+        {row.productKind === "pack" && row.prices.steam?.url?.includes("/bundle/") ? <p className="bundlePriceNote">Precio del bundle completo. Steam puede descontar los juegos que ya tenés.</p> : null}
       </div>
     </article>
   );

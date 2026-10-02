@@ -126,6 +126,7 @@ export function LandingClient({
           <Link href="/biblioteca" className="landingNavButton">
             Explorar juegos
           </Link>
+          <Link href="/ofertas-de-otono" className="landingNavButton autumnLandingLink">Ofertas de otoño</Link>
           <Link href="/biblioteca/juego-del-finde" className="landingNavButton">Juego del finde</Link>
         </div>
       </nav>

@@ -1,5 +1,6 @@
 import type { SampleGame, StorePrice } from "../types";
 import type { RegionConfig } from "../regions";
+import { parseSteamBundle } from "./steam-bundle";
 
 type SteamPayload = {
   success?: boolean;
@@ -31,8 +32,8 @@ export async function fetchStorePrice(game: SampleGame, region?: RegionConfig): 
 
 export async function fetchStorePrices(games: SampleGame[], chunkSize = 50, region?: RegionConfig): Promise<Map<string, StorePrice>> {
   const result = new Map<string, StorePrice>();
-  const gamesWithPackageId = games.filter((game) => Boolean(game.identifiers.steamSubId));
-  const gamesWithAppId = games.filter((game) => Boolean(game.identifiers.steamAppId) && !game.identifiers.steamSubId);
+  const gamesWithPackageId = games.filter((game) => Boolean(game.identifiers.steamSubId) && !game.identifiers.steamBundleId);
+  const gamesWithAppId = games.filter((game) => Boolean(game.identifiers.steamAppId) && !game.identifiers.steamSubId && !game.identifiers.steamBundleId);
   const sleepMs = parseNonNegativeInt(process.env.STEAM_CHUNK_SLEEP_MS) ?? 2500;
 
   if (process.env.STEAM_FORCE_SINGLE_REQUESTS === "1") {
@@ -75,7 +76,18 @@ export async function fetchStorePrices(games: SampleGame[], chunkSize = 50, regi
   const packagePrices = await fetchSteamPackagePrices(gamesWithPackageId, region, sleepMs);
   for (const [gameId, price] of packagePrices) result.set(gameId, price);
 
-  for (const game of games.filter((item) => !item.identifiers.steamAppId && !item.identifiers.steamSubId)) {
+  for (const game of games.filter(game => game.identifiers.steamBundleId)) {
+    try {
+      const response = await fetchSteam(`https://store.steampowered.com/bundle/${game.identifiers.steamBundleId}/?cc=${region?.steamCc ?? "AR"}&l=english`);
+      if (!response.ok) throw new Error(`Steam bundle HTTP ${response.status}`);
+      result.set(game.id, parseSteamBundle(game, await response.text(), region));
+    } catch (error) {
+      result.set(game.id, unavailable(game.title, error instanceof Error ? error.message : "Steam bundle failed"));
+    }
+    if (sleepMs > 0) await sleep(sleepMs);
+  }
+
+  for (const game of games.filter((item) => !item.identifiers.steamAppId && !item.identifiers.steamSubId && !item.identifiers.steamBundleId)) {
     result.set(game.id, unavailable(game.title, "Sin steamAppId ni steamSubId"));
   }
 
@@ -157,7 +169,7 @@ async function fetchSteam(url: string): Promise<Response> {
   for (let attempt = 0; attempt <= retries; attempt += 1) {
     const timeoutMs = parseNonNegativeInt(process.env.STEAM_REQUEST_TIMEOUT_MS) ?? 12000;
     const response = await fetch(url, {
-      headers: { accept: "application/json", "user-agent": "BARATEAM price refresh" },
+      headers: { accept: "*/*", "user-agent": "BARATEAM price refresh", ...(url.includes("/bundle/") ? { cookie: "birthtime=631152000; lastagecheckage=1-January-1990; wants_mature_content=1" } : {}) },
       signal: timeoutMs > 0 ? AbortSignal.timeout(timeoutMs) : undefined,
       next: { revalidate: 3600 }
     });

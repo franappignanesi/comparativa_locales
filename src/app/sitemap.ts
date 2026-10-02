@@ -14,7 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const reviewed = new Set(getWeekendGames().map((game) => game.steamAppId));
   return [
     ...["/privacidad", "/terminos"].map((path) => ({ url: `${SITE_URL}${path}`, lastModified: new Date("2026-10-01T00:00:00Z") })),
-    ...["/", "/biblioteca", "/comparativa-general", "/biblioteca/juego-del-finde", "/juegos"].map((path) => ({ url: `${SITE_URL}${path}`, lastModified })),
+    ...["/", "/biblioteca", "/comparativa-general", "/biblioteca/juego-del-finde", "/ofertas-de-otono", "/juegos"].map((path) => ({ url: `${SITE_URL}${path}`, lastModified })),
     ...Array.from({ length: Math.max(0, Math.ceil(sample.broadSample.length / 100) - 1) }, (_, index) => ({ url: `${SITE_URL}/juegos/pagina/${index + 2}`, lastModified })),
     ...sample.broadSample.filter((game) => priced.has(game.id) || game.isFree || reviewed.has(game.identifiers.steamAppId!)).map((game) => ({ url: `${SITE_URL}/juegos/${game.id}`, lastModified }))
   ];

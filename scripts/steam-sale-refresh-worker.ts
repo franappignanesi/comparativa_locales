@@ -108,7 +108,7 @@ async function refreshRegion(regionId: RegionId, saleName: string): Promise<Regi
     const exchangeRate = await getExchangeRate(region.id);
     // broadSample is already ordered with the curated catalog first. Preserving that
     // order keeps popular titles ahead of automatically discovered long-tail games.
-    const allGames = sample.broadSample.filter((game) => game.availableStores.includes("steam") && (game.identifiers.steamAppId || game.identifiers.steamSubId));
+    const allGames = sample.broadSample.filter((game) => game.availableStores.includes("steam") && (game.identifiers.steamAppId || game.identifiers.steamSubId || game.identifiers.steamBundleId));
     const targetedGameIds = parseGameIds(process.env.STEAM_SALE_GAME_IDS);
     const targeted = targetedGameIds.size > 0;
     const games = targeted ? allGames.filter((game) => targetedGameIds.has(game.id)) : allGames;

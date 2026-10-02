@@ -171,7 +171,7 @@ async function buildPriceRows(
   const useSteamLiveFallback = process.env.STEAM_LIVE_FALLBACK !== "0";
   const steamPrices = useSteamLiveFallback
     ? await fetchSteamPrices(games.filter((game) => game.availableStores.includes("steam")), steamChunkSize, region)
-    : new Map<string, StorePrice>();
+    : await fetchSteamPrices(games.filter(game => game.identifiers.steamBundleId), steamChunkSize, region);
 
   const prices = await mapWithConcurrency(games, getRefreshConcurrency(), async (game) => {
     const storePrices: Partial<Record<StoreId, NormalizedPrice>> = {};
@@ -180,7 +180,7 @@ async function buildPriceRows(
       STORES.map(async (store) => {
         const itadPrice = store === "microsoft" ? undefined : itadCurrent.prices.get(game.id)?.[store];
 
-        if (store === "steam" && useSteamLiveFallback) {
+        if (store === "steam" && (useSteamLiveFallback || game.identifiers.steamBundleId)) {
           const steamPrice = steamPrices.get(game.id) ?? (await fetchSteamPrice(game, region));
           if (steamPrice.available && steamPrice.finalPrice != null) {
             storePrices[store] = withFreshness(normalizePrice({ ...steamPrice, fetchedAt: steamPrice.fetchedAt ?? fetchedAt }, exchangeRate));

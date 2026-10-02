@@ -11,6 +11,8 @@ import { STORES } from "./types";
 import weekendAdditions from "../../data/weekend-catalog-additions.json";
 import manualStoreMatches from "../../data/manual-store-matches.json";
 import sourceCandidates from "../../data/game-candidates.json";
+import autumnAdditions from "../../data/autumn-catalog-additions.json";
+import { steamIdentity } from "./autumn-offers";
 import { withDiscoveredMicrosoftGames } from "./microsoft-discovery";
 
 const curatedCandidates = weekendAdditions as GameCandidate[];
@@ -84,7 +86,20 @@ export async function buildGameSample(): Promise<GameSample> {
 
 export async function getGameSample(): Promise<GameSample> {
   const sample = await readJson<GameSample>(dataPath("generated", "game-sample.json"), emptySample);
-  return sample.timestamp ? withDiscoveredMicrosoftGames(withManualStoreMatches(withCuratedGames(withSourceCandidates(sample)))) : buildGameSample();
+  return sample.timestamp ? withDiscoveredMicrosoftGames(withManualStoreMatches(withSeasonalGames(withCuratedGames(withSourceCandidates(sample))))) : withSeasonalGames(await buildGameSample());
+}
+
+export function withSeasonalGames(sample: GameSample): GameSample {
+  const known = new Set(sample.broadSample.map(game => steamIdentity(game.identifiers)));
+  const ids = new Set(sample.broadSample.map(game => game.id));
+  const added = (autumnAdditions as GameCandidate[]).filter(game => !known.has(steamIdentity(game.identifiers)))
+    .map(game => toSampleGame(game, [])).filter(game => !ids.has(game.id) && (ids.add(game.id), true));
+  if (!added.length) return sample;
+  const broadSample = [...sample.broadSample, ...added];
+  return { ...sample, broadSample,
+    strictSample: broadSample.filter(game => game.availableStores.length === STORES.length),
+    storeCoverage: Object.fromEntries(STORES.map(store => [store, broadSample.filter(game => game.availableStores.includes(store)).length])),
+    missingByStore: Object.fromEntries(STORES.map(store => [store, broadSample.filter(game => game.missingStores.includes(store)).map(game => game.title)])) };
 }
 
 export function withSourceCandidates(sample: GameSample): GameSample {

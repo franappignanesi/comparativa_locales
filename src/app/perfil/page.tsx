@@ -1,4 +1,5 @@
 "use client";
+import { AutumnNavLink } from "@/app/components/AutumnNavLink";
 
 import { BarChart3, Bell, ChevronDown, History, Library, Mail, MonitorSmartphone, Settings, ShieldAlert } from "lucide-react";
 import Link from "next/link";
@@ -164,6 +165,7 @@ export default function ProfilePage() {
               <Link href="/biblioteca?filter=historicos" className="sideSubLink">Mínimos históricos 📉</Link>
             </div>
           </div>
+          <AutumnNavLink />
           <Link href="/comparativa-general" className="sideLink">
             <BarChart3 size={20} />
             Comparativa general
