@@ -3,6 +3,9 @@ name: Deploy application with current price data
 on:
   workflow_dispatch:
     inputs:
+      history_recovery_caches:
+        description: "Comma-separated exact legacy cache keys; merge observations without changing current prices"
+        default: ""
       history_recovery_cache:
         description: "Optional exact public cache key to recover prior observations without replacing current prices"
         default: ""
@@ -122,12 +125,22 @@ jobs:
         if: inputs.history_recovery_cache != '' && steps.public-data.outputs.cache-matched-key != ''
         run: npx tsx scripts/recover-price-history.ts
       - name: Compact price history
-        if: steps.public-data.outputs.cache-matched-key != ''
+        # Recovery is explicit and never runs on ordinary pushes or refreshes.
+        if: steps.public-data.outputs.cache-matched-key != '' && inputs.history_recovery_caches == ''
         env:
           PRICE_HISTORY_GZIP_ONLY: "1"
         run: npm run worker:compact-price-history
+      - name: Recover observations from legacy backups
+        if: inputs.history_recovery_caches != '' && steps.public-data.outputs.cache-matched-key != ''
+        env:
+          RECOVERY_CACHES: ${{ inputs.history_recovery_caches }}
+          PRICE_HISTORY_GZIP_ONLY: "1"
+        run: |
+          npm install --no-save --package-lock=false @actions/cache@4
+          node scripts/recover-history-caches.mjs
+          npm run worker:compact-price-history
       - name: Preserve recovered history for future refreshes
-        if: inputs.history_recovery_cache != '' && steps.public-data.outputs.cache-matched-key != ''
+        if: (inputs.history_recovery_cache != '' || inputs.history_recovery_caches != '') && steps.public-data.outputs.cache-matched-key != ''
         uses: actions/cache/save@v4
         with:
           path: |
