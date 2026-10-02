@@ -594,6 +594,7 @@ select {
 .userButton {
   width: 36px;
   height: 36px;
+  padding: 0;
   display: grid;
   place-items: center;
   border: 1px solid rgba(255, 232, 172, 0);
@@ -611,6 +612,7 @@ select {
 
 .userButton img,
 .userProfile img {
+  display: block;
   width: 28px;
   height: 28px;
   border-radius: 999px;
@@ -842,7 +844,8 @@ select {
   top: calc(100% + 10px);
   right: 0;
   width: 190px;
-  display: none;
+  display: grid;
+  gap: 4px;
   padding: 6px;
   border: 1px solid rgba(255, 232, 172, 0.2);
   border-radius: 8px;
@@ -850,10 +853,15 @@ select {
   box-shadow: 0 18px 46px rgba(0, 0, 0, 0.4);
 }
 
-.regionSelector:hover .regionMenu,
-.regionSelector:focus-within .regionMenu {
-  display: grid;
-  gap: 4px;
+@media (hover: hover) and (pointer: fine) {
+  .regionSelector[data-open="true"]::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 190px;
+    height: 10px;
+  }
 }
 
 .regionMenu button {

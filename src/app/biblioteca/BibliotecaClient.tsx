@@ -143,6 +143,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
   const [filter, setFilter] = useState(searchParams.get("filter") ?? initialFilter);
   const [sort, setSort] = useState(searchParams.get("sort") ?? initialSort);
   const [libraryMenuOpen, setLibraryMenuOpen] = useState(true);
+  const [mobileFilters, setMobileFilters] = useState(false);
   const [autumnExpanded, setAutumnExpanded] = useState(false);
   const [region, setRegion] = useState<RegionId>(DEFAULT_REGION);
   const [loading, setLoading] = useState(!initialPayload);
@@ -164,6 +165,14 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
   const [wishlistAlerts, setWishlistAlerts] = useState<WishlistAlert[]>([]);
   const [enabledStores, setEnabledStores] = useState<StoreId[]>([...STORES]);
   const communityVotes = useCommunityVotes(filter === AUTUMN_FILTER, user?.sub, region);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 900px)");
+    const update = () => setMobileFilters(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
 
   useEffect(() => {
     setQuery(searchParams.get("query") ?? "");
@@ -589,7 +598,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
               <option value="diferencias">Más baratos que Steam 👀</option>
               <option value="historicos">Mínimos históricos 📉</option>
               <option value={WEEKEND_FILTER}>Juego del finde</option>
-              <option value="completos">Completos</option>
+              {!mobileFilters ? <option value="completos">Completos</option> : null}
             </select>
           </label>
           <label className="iconSelect">
