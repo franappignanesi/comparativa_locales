@@ -80,7 +80,7 @@ export async function getPriceHistoryReport(
   const cachedFullEntries = filterEntriesByGameIds(cachedFull.entries, options.gameIds);
   const baseEntries = [...ownEntries, ...itadEntries, ...cachedFullEntries];
   const fullHistoryGameIds = options.includeFullItad && options.gameIds
-    ? gameIdsMissingHistory([...ownEntries, ...cachedFullEntries], options.gameIds)
+    ? gameIdsMissingHistory(cachedFullEntries, options.gameIds)
     : new Set<string>();
   const fullItad = fullHistoryGameIds.size ? await getFullItadHistory(latest, fullHistoryGameIds) : emptyItad;
   const entries = normalizeHistoricalEntries(
@@ -105,20 +105,21 @@ export async function getPriceHistoryReport(
   };
 }
 
-function gameIdsMissingHistory(entries: PriceHistoryEntry[], gameIds: Set<string>): Set<string> {
-  const counts = new Map<string, number>();
-  for (const entry of entries) counts.set(entry.gameId, (counts.get(entry.gameId) ?? 0) + 1);
-  return new Set([...gameIds].filter((gameId) => (counts.get(gameId) ?? 0) < MIN_FULL_HISTORY_POINTS));
+export function gameIdsMissingHistory(entries: PriceHistoryEntry[], gameIds: Set<string>): Set<string> {
+  const days = new Map<string, Set<string>>();
+  for (const entry of entries) {
+    if (entry.kind === "historical_low" || !Number.isFinite(Date.parse(entry.timestamp))) continue;
+    const gameDays = days.get(entry.gameId) ?? new Set<string>();
+    gameDays.add(entryDay(entry.timestamp));
+    days.set(entry.gameId, gameDays);
+  }
+  return new Set([...gameIds].filter((gameId) => (days.get(gameId)?.size ?? 0) < MIN_FULL_HISTORY_POINTS));
 }
 
 async function getFullItadHistory(latest: LatestPrices, gameIds: Set<string>): Promise<ItadHistoryFile> {
   const filePath = itadFullHistoryPath(parseRegion(latest.region));
   const cached = await readJson<ItadHistoryFile>(filePath, emptyItad);
-  const cachedCounts = cached.entries.reduce<Record<string, number>>((acc, entry) => {
-    acc[entry.gameId] = (acc[entry.gameId] ?? 0) + 1;
-    return acc;
-  }, {});
-  const missingGameIds = new Set([...gameIds].filter((gameId) => (cachedCounts[gameId] ?? 0) < MIN_FULL_HISTORY_POINTS));
+  const missingGameIds = gameIdsMissingHistory(cached.entries, gameIds);
   if (!missingGameIds.size) return cached;
 
   let fetched: ItadHistoryFile;

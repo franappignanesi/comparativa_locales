@@ -379,7 +379,10 @@ function shopTitle(shop: ItadShop): string {
 
 async function getItad<T>(path: string, key: string, params: Record<string, string | number | boolean>): Promise<T> {
   const url = itadUrl(path, key, params);
-  const response = await fetch(url, { headers: { accept: "application/json", "ITAD-API-Key": key } });
+  const response = await fetch(url, {
+    headers: { accept: "application/json", "ITAD-API-Key": key },
+    ...(path === "/games/history/v2" ? { next: { revalidate: 86400 }, signal: AbortSignal.timeout(15000) } : {})
+  });
   if (!response.ok) throw new Error(`ITAD ${path} HTTP ${response.status}`);
   return (await response.json()) as T;
 }

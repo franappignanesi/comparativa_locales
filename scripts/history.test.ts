@@ -5,11 +5,19 @@ import os from "node:os";
 import path from "node:path";
 import { gzipSync } from "node:zlib";
 import { readJson } from "../src/lib/cache";
-import { compactOwnHistory } from "../src/lib/history";
+import { compactOwnHistory, gameIdsMissingHistory } from "../src/lib/history";
 import { historyChartObservations } from "../src/lib/history-chart";
 import type { PriceHistoryEntry } from "../src/lib/types";
 
 const entry = (timestamp: string, price: number): PriceHistoryEntry => ({ gameId: "test", store: "steam", timestamp, originalCurrency: "USD", originalFinalPrice: price, originalBasePrice: 50, arsFinalPrice: price * 1000, arsBasePrice: 50000, discountPct: 0, source: "snapshot" });
+
+test("prices across several stores on one day are not a complete historical series", () => {
+  const sameDay = [entry("2026-10-01T10:00:00Z", 50), { ...entry("2026-10-01T12:00:00Z", 40), store: "epic" as const }];
+  assert.deepEqual([...gameIdsMissingHistory(sameDay, new Set(["test"]))], ["test"]);
+  assert.equal(gameIdsMissingHistory([...sameDay, entry("2026-09-01T10:00:00Z", 60)], new Set(["test"])).size, 0);
+  const low = { ...entry("2026-06-01T10:00:00Z", 20), kind: "historical_low" as const };
+  assert.equal(gameIdsMissingHistory([...sameDay, low], new Set(["test"])).size, 1);
+});
 
 test("a checked-in old JSON cannot hide newer compressed history; fresh writes still win", async () => {
   const folder = await fs.mkdtemp(path.join(os.tmpdir(), "barateam-history-"));
