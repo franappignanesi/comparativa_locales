@@ -35,6 +35,11 @@
 .cropControl { display: flex; gap: 10px; align-items: flex-end; }
 .cropControl label { flex: 1; min-width: 0; }
 .cropControl input[type="range"] { width: 100%; accent-color: var(--primary); padding: 0; }
+.cropPanel { min-width: 0; font-size: 13px; }
+.cropPanel summary { cursor: pointer; padding: 8px 0; font-weight: 700; }
+.cropPanel summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.cropPanel .cropControl { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.cropPanel label { overflow-wrap: anywhere; }
 .preview { position: sticky; top: 100px; max-width: 540px; }
 .previewBar { display: flex; justify-content: space-between; align-items: center; min-height: 40px; margin-bottom: 10px; gap: 8px; font-size: 12px; color: var(--muted); }
 .previewBar button { font-size: 12px; }

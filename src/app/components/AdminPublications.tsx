@@ -163,6 +163,11 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
     setDrafts(current => current.map(draft => draft.game.id === selected?.game.id ? { ...draft, ...updates } : draft));
   }
 
+  function frameCover(id: string, position: number) {
+    setDrafts(current => current.map(draft => draft.game.id === id ? { ...draft, coverPosition: position } : draft));
+    setPreview("cover");
+  }
+
   function move(index: number, direction: number) {
     setDrafts(current => {
       const next = [...current];
@@ -255,6 +260,13 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
               <label><input type="radio" name="cover-layout" value="tiles" checked={coverLayout === "tiles"} onChange={() => setCoverLayout("tiles")} />Mosaico</label>
               <label><input type="radio" name="cover-layout" value="strips" checked={coverLayout === "strips"} onChange={() => setCoverLayout("strips")} />Divisiones verticales</label>
             </div> : null}
+            {coverImages && coverLayout === "strips" && drafts.length ? <details className={styles.cropPanel}>
+              <summary>Encuadres de portada ({drafts.length})</summary>
+              {drafts.map((draft, index) => <div key={draft.game.id} className={styles.cropControl}>
+                <label>{index + 1}. {draft.game.title}<input type="range" aria-label={`Encuadre de ${draft.game.title}`} min={0} max={100} step={1} value={draft.coverPosition ?? 50} onChange={event => frameCover(draft.game.id, Number(event.target.value))} /></label>
+                <button type="button" title="Volver al centro" aria-label={`Centrar portada de ${draft.game.title}`} onClick={() => frameCover(draft.game.id, 50)}><RefreshCw size={16} /></button>
+              </div>)}
+            </details> : null}
             <label><input type="checkbox" checked={showCallout} onChange={event => setShowCallout(event.target.checked)} />Mostrar invitación a deslizar</label>
             {showCallout ? <label>Invitación a deslizar<input maxLength={80} value={coverCallout} onChange={event => setCoverCallout(event.target.value)} /></label> : null}</> : null}
         </fieldset>
@@ -269,10 +281,6 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
           {selected ? <>
           <label>Título<input value={selected.headline} maxLength={90} onChange={event => edit({ headline: event.target.value })} /></label>
           <label>Descripción<textarea value={selected.description} maxLength={170} rows={3} onChange={event => edit({ description: event.target.value })} /><small>{selected.description.length}/170</small></label>
-          {includeCover && coverImages && coverLayout === "strips" ? <div className={styles.cropControl}>
-            <label>Encuadre de portada<input type="range" aria-label={`Encuadre de ${selected.game.title}`} min={0} max={100} step={1} value={selected.coverPosition ?? 50} onChange={event => { edit({ coverPosition: Number(event.target.value) }); setPreview("cover"); }} /></label>
-            <button type="button" title="Volver al centro" aria-label="Volver al centro" onClick={() => { edit({ coverPosition: 50 }); setPreview("cover"); }}><RefreshCw size={16} /></button>
-          </div> : null}
           </> : null}
         </fieldset>
         <fieldset disabled={Boolean(busy)} className={styles.settings}>
