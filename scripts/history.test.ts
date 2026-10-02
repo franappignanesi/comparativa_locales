@@ -5,11 +5,17 @@ import os from "node:os";
 import path from "node:path";
 import { gzipSync } from "node:zlib";
 import { readJson } from "../src/lib/cache";
-import { compactOwnHistory, gameIdsMissingHistory } from "../src/lib/history";
+import { compactOwnHistory, gameIdsMissingHistory, isFullHistoryCacheFresh } from "../src/lib/history";
 import { historyChartObservations } from "../src/lib/history-chart";
 import type { PriceHistoryEntry } from "../src/lib/types";
 
 const entry = (timestamp: string, price: number): PriceHistoryEntry => ({ gameId: "test", store: "steam", timestamp, originalCurrency: "USD", originalFinalPrice: price, originalBasePrice: 50, arsFinalPrice: price * 1000, arsBasePrice: 50000, discountPct: 0, source: "snapshot" });
+
+test("an old full-history cache cannot suppress newly available observations", () => {
+  assert.equal(isFullHistoryCacheFresh(new Date(Date.now() - 1000).toISOString()), true);
+  assert.equal(isFullHistoryCacheFresh(new Date(Date.now() - 2 * 86400000).toISOString()), false);
+  assert.equal(isFullHistoryCacheFresh(null), false);
+});
 
 test("prices across several stores on one day are not a complete historical series", () => {
   const sameDay = [entry("2026-10-01T10:00:00Z", 50), { ...entry("2026-10-01T12:00:00Z", 40), store: "epic" as const }];

@@ -28,6 +28,7 @@ const emptyItad: ItadHistoryFile = {
   entries: []
 };
 const MIN_FULL_HISTORY_POINTS = 2;
+const FULL_HISTORY_CACHE_MAX_AGE_MS = 86400 * 1000;
 const DEFAULT_OWN_HISTORY_RETENTION_DAYS = 120;
 
 export async function appendLatestToHistory(latest: LatestPrices): Promise<void> {
@@ -80,7 +81,7 @@ export async function getPriceHistoryReport(
   const cachedFullEntries = filterEntriesByGameIds(cachedFull.entries, options.gameIds);
   const baseEntries = [...ownEntries, ...itadEntries, ...cachedFullEntries];
   const fullHistoryGameIds = options.includeFullItad && options.gameIds
-    ? gameIdsMissingHistory(cachedFullEntries, options.gameIds)
+    ? isFullHistoryCacheFresh(cachedFull.timestamp) ? gameIdsMissingHistory(cachedFullEntries, options.gameIds) : options.gameIds
     : new Set<string>();
   const fullItad = fullHistoryGameIds.size ? await getFullItadHistory(latest, fullHistoryGameIds) : emptyItad;
   const entries = normalizeHistoricalEntries(
@@ -116,10 +117,15 @@ export function gameIdsMissingHistory(entries: PriceHistoryEntry[], gameIds: Set
   return new Set([...gameIds].filter((gameId) => (days.get(gameId)?.size ?? 0) < MIN_FULL_HISTORY_POINTS));
 }
 
+export function isFullHistoryCacheFresh(timestamp: string | null): boolean {
+  const age = Date.now() - Date.parse(timestamp ?? "");
+  return age >= 0 && age < FULL_HISTORY_CACHE_MAX_AGE_MS;
+}
+
 async function getFullItadHistory(latest: LatestPrices, gameIds: Set<string>): Promise<ItadHistoryFile> {
   const filePath = itadFullHistoryPath(parseRegion(latest.region));
   const cached = await readJson<ItadHistoryFile>(filePath, emptyItad);
-  const missingGameIds = gameIdsMissingHistory(cached.entries, gameIds);
+  const missingGameIds = isFullHistoryCacheFresh(cached.timestamp) ? gameIdsMissingHistory(cached.entries, gameIds) : gameIds;
   if (!missingGameIds.size) return cached;
 
   let fetched: ItadHistoryFile;
