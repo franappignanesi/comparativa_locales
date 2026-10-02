@@ -12,6 +12,7 @@ import weekendAdditions from "../../data/weekend-catalog-additions.json";
 import manualStoreMatches from "../../data/manual-store-matches.json";
 import sourceCandidates from "../../data/game-candidates.json";
 import autumnAdditions from "../../data/autumn-catalog-additions.json";
+import autumnVerifiedItad from "../../data/autumn-verified-itad.json";
 import { steamIdentity } from "./autumn-offers";
 import { withDiscoveredMicrosoftGames } from "./microsoft-discovery";
 
@@ -94,8 +95,14 @@ export function withSeasonalGames(sample: GameSample): GameSample {
   const ids = new Set(sample.broadSample.map(game => game.id));
   const added = (autumnAdditions as GameCandidate[]).filter(game => !known.has(steamIdentity(game.identifiers)))
     .map(game => toSampleGame(game, [])).filter(game => !ids.has(game.id) && (ids.add(game.id), true));
-  if (!added.length) return sample;
-  const broadSample = [...sample.broadSample, ...added];
+  // These IDs were audited against exact Steam app identities, not title search.
+  const verifiedIds: Record<string, string> = autumnVerifiedItad;
+  const broadSample = [...sample.broadSample, ...added].map(game => {
+    const id = game.identifiers.steamAppId;
+    const itadId = id ? verifiedIds[String(id)] : undefined;
+    return itadId && game.identifiers.itadId !== itadId
+      ? { ...game, identifiers: { ...game.identifiers, itadId } } : game;
+  });
   return { ...sample, broadSample,
     strictSample: broadSample.filter(game => game.availableStores.length === STORES.length),
     storeCoverage: Object.fromEntries(STORES.map(store => [store, broadSample.filter(game => game.availableStores.includes(store)).length])),

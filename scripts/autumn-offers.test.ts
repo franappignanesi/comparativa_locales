@@ -26,16 +26,22 @@ test("ranking balances relevance and Steam all-time lows without mixing currenci
   assert.equal(steamAtHistoricalLow(row(24), low), true);
 });
 
-test("all 26 selected identities resolve alongside existing games and additions are idempotent", () => {
+test("all 27 selected identities resolve alongside existing games and additions are idempotent", () => {
   const existing = AUTUMN_SELECTION.filter(item => !additions.some(game => steamIdentity(game.identifiers) === steamIdentity(item)))
     .map<SampleGame>((item, index) => ({ id: `existing-${index}`, title: item.title, identifiers: item, availableStores: ["steam"], missingStores: ["epic", "gog", "humble", "microsoft"], notes: "", edition: "standard", category: "AA", releaseYear: 2025, expectedStores: ["steam"], confidence: "high", comparisonStatus: "missing_some_stores" }));
   const sample: GameSample = { timestamp: "2026-10-01", broadSample: existing, strictSample: [], rejected: [], missingByStore: {}, storeCoverage: {}, categoryCoverage: {} };
   const updated = withSeasonalGames(sample);
-  assert.equal(AUTUMN_SELECTION.length, 26);
-  assert.equal(new Set(AUTUMN_SELECTION.map(steamIdentity)).size, 26);
+  assert.equal(AUTUMN_SELECTION.length, 27);
+  assert.equal(new Set(AUTUMN_SELECTION.map(steamIdentity)).size, 27);
+  assert.ok(AUTUMN_SELECTION.some(item => item.steamAppId === 1304930));
+  assert.ok(AUTUMN_SELECTION.some(item => item.steamAppId === 1326470));
+  assert.ok(!AUTUMN_SELECTION.some(item => item.steamAppId === 1145360));
   assert.deepEqual(AUTUMN_SELECTION.filter(item => !updated.broadSample.some(game => steamIdentity(game.identifiers) === steamIdentity(item))), []);
   assert.equal(withSeasonalGames(updated).broadSample.length, updated.broadSample.length);
-  assert.equal(sample.broadSample.length, 18);
+  assert.equal(sample.broadSample.length, 19);
+  const outlast = updated.broadSample.find(game => game.identifiers.steamAppId === 1304930)!;
+  assert.equal(outlast.identifiers.itadId, "018d937f-4385-73cd-abfc-dc95e5e04166");
+  assert.equal(sample.broadSample.find(game => game.identifiers.steamAppId === 1304930)?.identifiers.itadId, undefined);
 });
 
 test("bundle extraction uses its own purchase block, not a discounted included game", () => {
