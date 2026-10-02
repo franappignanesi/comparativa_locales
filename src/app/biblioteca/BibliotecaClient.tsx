@@ -53,7 +53,8 @@ import { WeekendRecommendation, WeekendTag } from "@/app/components/WeekendRecom
 import { WeekendShowcase } from "@/app/components/WeekendShowcase";
 import { PopularWishlist } from "@/app/components/PopularWishlist";
 import { AutumnNavLink } from "@/app/components/AutumnNavLink";
-import { AUTUMN_FILTER, steamAtHistoricalLow } from "@/lib/autumn-offers";
+import { AUTUMN_FILTER, steamAtHistoricalLow, steamOfferDiscount } from "@/lib/autumn-offers";
+import { CommunityOffers, OfferVoteButton, useCommunityVotes } from "@/app/components/CommunityOffers";
 
 type ApiPayload = {
   autumnSelection?: CatalogResponse["autumnSelection"];
@@ -159,6 +160,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
   const [wishlist, setWishlist] = useState<WishlistGame[]>([]);
   const [wishlistAlerts, setWishlistAlerts] = useState<WishlistAlert[]>([]);
   const [enabledStores, setEnabledStores] = useState<StoreId[]>([...STORES]);
+  const communityVotes = useCommunityVotes(filter === AUTUMN_FILTER, user?.sub, region);
 
   useEffect(() => {
     setQuery(searchParams.get("query") ?? "");
@@ -405,10 +407,13 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
     }
   }
 
-  function renderCatalogCard(row: PriceRow) {
+  function renderCatalogCard(row: PriceRow, compactComparison = false) {
     return <GameCard key={row.gameId} row={row} analysis={summary.games[row.gameId]}
       historyLows={payload!.history.lowsByGame[row.gameId] ?? {}} enabledStores={enabledStores}
       steamFocus={autumn} wishlisted={wishlist.some(item => item.gameId === row.gameId)}
+      compactComparison={compactComparison}
+      voteButton={autumn && enabledStores.includes("steam") && (steamOfferDiscount(row) > 0 || communityVotes.votes.includes(row.gameId)) ? <OfferVoteButton voted={communityVotes.votes.includes(row.gameId)} count={communityVotes.data.counts[row.gameId] ?? 0}
+        disabled={!!communityVotes.pending || !!user && !communityVotes.ready} pending={communityVotes.pending === row.gameId} onVote={() => communityVotes.toggle(row.gameId)} /> : undefined}
       onToggleWishlist={() => toggleWishlist(row)} usdToArs={payload!.latest.usdToArs || FALLBACK_USD_TO_ARS}
       usdToTarget={payload!.latest.usdToTarget || payload!.latest.usdToArs || FALLBACK_USD_TO_ARS}
       displayCurrency={payload!.latest.currency ?? "ARS"} displayLocale={payload!.latest.locale ?? "es-AR"}
@@ -500,19 +505,20 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
         {weekendOpenError ? <p role="alert">No pudimos abrir el juego. Probá de nuevo en unos segundos.</p> : null}
         {filter === WEEKEND_FILTER ? <h2 className="weekendCatalogHeading">Todos nuestros juegos del finde</h2> : null}
 
-        {autumn ? <section className="autumnSelection" aria-labelledby="autumn-selection-title">
+        {autumn ? <section className={`autumnSelection${autumnExpanded ? " expanded" : " collapsed"}`} aria-labelledby="autumn-selection-title">
           <div className="autumnSectionHeading"><span className="autumnEyebrow">SHUX × STEAM</span><h2 id="autumn-selection-title">SELECCIÓN DE OFERTAS SHUX</h2><p>¡Los juegos seleccionados de las ofertas de Steam para el video de Shux!</p></div>
           {loading ? <div className="catalogRefreshIndicator" role="status"><span />Actualizando precios...</div> : null}
           {!enabledStores.includes("steam") ? <p role="status">Activá Steam en tus tiendas para ver sus ofertas.</p> : <>
             <div className="gameGrid" id="autumn-selection-games">
-              {(payload.autumnSelection ?? []).slice(0, autumnExpanded ? undefined : 6).map(renderCatalogCard)}
+              {(payload.autumnSelection ?? []).slice(0, autumnExpanded ? undefined : 4).map(row => renderCatalogCard(row, true))}
             </div>
-            {(payload.autumnSelection?.length ?? 0) > 6 ? <div className="autumnExpand"><button type="button" className="button" aria-expanded={autumnExpanded} aria-controls="autumn-selection-games" onClick={() => {
+            {(payload.autumnSelection?.length ?? 0) > 4 ? <div className="autumnExpand"><button type="button" className="button" aria-expanded={autumnExpanded} aria-controls="autumn-selection-games" onClick={() => {
               if (autumnExpanded) document.getElementById("autumn-selection-title")?.scrollIntoView({ behavior: "smooth", block: "start" });
               setAutumnExpanded(current => !current);
             }}><ChevronDown size={18} className={autumnExpanded ? "expanded" : ""} />{autumnExpanded ? "Ver menos" : "Ver todos"}</button></div> : null}
           </>}
         </section> : null}
+        {autumn ? <CommunityOffers state={communityVotes} loggedIn={!!user} enabled={enabledStores.includes("steam")} onOpen={gameId => { void openWeekendGame(gameId, "todos"); }} /> : null}
         {autumn ? <h2 className="autumnAllHeading">Todas las ofertas</h2> : null}
 
         <section className={`toolbar ${queryActive ? "searchActive" : ""}`} aria-label="Controles">
@@ -631,7 +637,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
               Actualizando resultados...
             </div>
           ) : null}
-          {games.map(renderCatalogCard)}
+          {games.map(row => renderCatalogCard(row))}
         </section>
 
         <div className="paginationFoot">
@@ -671,6 +677,8 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
       {selectedRow ? (
         <GameDetailModal
           row={selectedRow}
+          voteButton={autumn && enabledStores.includes("steam") && (steamOfferDiscount(selectedRow) > 0 || communityVotes.votes.includes(selectedRow.gameId)) ? <OfferVoteButton voted={communityVotes.votes.includes(selectedRow.gameId)} count={communityVotes.data.counts[selectedRow.gameId] ?? 0}
+            disabled={!!communityVotes.pending || !!user && !communityVotes.ready} pending={communityVotes.pending === selectedRow.gameId} onVote={() => communityVotes.toggle(selectedRow.gameId)} /> : undefined}
           analysis={summary.games[selectedRow.gameId]}
           lows={payload.history.lowsByGame[selectedRow.gameId] ?? {}}
           enabledStores={enabledStores}
@@ -729,6 +737,8 @@ function BibliotecaLoading() {
 
 function GameCard({
   intro,
+  voteButton,
+  compactComparison = false,
   steamFocus = false,
   row,
   analysis,
@@ -745,6 +755,8 @@ function GameCard({
   onCategoryClick
 }: {
   intro?: ReactNode;
+  voteButton?: ReactNode;
+  compactComparison?: boolean;
   steamFocus?: boolean;
   row: PriceRow;
   analysis: GameAnalysis | undefined;
@@ -764,13 +776,15 @@ function GameCard({
   const activeStores = enabledStores.length ? enabledStores : STORES;
   const pricedStores = activeStores.filter((store) => row.prices[store]?.available && row.prices[store]?.arsFinalPrice != null);
   const activeWinner = winner && activeStores.includes(winner) ? winner : null;
-  const visibleStores = activeWinner
+  const alternatives = pricedStores.filter(store => store !== "steam")
+    .sort((a, b) => (row.prices[a]?.arsFinalPrice ?? Infinity) - (row.prices[b]?.arsFinalPrice ?? Infinity));
+  const visibleStores: StoreId[] = compactComparison ? [...(activeStores.includes("steam") ? ["steam" as StoreId] : []), ...alternatives.slice(0, 1)] : activeWinner
     ? Array.from(new Set(["steam" as StoreId, activeWinner, ...pricedStores.filter((store) => store !== "steam" && store !== activeWinner)])).filter((store) => activeStores.includes(store)).slice(0, 5)
     : pricedStores.slice(0, 5);
   const bestDiscount = bestDiscountOffer(row, steamFocus ? activeStores.filter(store => store === "steam") : activeStores);
 
   return (
-    <article className={`gameCard${steamFocus ? " autumnGameCard" : ""}`}>
+    <article className={`gameCard${steamFocus ? " autumnGameCard" : ""}${compactComparison ? " compactComparison" : ""}`}>
       {intro}
       <div
         className="gameHero clickableHero"
@@ -788,6 +802,7 @@ function GameCard({
           </span>
         ) : null}
         {row.weekendGame ? <div className="weekendCardTag"><WeekendTag /></div> : null}
+        {voteButton}
         <button
           className={wishlisted ? "wishlistStar active" : "wishlistStar"}
           type="button"
@@ -830,11 +845,13 @@ function GameCard({
                 differenceVsSteam={winner === store ? analysis?.differenceVsSteam : null}
                 displayCurrency={displayCurrency}
                 displayLocale={displayLocale}
+                logos={compactComparison && store !== "steam" ? alternatives.slice(0, 3) : undefined}
               />
             ))
           ) : (
             <div className="emptyPrices">{row.isFree ? <a href={row.prices.steam?.url ?? (row.weekendGame ? `https://store.steampowered.com/app/${row.weekendGame.steamAppId}/` : "https://store.steampowered.com/")} target="_blank" rel="noopener noreferrer">Gratuito en Steam</a> : row.weekendGame ? "Precios pendientes de incorporación" : "Sin precios disponibles"}</div>
           )}
+          {compactComparison && !alternatives.length && activeStores.includes("steam") ? <div className="compactNoAlternative">Sin precio en otras tiendas</div> : null}
         </div>
 
         <HistoricalLowStrip lows={historyLows} enabledStores={activeStores} usdToArs={usdToArs} usdToTarget={usdToTarget} displayCurrency={displayCurrency} displayLocale={displayLocale} onOpen={onOpen} />
@@ -864,6 +881,7 @@ function discountPct(price: NormalizedPrice | undefined): number | null {
 
 function StorePriceTile({
   store,
+  logos,
   price,
   winner,
   index,
@@ -872,6 +890,7 @@ function StorePriceTile({
   displayLocale
 }: {
   store: StoreId;
+  logos?: StoreId[];
   price: NormalizedPrice | undefined;
   winner: boolean;
   index: number | null | undefined;
@@ -894,8 +913,9 @@ function StorePriceTile({
   const content = (
     <>
       {winner ? <span className="winnerTag">WINNER</span> : null}
+      {logos ? <span className="compactOtherLogos" aria-label={`Otras tiendas con precio: ${logos.map(item => STORE_LABELS[item]).join(", ")}`}>{logos.map(item => <span key={item} title={STORE_LABELS[item]} className={item === store ? "selected" : ""}><StoreLogo store={item} /></span>)}</span> : null}
       <div className="storeName">
-        <StoreLogo store={store} />
+        {logos ? null : <StoreLogo store={store} />}
         {STORE_LABELS[store]}
       </div>
       <strong>{formatOfficialPrice(price)}</strong>
@@ -1020,6 +1040,7 @@ function LowestHistoricalLow({
 
 function GameDetailModal({
   row,
+  voteButton,
   analysis,
   lows,
   enabledStores,
@@ -1035,6 +1056,7 @@ function GameDetailModal({
   onClose
 }: {
   row: PriceRow;
+  voteButton?: ReactNode;
   analysis: GameAnalysis | undefined;
   lows: PriceHistoryReport["lowsByGame"][string];
   enabledStores: StoreId[];
@@ -1055,6 +1077,7 @@ function GameDetailModal({
       <section className="gameModal" role="dialog" aria-modal="true" aria-label={row.gameTitle} onClick={(event) => event.stopPropagation()}>
         <div className="modalActions">
           {row.weekendGame ? <WeekendTag /> : null}
+          {voteButton}
           <button
             className={wishlisted ? "wishlistStar modalWishlistStar active" : "wishlistStar modalWishlistStar"}
             type="button"
