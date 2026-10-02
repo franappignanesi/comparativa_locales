@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ProblemReportButton } from "@/app/components/ProblemReportButton";
 import { AutumnLeafBudget } from "@/app/components/AutumnLeafBudget";
 import { AdminGameSuggestions } from "@/app/components/AdminGameSuggestions";
+import dynamic from "next/dynamic";
 import { RegionSelector } from "@/app/components/RegionSelector";
 import { GoogleUser, UserMenu } from "@/app/components/UserMenu";
 import { fetchWishlistAlerts, persistSession, readStoredUser, type WishlistAlert } from "@/app/components/userPersistence";
@@ -22,6 +23,8 @@ type ResolveDraft = {
   message: string;
 };
 
+const AdminPublications = dynamic(() => import("@/app/components/AdminPublications").then(module => module.AdminPublications), { loading: () => <p className="loading">Cargando publicaciones...</p> });
+
 export default function AdminReportsPage() {
   const [region, setRegion] = useState<RegionId>(DEFAULT_REGION);
   const [user, setUser] = useState<GoogleUser | null>(null);
@@ -33,7 +36,7 @@ export default function AdminReportsPage() {
   const [resolveDraft, setResolveDraft] = useState<ResolveDraft>({ reportId: "", notify: null, message: "" });
   const [loading, setLoading] = useState(true);
   const [libraryMenuOpen, setLibraryMenuOpen] = useState(false);
-  const [tab, setTab] = useState<"reports" | "suggestions">("reports");
+  const [tab, setTab] = useState<"reports" | "suggestions" | "publications">("reports");
 
   useEffect(() => {
     const savedRegion = window.localStorage.getItem("glitchprice-region") as RegionId | null;
@@ -194,12 +197,13 @@ export default function AdminReportsPage() {
         <header className="heroHeader">
           <div>
             <span className="eyebrow">Admin</span>
-            <h1>Reportes de problema</h1>
+            <h1>{tab === "publications" ? "Publicaciones" : tab === "suggestions" ? "Juegos sugeridos" : "Reportes de problema"}</h1>
           </div>
         </header>
-        {isAdmin ? <div className="adminReportTabs" role="tablist" aria-label="Reportes y sugerencias">
+        {isAdmin ? <div className="adminReportTabs" role="tablist" aria-label="Administración">
           <button type="button" role="tab" aria-selected={tab === "reports"} onClick={() => setTab("reports")}>Reportes</button>
           <button type="button" role="tab" aria-selected={tab === "suggestions"} onClick={() => setTab("suggestions")}>Juegos sugeridos</button>
+          <button type="button" role="tab" aria-selected={tab === "publications"} onClick={() => setTab("publications")}>Publicaciones</button>
         </div> : null}
 
         {!user ? (
@@ -213,7 +217,7 @@ export default function AdminReportsPage() {
           <section className="adminNotice">
             <p>Esta seccion solo esta disponible para cuentas administradoras.</p>
           </section>
-        ) : tab === "suggestions" ? <AdminGameSuggestions /> : loading ? (
+        ) : tab === "publications" ? <AdminPublications initialRegion={region} /> : tab === "suggestions" ? <AdminGameSuggestions /> : loading ? (
           <p className="loading">Cargando reportes...</p>
         ) : (
           <>
