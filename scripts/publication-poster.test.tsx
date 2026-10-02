@@ -1,0 +1,29 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { renderToStaticMarkup } from "react-dom/server";
+import { PublicationCover, PublicationCta, PublicationPoster } from "../src/app/components/PublicationPoster";
+import type { PublicationDraft } from "../src/lib/social-publications";
+
+const draft: PublicationDraft = { headline: "Dishonored", description: "Para el finde", game: {
+  id: "dishonored", title: "Dishonored", coverUrl: "/test.jpg", region: "AR", timestamp: null,
+  prices: [{ store: "steam", label: "Steam", amount: 1.47, currency: "USD", discount: 75, historicalLow: true, cheapest: true, stale: false }],
+} };
+const options = { hideMissing: true, hideStale: true, discounts: true, lows: true, showEyebrow: true, eyebrow: "Elegidos por la comunidad" };
+
+test("poster supports custom or hidden epigraph and adapts to store count", () => {
+  const html = renderToStaticMarkup(<PublicationPoster draft={draft} options={options} index={2} total={4} />);
+  assert.match(html, /Elegidos por la comunidad/);
+  assert.match(html, /data-count="1"/);
+  assert.match(html, /font-size:104px/);
+  assert.doesNotMatch(renderToStaticMarkup(<PublicationPoster draft={draft} options={{ ...options, showEyebrow: false }} index={1} total={1} />), /Elegidos por la comunidad/);
+});
+
+test("cover can reserve blank space and CTA can omit the question", () => {
+  const cover = renderToStaticMarkup(<PublicationCover drafts={[draft]} title="Ofertas" showImages={false} total={3} />);
+  assert.doesNotMatch(cover, /test.jpg|JUEGOS ELEGIDOS POR SHUX/);
+  assert.match(cover, /01.*03/);
+  const cta = renderToStaticMarkup(<PublicationCta drafts={[draft]} question="" total={3} />);
+  assert.doesNotMatch(cta, /<h2/);
+  assert.match(cta, /notificaciones personalizadas en BARATEAM/);
+  assert.match(renderToStaticMarkup(<PublicationCta drafts={[draft]} question="¿Qué vas a jugar?" total={3} />), /¿Qué vas a jugar/);
+});

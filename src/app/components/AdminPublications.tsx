@@ -4,7 +4,7 @@ import { ArrowDown, ArrowUp, Copy, Download, ImagePlus, LoaderCircle, Plus, Refr
 import { useEffect, useRef, useState } from "react";
 import { REGIONS, type RegionId } from "@/lib/regions";
 import { MAX_PUBLICATION_GAMES, publicationCaption, type PublicationDraft, type PublicationGame } from "@/lib/social-publications";
-import { PublicationCover, PublicationPoster, type PosterOptions } from "./PublicationPoster";
+import { PublicationCover, PublicationCta, PublicationPoster, type PosterOptions } from "./PublicationPoster";
 import styles from "./publications.module.css";
 
 type SearchGame = { id: string; title: string };
@@ -19,8 +19,11 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
   const [active, setActive] = useState("");
   const [coverTitle, setCoverTitle] = useState("Ofertas para viciar");
   const [includeCover, setIncludeCover] = useState(false);
-  const [previewCover, setPreviewCover] = useState(false);
-  const [options, setOptions] = useState<PosterOptions>({ hideMissing: true, hideStale: true, discounts: true, lows: true });
+  const [coverImages, setCoverImages] = useState(true);
+  const [includeCta, setIncludeCta] = useState(true);
+  const [ctaQuestion, setCtaQuestion] = useState("");
+  const [preview, setPreview] = useState<"game" | "cover" | "cta">("game");
+  const [options, setOptions] = useState<PosterOptions>({ hideMissing: true, hideStale: true, discounts: true, lows: true, showEyebrow: true, eyebrow: "LA SELECCIÓN DE SHUX" });
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -33,6 +36,8 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
   const stale = hasStale && !options.hideStale;
   const outputDrafts = drafts.map(draft => ({ ...draft, game: { ...draft.game, prices: draft.game.prices.filter(price => !price.stale) } }));
   const missingPrices = outputDrafts.some(draft => !draft.game.prices.some(price => price.amount != null));
+  const total = drafts.length + Number(includeCover) + Number(includeCta);
+  const caption = publicationCaption(outputDrafts, coverTitle) + (includeCta && ctaQuestion.trim() ? `\n\n${ctaQuestion.trim()}` : "");
 
   useEffect(() => {
     let cancelled = false;
@@ -54,6 +59,14 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
         if (cancelled) return;
         setDrafts(items); setRegion(saved.region); setActive(items[0]?.game.id ?? "");
         setIncludeCover(saved.includeCover === true);
+        setCoverImages(saved.coverImages !== false);
+        setIncludeCta(saved.includeCta !== false);
+        if (typeof saved.ctaQuestion === "string") setCtaQuestion(saved.ctaQuestion.slice(0, 120));
+        if (saved.options && typeof saved.options === "object") setOptions(current => ({
+          ...current,
+          ...Object.fromEntries(["hideMissing", "hideStale", "discounts", "lows", "showEyebrow"].filter(key => typeof saved.options[key] === "boolean").map(key => [key, saved.options[key]])),
+          eyebrow: typeof saved.options.eyebrow === "string" ? saved.options.eyebrow.slice(0, 60) : current.eyebrow,
+        }));
         if (typeof saved.coverTitle === "string") setCoverTitle(saved.coverTitle.slice(0, 72));
       } catch { if (!cancelled) setError("No pudimos restaurar el borrador. Podés volver a elegir los juegos."); }
       finally { if (!cancelled) { restored.current = true; setBusy(""); } }
@@ -65,10 +78,10 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
   useEffect(() => {
     if (!restored.current) return;
     // Store only editorial choices; prices are always reloaded from the protected API.
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ version: 1, region, includeCover, coverTitle,
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ version: 1, region, includeCover, coverTitle, coverImages, includeCta, ctaQuestion, options,
       items: drafts.map(draft => ({ id: draft.game.id, headline: draft.headline, description: draft.description })) })); }
     catch { /* Storage may be unavailable in private browsing. */ }
-  }, [drafts, region, includeCover, coverTitle]);
+  }, [drafts, region, includeCover, coverTitle, coverImages, includeCta, ctaQuestion, options]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -105,7 +118,7 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
     try {
       const data = await loadGame(game.id, region);
       setDrafts(current => [...current, { game: data, headline: data.title, description: "" }]);
-      setActive(data.id); setPreviewCover(false);
+      setActive(data.id); setPreview("game");
     } catch (reason) { setError(errorText(reason)); }
     finally { setBusy(""); }
   }
@@ -141,7 +154,7 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
       await document.fonts.ready;
       const { toBlob, getFontEmbedCSS } = await import("html-to-image");
       const nodes = Array.from(exports.current!.querySelectorAll<HTMLElement>("[data-publication-export]"));
-      const chosen = all ? nodes : nodes.filter(node => node.dataset.publicationExport === (previewCover && includeCover ? "cover" : selected.game.id));
+      const chosen = all ? nodes : nodes.filter(node => node.dataset.publicationExport === (preview === "cover" && includeCover ? "cover" : preview === "cta" && includeCta ? "cta" : `game-${selected.game.id}`));
       const images: Array<{ name: string; blob: Blob }> = [];
       let fontEmbedCSS: string | undefined;
       for (const [index, wrapper] of chosen.entries()) {
@@ -151,11 +164,11 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
           await image.decode();
           if (!image.naturalWidth) throw new Error("Falta una imagen. Reintentá antes de descargar.");
         }));
-        if (Array.from(node.querySelectorAll<HTMLElement>("h2, .publicationCopy p, .publicationMarkers, .publicationPrice, .publicationPrice strong")).some(element => element.scrollHeight > element.clientHeight + 2 || element.scrollWidth > element.clientWidth + 2)) {
+        if (Array.from(node.querySelectorAll<HTMLElement>("h2, .publicationCopy p, .publicationCtaCopy p, .publicationEyebrow, .publicationStore, .publicationMarkers, .publicationPrice, .publicationPrice strong")).some(element => element.scrollHeight > element.clientHeight + 2 || element.scrollWidth > element.clientWidth + 2)) {
           throw new Error("Un texto no entra en la imagen. Acortá el título o la descripción.");
         }
         fontEmbedCSS ??= await getFontEmbedCSS(node);
-        const blob = await toBlob(node, { width: 1080, height: 1350, pixelRatio: 1, fontEmbedCSS, backgroundColor: "#111111", style: { transform: "none", margin: "0" } });
+        const blob = await toBlob(node, { width: 1080, height: 1350, pixelRatio: 1, includeQueryParams: true, fontEmbedCSS, backgroundColor: "#111111", style: { transform: "none", margin: "0" } });
         if (!blob) throw new Error("No pudimos generar la imagen.");
         images.push({ name: `${String(nodes.indexOf(wrapper) + 1).padStart(2, "0")}-${safeName(wrapper.dataset.publicationExport!)}.png`, blob });
       }
@@ -163,7 +176,7 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
         const { default: JSZip } = await import("jszip");
         const zip = new JSZip();
         images.forEach(image => zip.file(image.name, image.blob));
-        zip.file("texto-publicacion.txt", publicationCaption(outputDrafts, coverTitle));
+        zip.file("texto-publicacion.txt", caption);
         saveBlob(await zip.generateAsync({ type: "blob" }), `barateam-${region.toLowerCase()}-carrusel.zip`);
       } else if (images[0]) saveBlob(images[0].blob, images[0].name);
       setMessage(all ? "Carrusel descargado." : "Imagen descargada.");
@@ -172,7 +185,7 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
   }
 
   async function copyCaption() {
-    try { await navigator.clipboard.writeText(publicationCaption(outputDrafts, coverTitle)); setMessage("Texto copiado."); }
+    try { await navigator.clipboard.writeText(caption); setMessage("Texto copiado."); }
     catch { setError("No pudimos copiar el texto. Podés seleccionarlo debajo."); }
   }
 
@@ -198,14 +211,19 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
         </div>
         <h3>Carrusel <span>{drafts.length}/{MAX_PUBLICATION_GAMES}</span></h3>
         <ol className={styles.queue}>{drafts.map((draft, index) => <li key={draft.game.id}>
-          <button className={draft.game.id === selected?.game.id && !previewCover ? styles.current : ""} disabled={Boolean(busy)} onClick={() => { setActive(draft.game.id); setPreviewCover(false); }}><span>{index + 1}. {draft.game.title}</span></button>
+          <button className={draft.game.id === selected?.game.id && preview === "game" ? styles.current : ""} disabled={Boolean(busy)} onClick={() => { setActive(draft.game.id); setPreview("game"); }}><span>{index + 1}. {draft.game.title}</span></button>
           <button disabled={Boolean(busy) || index === 0} title="Mover arriba" aria-label={`Mover ${draft.game.title} arriba`} onClick={() => move(index, -1)}><ArrowUp size={15} /></button>
           <button disabled={Boolean(busy) || index === drafts.length - 1} title="Mover abajo" aria-label={`Mover ${draft.game.title} abajo`} onClick={() => move(index, 1)}><ArrowDown size={15} /></button>
           <button disabled={Boolean(busy)} title="Quitar juego" aria-label={`Quitar ${draft.game.title}`} onClick={() => setDrafts(current => current.filter(item => item.game.id !== draft.game.id))}><Trash2 size={15} /></button>
         </li>)}</ol>
         <fieldset disabled={Boolean(busy)} className={styles.settings}>
-          <label><input type="checkbox" checked={includeCover} onChange={event => { setIncludeCover(event.target.checked); if (!event.target.checked) setPreviewCover(false); }} />Incluir portada</label>
-          {includeCover ? <label>Título de portada<input maxLength={72} value={coverTitle} onChange={event => setCoverTitle(event.target.value)} /></label> : null}
+          <label><input type="checkbox" checked={includeCover} onChange={event => { setIncludeCover(event.target.checked); if (!event.target.checked && preview === "cover") setPreview("game"); }} />Incluir portada</label>
+          {includeCover ? <><label>Título de portada<input maxLength={72} value={coverTitle} onChange={event => setCoverTitle(event.target.value)} /></label>
+            <label><input type="checkbox" checked={coverImages} onChange={event => setCoverImages(event.target.checked)} />Mostrar portadas de juegos</label></> : null}
+          <label><input type="checkbox" checked={includeCta} onChange={event => { setIncludeCta(event.target.checked); if (!event.target.checked && preview === "cta") setPreview("game"); }} />Incluir cierre BARATEAM</label>
+          {includeCta ? <label>Pregunta para la audiencia (opcional)<input maxLength={120} value={ctaQuestion} onChange={event => setCtaQuestion(event.target.value)} /></label> : null}
+          <label><input type="checkbox" checked={options.showEyebrow} onChange={event => setOptions(current => ({ ...current, showEyebrow: event.target.checked }))} />Mostrar epígrafe</label>
+          {options.showEyebrow ? <label>Epígrafe<input maxLength={60} value={options.eyebrow} onChange={event => setOptions(current => ({ ...current, eyebrow: event.target.value }))} /></label> : null}
           <label><input type="checkbox" checked={options.hideMissing} onChange={event => setOptions(current => ({ ...current, hideMissing: event.target.checked }))} />Ocultar tiendas sin dato</label>
           <label><input type="checkbox" checked={options.hideStale} onChange={event => setOptions(current => ({ ...current, hideStale: event.target.checked }))} />Excluir precios desactualizados</label>
           <label><input type="checkbox" checked={options.discounts} onChange={event => setOptions(current => ({ ...current, discounts: event.target.checked }))} />Mostrar descuentos</label>
@@ -217,10 +235,14 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
         </fieldset> : null}
       </div>
       <div className={styles.preview}>
-        <div className={styles.previewBar}><span>1080 × 1350</span>{includeCover && selected ? <button disabled={Boolean(busy)} onClick={() => setPreviewCover(current => !current)}><ImagePlus size={16} />{previewCover ? "Ver juego" : "Ver portada"}</button> : null}</div>
+        <div className={styles.previewBar}><span>1080 × 1350</span>{selected ? <div>
+          <button disabled={Boolean(busy)} aria-pressed={preview === "game"} onClick={() => setPreview("game")}>Juego</button>
+          {includeCover ? <button disabled={Boolean(busy)} aria-pressed={preview === "cover"} onClick={() => setPreview("cover")}>Portada</button> : null}
+          {includeCta ? <button disabled={Boolean(busy)} aria-pressed={preview === "cta"} onClick={() => setPreview("cta")}>Cierre</button> : null}
+        </div> : null}</div>
         {selected ? <div ref={viewport} className={styles.viewport}>
           <div style={{ transform: `scale(${width / 1080})`, transformOrigin: "top left" }}>
-            {previewCover && includeCover ? <PublicationCover drafts={drafts} title={coverTitle} /> : <PublicationPoster draft={selected} options={options} index={drafts.indexOf(selected) + 1 + Number(includeCover)} total={drafts.length + Number(includeCover)} />}
+            {preview === "cover" && includeCover ? <PublicationCover drafts={drafts} title={coverTitle} showImages={coverImages} total={total} /> : preview === "cta" && includeCta ? <PublicationCta drafts={drafts} question={ctaQuestion} total={total} /> : <PublicationPoster draft={selected} options={options} index={drafts.indexOf(selected) + 1 + Number(includeCover)} total={total} />}
           </div>
         </div> : <div className={styles.empty}><ImagePlus size={32} /><p>Elegí un juego</p></div>}
         <div className={styles.actions}>
@@ -229,12 +251,13 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
           <button disabled={!drafts.length || Boolean(busy)} onClick={() => void copyCaption()} title="Copiar texto de publicación" aria-label="Copiar texto de publicación"><Copy size={17} /></button>
         </div>
         <p className={styles.status} role="status">{busy ? <><LoaderCircle size={16} />{busy}</> : message}</p>
-        {drafts.length ? <details className={styles.caption}><summary>Texto de publicación</summary><textarea aria-label="Texto de publicación" readOnly value={publicationCaption(outputDrafts, coverTitle)} rows={8} /></details> : null}
+        {drafts.length ? <details className={styles.caption}><summary>Texto de publicación</summary><textarea aria-label="Texto de publicación" readOnly value={caption} rows={8} /></details> : null}
       </div>
     </div>
     <div className={styles.exportRoot} ref={exports} aria-hidden="true">
-      {includeCover && drafts.length ? <div data-publication-export="cover"><PublicationCover drafts={drafts} title={coverTitle} /></div> : null}
-      {drafts.map((draft, index) => <div key={draft.game.id} data-publication-export={draft.game.id}><PublicationPoster draft={draft} options={options} index={index + 1 + Number(includeCover)} total={drafts.length + Number(includeCover)} /></div>)}
+      {includeCover && drafts.length ? <div data-publication-export="cover"><PublicationCover drafts={drafts} title={coverTitle} showImages={coverImages} total={total} /></div> : null}
+      {drafts.map((draft, index) => <div key={draft.game.id} data-publication-export={`game-${draft.game.id}`}><PublicationPoster draft={draft} options={options} index={index + 1 + Number(includeCover)} total={total} /></div>)}
+      {includeCta && drafts.length ? <div data-publication-export="cta"><PublicationCta drafts={drafts} question={ctaQuestion} total={total} /></div> : null}
     </div>
   </section>;
 }

@@ -5,7 +5,7 @@ import { REGIONS } from "@/lib/regions";
 import { STORE_LOGOS } from "@/lib/store-assets";
 import { publicationDate, publicationMoney, type PublicationDraft } from "@/lib/social-publications";
 
-export type PosterOptions = { hideMissing: boolean; hideStale: boolean; discounts: boolean; lows: boolean };
+export type PosterOptions = { hideMissing: boolean; hideStale: boolean; discounts: boolean; lows: boolean; showEyebrow: boolean; eyebrow: string };
 
 export function PublicationPoster({ draft, options, index, total }: { draft: PublicationDraft; options: PosterOptions; index: number; total: number }) {
   const { game } = draft;
@@ -17,16 +17,16 @@ export function PublicationPoster({ draft, options, index, total }: { draft: Pub
       {game.coverUrl ? <img src={game.coverUrl} alt="" /> : <span>{game.title}</span>}
     </div>
     <div className="publicationCopy">
-      <span className="publicationEyebrow">LA SELECCIÓN DE SHUX</span>
+      {options.showEyebrow && options.eyebrow.trim() ? <span className="publicationEyebrow">{options.eyebrow}</span> : null}
       <FittedText as="h2" text={title} max={72} min={30} />
-      <FittedText as="p" text={draft.description} max={29} min={20} />
+      {draft.description.trim() ? <FittedText as="p" text={draft.description} max={29} min={20} /> : null}
     </div>
-    <div className="publicationPriceGrid" style={{ gridTemplateRows: `repeat(${Math.max(1, Math.ceil(prices.length / 2))}, minmax(0, 1fr))` }}>
+    <div className="publicationPriceGrid" data-count={prices.length} style={{ gridTemplateRows: `repeat(${Math.max(1, Math.ceil(prices.length / 2))}, minmax(0, 1fr))` }}>
       {prices.map((price, index) => <div key={price.store} className={`publicationPrice ${price.cheapest ? "best" : ""} ${prices.length % 2 && index === prices.length - 1 ? "wide" : ""}`}>
         <div className="publicationStore"><img src={STORE_LOGOS[price.store]} alt="" /><span>{price.label}</span>
           {options.discounts && price.discount > 0 ? <b className="publicationDiscount">-{price.discount}%</b> : null}
         </div>
-        <strong>{publicationMoney(price)}</strong>
+        <FittedText as="strong" text={publicationMoney(price)} max={prices.length === 1 ? 104 : prices.length === 2 ? 76 : prices.length <= 4 ? 48 : 34} min={24} />
         <div className="publicationMarkers">
           {price.cheapest ? <span>MÁS BARATO</span> : null}
           {options.lows && price.historicalLow ? <span className="publicationLow">MÍNIMO HISTÓRICO REGISTRADO</span> : null}
@@ -37,22 +37,39 @@ export function PublicationPoster({ draft, options, index, total }: { draft: Pub
   </article>;
 }
 
-export function PublicationCover({ drafts, title }: { drafts: PublicationDraft[]; title: string }) {
+export function PublicationCover({ drafts, title, showImages = true, total = drafts.length + 1 }: { drafts: PublicationDraft[]; title: string; showImages?: boolean; total?: number }) {
   return <article className="publicationPoster publicationCover">
-    <PosterHeader draft={drafts[0]} index={1} total={drafts.length + 1} />
-    <div className="publicationCoverCopy"><span className="publicationEyebrow">JUEGOS ELEGIDOS POR SHUX</span>
-      <FittedText as="h2" text={title || "Ofertas para viciar"} max={94} min={40} />
+    <PosterHeader draft={drafts[0]} index={1} total={total} />
+    <div className="publicationCoverCopy">
+      <FittedText as="h2" text={title || "Ofertas para viciar"} max={112} min={40} />
       <p>{drafts.length} juegos para tu próxima partida.</p>
     </div>
-    <div className="publicationCoverImages">{drafts.slice(0, 4).map(({ game }) => <div key={game.id}>
+    <div className="publicationCoverImages">{showImages ? drafts.slice(0, 4).map(({ game }) => <div key={game.id}>
       {game.coverUrl ? <img src={game.coverUrl} alt="" /> : null}<strong>{game.title}</strong>
-    </div>)}</div>
+    </div>) : null}</div>
     <div className="publicationCoverCallout">DESLIZÁ Y COMPARÁ PRECIOS <span>→</span></div>
     <PosterFooter date={publicationDate(drafts[0].game.timestamp)} />
   </article>;
 }
 
-function FittedText({ as: Tag, text, max, min }: { as: "h2" | "p"; text: string; max: number; min: number }) {
+export function PublicationCta({ drafts, question, total }: { drafts: PublicationDraft[]; question: string; total: number }) {
+  return <article className="publicationPoster publicationCta">
+    <div className="publicationCtaBackground">{Array.from({ length: 12 }, (_, index) => {
+      const game = drafts[index % drafts.length].game;
+      return <div key={index}>{game.coverUrl ? <img src={game.coverUrl} alt="" /> : null}<strong>{game.title}</strong></div>;
+    })}</div>
+    <PosterHeader draft={drafts[0]} index={total} total={total} />
+    <div className="publicationCtaCopy">
+      {question.trim() ? <FittedText as="h2" text={question} max={72} min={36} /> : null}
+      <b>BARATEAM</b>
+      <FittedText as="p" text="Compará precios en distintas tiendas y países, consultá históricos y creá tu wishlist con notificaciones personalizadas en BARATEAM" max={44} min={30} />
+      <span>shuxteam.com</span>
+    </div>
+    <footer className="publicationCtaFooter">Una herramienta de Shux</footer>
+  </article>;
+}
+
+function FittedText({ as: Tag, text, max, min }: { as: "h2" | "p" | "strong"; text: string; max: number; min: number }) {
   const ref = useRef<HTMLHeadingElement & HTMLParagraphElement>(null);
   useEffect(() => {
     let cancelled = false;
@@ -61,7 +78,8 @@ function FittedText({ as: Tag, text, max, min }: { as: "h2" | "p"; text: string;
       const element = ref.current;
       let size = max;
       element.style.fontSize = `${size}px`;
-      while (size > min && (element.scrollHeight > element.clientHeight + 1 || element.scrollWidth > element.clientWidth + 1)) {
+      const heightLimit = parseFloat(getComputedStyle(element).maxHeight);
+      while (size > min && ((Number.isFinite(heightLimit) && element.scrollHeight > heightLimit + 1) || element.scrollWidth > element.clientWidth + 1)) {
         size -= 1;
         element.style.fontSize = `${size}px`;
       }
