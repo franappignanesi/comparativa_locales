@@ -72,6 +72,8 @@ Existing wishlist thresholds, stores and region are used. Up to 10 game/store of
 
 The manual `Controlled owner Discord DM trial` workflow sends one clearly labeled trial to the already verified, opted-in owner account only. It uses fresh cached prices from that owner's wishlist and the normal delivery worker restricted to a single outbox ID. It verifies provider confirmation and replay protection. Trial receipts are separate from genuine alert receipts; account preferences and public enablement flags are not modified. An uncertain result must not be blindly rerun as a new workflow. This is a controlled delivery fixture, not proof that a real discount triggered automatic evaluation.
 
+Use `privacy_blocked` mode only after the owner blocks the bot in Discord while leaving BARATEAM consent enabled. The test requires Discord's explicit HTTP 403/code 50007 rejection, a blocked outbox row and no retry. A generic configuration failure does not count as a passing privacy test.
+
 - Typecheck, build and Discord unit tests.
 - Without session, all linking/test/control routes return 401; cross-origin mutations fail.
 - Replayed/mismatched OAuth state fails; one Discord account cannot attach to two Google users.

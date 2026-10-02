@@ -5,6 +5,9 @@ import { spawnSync } from "node:child_process";
 loadEnvConfig(process.cwd());
 
 async function main() {
+  const mode = process.env.DISCORD_DM_TRIAL_MODE || "delivery";
+  assert.ok(["delivery", "privacy_blocked"].includes(mode), "Unknown trial mode");
+  const blockedTrial = mode === "privacy_blocked";
   const recipient = "343930969998491658";
   const { discordRecipientAllowed } = await import("../src/lib/discord-config");
   assert.equal(process.env.DISCORD_TEST_MODE, "1", "Trial requires restricted test mode");
@@ -49,20 +52,28 @@ async function main() {
   payload.signatures = [discordHash(`${key}:receipt`)];
   const runWorker = () => {
     const result = spawnSync(process.execPath, ["--import", "tsx", "scripts/discord-notifications.ts"], {
-      stdio: "inherit", timeout: 240000, env: { ...process.env, DISCORD_ONLY_JOB_ID: id, DISCORD_MAX_MESSAGES_PER_RUN: "1" }
+      encoding: "utf8", timeout: 240000, env: { ...process.env, DISCORD_ONLY_JOB_ID: id, DISCORD_MAX_MESSAGES_PER_RUN: "1" }
     });
-    assert.equal(result.status, 0, "Isolated delivery worker failed; do not blindly replay uncertain sends");
+    process.stdout.write(result.stdout || "");
+    process.stderr.write(result.stderr || "");
+    return result;
   };
   await enqueueDiscord(key, "dm", sub, recipient, payload);
-  runWorker();
+  const first = runWorker();
+  if (blockedTrial) {
+    assert.equal(first.status, 1, "Expected a rejected Discord request, not a successful delivery");
+    assert.ok((first.stderr || "").split("\n").some(line => line.includes('"status":403') && line.includes('"providerCode":50007')), "Must confirm Discord privacy rejection, not a configuration failure");
+  } else {
+    assert.equal(first.status, 0, "Isolated delivery worker failed; do not blindly replay uncertain sends");
+  }
   const rows = await sql.query("SELECT status,attempts FROM discord_outbox WHERE id=$1", [id]);
-  assert.equal(rows[0]?.status, "sent", "Provider delivery must be confirmed");
+  assert.equal(rows[0]?.status, blockedTrial ? "blocked" : "sent", "Expected final provider-confirmed outcome");
   const attempts = Number(rows[0].attempts);
   assert.equal((await enqueueDiscord(key, "dm", sub, recipient, payload)).shouldDispatch, false);
   assert.equal(await claimDiscordJob(id), null);
-  runWorker();
+  assert.equal(runWorker().status, 0, "Completed or blocked trial must not be retried");
   const after = await sql.query("SELECT status,attempts FROM discord_outbox WHERE id=$1", [id]);
   assert.equal(Number(after[0].attempts), attempts);
-  console.log(JSON.stringify({ confirmed: true, duplicatePrevented: true, otherRecipientsProcessed: 0, region: settings.preferredRegion }));
+  console.log(JSON.stringify({ confirmed: !blockedTrial, privacyRejectionConfirmed: blockedTrial, duplicatePrevented: true, otherRecipientsProcessed: 0, region: settings.preferredRegion }));
 }
 main().catch(() => { console.error("Owner DM trial did not complete. Inspect the isolated worker result; no automatic replay or settings changes."); process.exitCode = 1; });

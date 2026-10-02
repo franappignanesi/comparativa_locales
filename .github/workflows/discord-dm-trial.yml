@@ -1,6 +1,12 @@
 name: Controlled owner Discord DM trial
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "Owner-only delivery or expected privacy rejection"
+        type: choice
+        default: delivery
+        options: [delivery, privacy_blocked]
 permissions:
   contents: read
 concurrency:
@@ -17,6 +23,7 @@ jobs:
       DISCORD_SEND_ENABLED: ${{ vars.DISCORD_SEND_ENABLED || '0' }}
       DISCORD_TEST_MODE: "1"
       DISCORD_TEST_USER_IDS: ${{ secrets.DISCORD_TEST_USER_IDS }}
+      DISCORD_DM_TRIAL_MODE: ${{ inputs.mode || 'delivery' }}
     steps:
       - uses: actions/checkout@v7.0.0
       - uses: actions/cache/restore@v4

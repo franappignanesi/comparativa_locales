@@ -47,7 +47,7 @@ async function main() {
       } catch (error) {
         failures++;
         const apiError = error instanceof DiscordApiError ? error : null;
-        console.error("[discord-worker] delivery failed", { kind: job.kind, status: apiError?.status ?? null, providerCode: apiError?.providerCode ?? null, reason: apiError?.reason ?? "unconfirmed", ambiguous: apiError?.ambiguous ?? true });
+        console.error("[discord-worker] delivery failed", JSON.stringify({ kind: job.kind, status: apiError?.status ?? null, providerCode: apiError?.providerCode ?? null, reason: apiError?.reason ?? "unconfirmed", ambiguous: apiError?.ambiguous ?? true }));
         const exhaustedTrial = apiError?.reason === "weekly_test_daily_limit";
         if (apiError?.reason === "weekly_daily_limit" || exhaustedTrial) {
           const message = exhaustedTrial
