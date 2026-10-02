@@ -4,7 +4,6 @@
   { "title": "Quantic Dream Collection", "steamBundleId": 14936 },
   { "title": "Hozy", "steamAppId": 3326230 },
   { "title": "Assassin’s Creed Shadows", "steamAppId": 3159330 },
-  { "title": "REPLACED", "steamAppId": 1663850 },
   { "title": "Dying Light: The Beast", "steamAppId": 3008130 },
   { "title": "Battlefield 6", "steamAppId": 2807960 },
   { "title": "Lorelei and the Laser Eyes", "steamAppId": 2008920 },
@@ -17,7 +16,6 @@
   { "title": "Sons of the Forest", "steamAppId": 1326470 },
   { "title": "Absolum", "steamAppId": 1904480 },
   { "title": "The Witcher 3: Wild Hunt", "steamAppId": 292030 },
-  { "title": "Katana ZERO", "steamAppId": 460950 },
   { "title": "Celeste", "steamAppId": 504230 },
   { "title": "Dishonored", "steamAppId": 205100 },
   { "title": "Warhammer 40,000: Space Marine 2", "steamAppId": 2183900 },
@@ -25,6 +23,5 @@
   { "title": "Persona 3 Reload", "steamAppId": 2161700 },
   { "title": "Cyberpunk 2077 + Phantom Liberty (Bundle)", "steamBundleId": 32470 },
   { "title": "Killing Floor 3", "steamAppId": 1430190 },
-  { "title": "No More Room in Hell 2", "steamAppId": 292000 },
   { "title": "Destiny 2: The Collection", "steamBundleId": 72233 }
 ]

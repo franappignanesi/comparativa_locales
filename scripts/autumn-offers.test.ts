@@ -26,20 +26,21 @@ test("ranking balances relevance and Steam all-time lows without mixing currenci
   assert.equal(steamAtHistoricalLow(row(24), low), true);
 });
 
-test("all 28 selected identities resolve alongside existing games and additions are idempotent", () => {
+test("all 25 selected identities resolve alongside existing games and additions are idempotent", () => {
   const existing = AUTUMN_SELECTION.filter(item => !additions.some(game => steamIdentity(game.identifiers) === steamIdentity(item)))
     .map<SampleGame>((item, index) => ({ id: `existing-${index}`, title: item.title, identifiers: item, availableStores: ["steam"], missingStores: ["epic", "gog", "humble", "microsoft"], notes: "", edition: "standard", category: "AA", releaseYear: 2025, expectedStores: ["steam"], confidence: "high", comparisonStatus: "missing_some_stores" }));
   const sample: GameSample = { timestamp: "2026-10-01", broadSample: existing, strictSample: [], rejected: [], missingByStore: {}, storeCoverage: {}, categoryCoverage: {} };
   const updated = withSeasonalGames(sample);
-  assert.equal(AUTUMN_SELECTION.length, 28);
-  assert.equal(new Set(AUTUMN_SELECTION.map(steamIdentity)).size, 28);
+  assert.equal(AUTUMN_SELECTION.length, 25);
+  assert.equal(new Set(AUTUMN_SELECTION.map(steamIdentity)).size, 25);
+  assert.ok(!AUTUMN_SELECTION.some(item => [460950, 1663850, 292000].includes(item.steamAppId ?? 0)));
   assert.ok(AUTUMN_SELECTION.some(item => item.steamAppId === 1304930));
   assert.ok(AUTUMN_SELECTION.some(item => item.steamAppId === 1326470));
   assert.ok(AUTUMN_SELECTION.some(item => item.steamAppId === 1904480));
   assert.ok(!AUTUMN_SELECTION.some(item => item.steamAppId === 1145360));
   assert.deepEqual(AUTUMN_SELECTION.filter(item => !updated.broadSample.some(game => steamIdentity(game.identifiers) === steamIdentity(item))), []);
   assert.equal(withSeasonalGames(updated).broadSample.length, updated.broadSample.length);
-  assert.equal(sample.broadSample.length, 20);
+  assert.equal(sample.broadSample.length, 18);
   const outlast = updated.broadSample.find(game => game.identifiers.steamAppId === 1304930)!;
   assert.equal(outlast.identifiers.itadId, "018d937f-4385-73cd-abfc-dc95e5e04166");
   assert.equal(sample.broadSample.find(game => game.identifiers.steamAppId === 1304930)?.identifiers.itadId, undefined);
