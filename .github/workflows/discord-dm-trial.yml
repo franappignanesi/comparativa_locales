@@ -1,0 +1,42 @@
+name: Controlled owner Discord DM trial
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: discord-owner-dm-trial
+  cancel-in-progress: false
+jobs:
+  trial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GLITCHPRICE_PUBLIC_CACHE_SOURCE: file
+      POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+      DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+      DISCORD_SEND_ENABLED: ${{ vars.DISCORD_SEND_ENABLED || '0' }}
+      DISCORD_TEST_MODE: "1"
+      DISCORD_TEST_USER_IDS: ${{ secrets.DISCORD_TEST_USER_IDS }}
+    steps:
+      - uses: actions/checkout@v7.0.0
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            data/generated/game-sample.json
+            data/generated/latest-prices*.json
+            data/generated/price-history*.json
+            data/generated/price-history*.json.gz
+            data/generated/itad-history*.json
+            data/generated/itad-full-history*.json
+            data/generated/pending-releases.json
+            data/generated/catalog-expansion.json
+            data/generated/steam-sale-refresh-cursor-*.json
+          key: barateam-public-data-${{ github.run_id }}-dm-trial
+          restore-keys: barateam-public-data-
+      - uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Deliver one isolated owner trial and check replay protection
+        run: npx tsx scripts/discord-dm-trial.ts

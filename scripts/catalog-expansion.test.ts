@@ -75,13 +75,13 @@ test("every public dataset cache uses identical paths for save and restore", asy
   const { createRequire } = await import("node:module");
   const { load } = createRequire(import.meta.url)("js-yaml");
   const paths: string[] = [];
-  for (const file of ["daily-price-refresh", "deploy-production", "discord-weekly", "steam-sale-refresh"]) {
+  for (const file of ["daily-price-refresh", "deploy-production", "discord-weekly", "steam-sale-refresh", "discord-dm-trial"]) {
     const workflow = load(await readFile(`.github/workflows/${file}.yml`, "utf8")) as { jobs: Record<string, { steps: Array<{ uses?: string; with?: { key?: string; path?: string } }> }> };
     const steps = Object.values(workflow.jobs).flatMap(job => job.steps).filter(step => step.uses?.startsWith("actions/cache/") && step.with?.key?.startsWith("barateam-public-data-"));
     assert.ok(steps.length, `Public cache missing in ${file}`);
     for (const step of steps) paths.push(step.with!.path!.split(/\r?\n/).map(line => line.trim()).filter(Boolean).join("\n"));
   }
-  assert.equal(paths.length, 8);
+  assert.equal(paths.length, 9);
   assert.equal(new Set(paths).size, 1, "Different cache paths create incompatible GitHub cache versions and restore old data");
   assert.ok(paths[0].includes("data/generated/catalog-expansion.json"));
 });

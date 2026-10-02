@@ -5,6 +5,31 @@ import { boundedDiscordSetting, discordRecipientAllowed, discordSameOrigin, disc
 import { DiscordApiError, discordRequest, discordWeeklyBudget, resetDiscordBudget, sendDiscordDm, sendDiscordWebhook } from "../src/lib/discord-api";
 import { discordTestFailure } from "../src/lib/discord-test-errors";
 import type { WishlistAlert } from "../src/lib/wishlist-alerts";
+import { discordDmConsentValid, discordDmOffersValid } from "../src/lib/discord-dm-validation";
+import type { DiscordJob } from "../src/lib/discord-store";
+import { DEFAULT_NOTIFICATION_SETTINGS, DEFAULT_WISHLIST_PREFERENCES, type StoredWishlistItem } from "../src/lib/user-store";
+import type { LatestPrices } from "../src/lib/types";
+
+test("queued DMs recheck consent, unlinking, region, stores, conditions and current price", () => {
+  const job = { recipient: "123456789012345678", payload: { region: "AR", prices: [{ gameId: "game", store: "steam", currency: "USD", price: 10, type: "price_drop" }] } } as DiscordJob;
+  const link = { discordId: job.recipient, username: "test", verified: true };
+  const settings = { ...DEFAULT_NOTIFICATION_SETTINGS, discord: true, preferredRegion: "AR" as const, enabledStores: ["steam" as const] };
+  assert.equal(discordDmConsentValid(job, link, settings, true), true);
+  assert.equal(discordDmConsentValid(job, null, settings, true), false);
+  assert.equal(discordDmConsentValid(job, { ...link, verified: false }, settings, true), false);
+  assert.equal(discordDmConsentValid(job, link, { ...settings, discord: false }, true), false);
+  assert.equal(discordDmConsentValid(job, link, { ...settings, preferredRegion: "MX" }, true), false);
+  assert.equal(discordDmConsentValid(job, link, settings, false), false);
+  const item = { gameId: "game", notificationEnabled: true, notificationPreferences: { ...DEFAULT_WISHLIST_PREFERENCES, priceDrop: true } } as StoredWishlistItem;
+  const latest = { timestamp: new Date().toISOString(), prices: [{ gameId: "game", prices: { steam: { available: true, finalPrice: 10, currency: "USD", fetchedAt: new Date().toISOString() } } }] } as LatestPrices;
+  assert.equal(discordDmOffersValid(job, settings, [item], latest), true);
+  assert.equal(discordDmOffersValid(job, settings, [], latest), false);
+  assert.equal(discordDmOffersValid(job, settings, [{ ...item, notificationEnabled: false }], latest), false);
+  assert.equal(discordDmOffersValid(job, settings, [{ ...item, notificationPreferences: { ...item.notificationPreferences, priceDrop: false } }], latest), false);
+  assert.equal(discordDmOffersValid(job, { ...settings, enabledStores: [] }, [item], latest), false);
+  assert.equal(discordDmOffersValid({ ...job, payload: { ...job.payload, prices: [{ ...job.payload.prices![0], price: 9 }] } }, settings, [item], latest), false);
+  assert.equal(discordDmOffersValid({ ...job, payload: { region: "AR", prices: [] } }, settings, [item], latest), false);
+});
 
 const alert: WishlistAlert = { userId: "private-user", region: "AR", gameId: "game", gameTitle: "Juego @everyone", store: "steam", type: "price_drop", message: "Bajó 50%", triggeredAt: "2026-10-01T00:00:00Z", currentOfficialPrice: 10, currentCurrency: "USD", currentArsPrice: 10000 };
 test("manual weekly trials have a separate bounded budget from scheduled sends", () => {

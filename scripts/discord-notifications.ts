@@ -4,13 +4,16 @@ loadEnvConfig(process.cwd());
 async function main() {
   const { boundedDiscordSetting, discordRecipientAllowed, discordSendsEnabled } = await import("../src/lib/discord-config");
   if (!discordSendsEnabled()) { console.log("Discord sending disabled; nothing sent."); return; }
+  const onlyId = process.env.DISCORD_ONLY_JOB_ID || null;
+  if (onlyId && !/^[a-f0-9]{64}$/.test(onlyId)) throw new Error("Invalid isolated Discord job ID");
   const { acquireJobLock } = await import("../src/lib/job-lock");
   const lock = await acquireJobLock("discord-notifications", { ttlMs: 600000 });
   if (!lock.acquired) { console.log("Discord worker already running."); return; }
   const { claimDiscordJob, finishDiscordJob, getDiscordLink, pruneDiscordStore } = await import("../src/lib/discord-store");
   const { DiscordApiError, resetDiscordBudget, sendDiscordDm, sendDiscordWebhook } = await import("../src/lib/discord-api");
   const { getNotificationSettings, getWishlist } = await import("../src/lib/user-store");
-  const { readDiscordPrices, discordPriceFresh } = await import("../src/lib/discord-notifications");
+  const { readDiscordPrices } = await import("../src/lib/discord-notifications");
+  const { discordDmConsentValid, discordDmOffersValid } = await import("../src/lib/discord-dm-validation");
   const { REGIONS } = await import("../src/lib/regions");
   const deadline = Date.now() + boundedDiscordSetting("DISCORD_WORKER_MAX_MS", 180000, 300000);
   const maximum = boundedDiscordSetting("DISCORD_MAX_MESSAGES_PER_RUN", 30, 100);
@@ -20,27 +23,19 @@ async function main() {
   try {
     await pruneDiscordStore();
     for (let count = 0; count < maximum && Date.now() < deadline - 30000; count++) {
-      const job = await claimDiscordJob();
+      const job = await claimDiscordJob(onlyId);
       if (!job) break;
       try {
         if (job.kind === "dm") {
           const [link, settings, wishlist] = await Promise.all([getDiscordLink(job.userSub), getNotificationSettings(job.userSub), getWishlist(job.userSub)]);
-          if (!link?.verified || link.discordId !== job.recipient || !settings.discord || !discordRecipientAllowed(job.recipient) || settings.preferredRegion !== job.payload.region) {
+          if (!discordDmConsentValid(job, link, settings, discordRecipientAllowed(job.recipient))) {
             await finishDiscordJob(job, "blocked"); blocked++; continue;
           }
           const region = REGIONS.find((item) => item.id === job.payload.region)?.id;
           if (!region) throw new Error("Invalid region");
           const latest = prices.get(region) ?? await readDiscordPrices(region);
           prices.set(region, latest);
-          const valid = job.payload.prices?.every((item) => {
-            const entry = wishlist.find((game) => game.gameId === item.gameId);
-            if (!entry?.notificationEnabled) return false;
-            const preferences = entry.notificationPreferences;
-            if (item.type === "price_drop" && !preferences.priceDrop || item.type === "historical_low" && !preferences.historicalLow || item.type === "below_usd" && (!preferences.belowUsd || preferences.belowUsdValue !== item.thresholdUsd)) return false;
-            if (!settings.enabledStores.includes(item.store as typeof settings.enabledStores[number])) return false;
-            const price = latest.prices.find((row) => row.gameId === item.gameId)?.prices[item.store as typeof settings.enabledStores[number]];
-            return discordPriceFresh(price, latest.timestamp) && price && (price.originalCurrency ?? price.currency) === item.currency && (price.originalFinalPrice ?? price.finalPrice) === item.price;
-          });
+          const valid = discordDmOffersValid(job, settings, wishlist, latest);
           if (!valid) { await finishDiscordJob(job, "blocked"); blocked++; continue; }
           await sendDiscordDm(job.recipient, { content: job.payload.content, embeds: job.payload.embeds }, job.id);
         } else {
