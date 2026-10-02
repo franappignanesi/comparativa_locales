@@ -116,9 +116,10 @@ async function evaluateWishlistAlerts(
         const previous = findPreviousSnapshot(entries, store, latest);
         if (previous?.arsFinalPrice != null && previous.arsFinalPrice > price.arsFinalPrice) {
           const pctRaw = (1 - price.arsFinalPrice / previous.arsFinalPrice) * 100;
-          if (pctRaw < 1) continue;
-          const pct = Math.floor(pctRaw);
-          alerts.push(buildAlert(userId, region, row, store, "price_drop", `Bajó ${pct}% en ${STORE_LABELS[store]}`, price, previous.arsFinalPrice));
+          if (pctRaw >= 1) {
+            const pct = Math.floor(pctRaw);
+            alerts.push(buildAlert(userId, region, row, store, "price_drop", `Bajó ${pct}% en ${STORE_LABELS[store]}`, price, previous.arsFinalPrice));
+          }
         }
       }
 
@@ -130,7 +131,7 @@ async function evaluateWishlistAlerts(
             row,
             store,
             "below_usd",
-            `Bajó de USD ${formatUsd(preferences.belowUsdValue)} en ${STORE_LABELS[store]}`,
+            `Está en USD ${formatUsd(preferences.belowUsdValue)} o menos en ${STORE_LABELS[store]}`,
             price,
             null,
             preferences.belowUsdValue
@@ -173,7 +174,10 @@ async function claimAlerts(channel: "email" | "web_push", userSub: string, alert
       region: alert.region,
       gameId: alert.gameId,
       store: alert.store,
-      type: alert.type
+      type: alert.type,
+      currentCurrency: alert.currentCurrency,
+      currentOfficialPrice: alert.currentOfficialPrice,
+      thresholdUsd: alert.thresholdUsd
     });
     if (ok) claimed.push(alert);
   }

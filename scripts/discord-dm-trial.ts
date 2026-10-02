@@ -46,7 +46,7 @@ async function main() {
     store, type: "price_drop", message: "Prueba controlada: este es el precio vigente, no una nueva rebaja.",
     triggeredAt: new Date().toISOString(), currentOfficialPrice: price.originalFinalPrice ?? price.finalPrice,
     currentCurrency: price.originalCurrency ?? price.currency, currentArsPrice: price.arsFinalPrice
-  }]);
+  }], { trial: true });
   payload.content = "PRUEBA DE BARATEAM · Alerta de tu lista de deseados";
   // Trial receipts must never suppress genuine wishlist notifications.
   payload.signatures = [discordHash(`${key}:receipt`)];

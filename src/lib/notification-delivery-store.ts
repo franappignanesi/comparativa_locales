@@ -1,32 +1,19 @@
-import { createHash } from "node:crypto";
 import { neon } from "@neondatabase/serverless";
-import type { RegionId } from "./regions";
-import type { StoreId } from "./types";
-import type { WishlistAlertType } from "./wishlist-alerts";
+import { wishlistNotificationKey, type WishlistNotificationIdentity } from "./wishlist-notification-key";
 
 type NotificationChannel = "email" | "web_push";
 type Sql = ReturnType<typeof neon>;
-type NotificationSignatureInput = {
-  region: RegionId;
-  gameId: string;
-  store: StoreId;
-  type: WishlistAlertType;
-};
 
 let sqlClient: Sql | null = null;
 let initialized = false;
 
-export async function claimNotificationDelivery(input: {
+export async function claimNotificationDelivery(input: WishlistNotificationIdentity & {
   channel: NotificationChannel;
   userSub: string;
-  region: RegionId;
-  gameId: string;
-  store: StoreId;
-  type: WishlistAlertType;
 }): Promise<boolean> {
   if (!hasPostgresConfig()) return false;
   await ensureSchema();
-  const signature = createSignature(input);
+  const signature = wishlistNotificationKey(input);
   const rows = (await getSql().query(
     `INSERT INTO notification_deliveries (channel, user_sub, signature, created_at)
      VALUES ($1, $2, $3, $4)
@@ -51,10 +38,6 @@ async function ensureSchema(): Promise<void> {
   `);
   await getSql().query("CREATE INDEX IF NOT EXISTS idx_notification_deliveries_created ON notification_deliveries (created_at)");
   initialized = true;
-}
-
-function createSignature(input: NotificationSignatureInput): string {
-  return createHash("sha256").update(`${input.region}:${input.gameId}:${input.store}:${input.type}`).digest("hex");
 }
 
 function getSql(): Sql {
