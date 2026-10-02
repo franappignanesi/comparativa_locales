@@ -95,12 +95,13 @@ export function withSeasonalGames(sample: GameSample): GameSample {
   const ids = new Set(sample.broadSample.map(game => game.id));
   const added = (autumnAdditions as GameCandidate[]).filter(game => !known.has(steamIdentity(game.identifiers)))
     .map(game => toSampleGame(game, [])).filter(game => !ids.has(game.id) && (ids.add(game.id), true));
-  // These IDs were audited against exact Steam app identities, not title search.
+  // App and collection identities are audited separately; never reuse a base-game ID for a pack.
   const verifiedIds: Record<string, string> = autumnVerifiedItad;
   const broadSample = [...sample.broadSample, ...added].map(game => {
     const id = game.productKind !== "pack" && !game.identifiers.steamBundleId && !game.identifiers.steamSubId
       ? game.identifiers.steamAppId : undefined;
-    const itadId = id ? verifiedIds[String(id)] : undefined;
+    const itadId = game.identifiers.steamBundleId ? verifiedIds[`bundle/${game.identifiers.steamBundleId}`]
+      : id ? verifiedIds[String(id)] : undefined;
     return itadId && game.identifiers.itadId !== itadId
       ? { ...game, identifiers: { ...game.identifiers, itadId } } : game;
   });

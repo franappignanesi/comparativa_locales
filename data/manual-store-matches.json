@@ -1,6 +1,20 @@
 {
   "matches": [
     {
+      "gameTitle": "Destiny 2: The Collection",
+      "store": "epic",
+      "identifier": "destiny-2--the-collection",
+      "edition": "standard",
+      "notes": "Verified complete collection for Windows PC, same expansions as Steam bundle 72233. Prices use dedicated ITAD collection identity, never the free base game."
+    },
+    {
+      "gameTitle": "Destiny 2: The Collection",
+      "store": "humble",
+      "identifier": "destiny-2-the-collection",
+      "edition": "standard",
+      "notes": "Exact complete collection verified in ITAD official Humble offers across five regions. Dedicated collection ID keeps base-game and DLC prices separate."
+    },
+    {
       "gameTitle": "REPLACED",
       "store": "microsoft",
       "identifier": "9NV3L234VGXD",

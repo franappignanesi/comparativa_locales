@@ -48,6 +48,7 @@ test("all 25 selected identities resolve alongside existing games and additions 
     identifiers: { steamAppId: 1304930, steamBundleId: 123 } };
   const withPack = withSeasonalGames({ ...updated, broadSample: [...updated.broadSample, pack] });
   assert.equal(withPack.broadSample.find(game => game.id === pack.id)?.identifiers.itadId, undefined);
+  assert.equal(updated.broadSample.find(game => game.identifiers.steamBundleId === 72233)?.identifiers.itadId, "019ead54-3e7e-70ec-881e-f87f33404aa2");
 });
 
 test("bundle extraction uses its own purchase block, not a discounted included game", () => {
