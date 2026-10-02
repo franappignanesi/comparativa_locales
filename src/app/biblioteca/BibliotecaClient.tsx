@@ -46,6 +46,7 @@ import { STORE_LOGOS } from "@/lib/store-assets";
 import { GameCover } from "@/app/components/GameCover";
 import type { LatestPrices, NormalizedPrice, PriceHistoryReport, StoreId } from "@/lib/types";
 import { STORES } from "@/lib/types";
+import { historyChartObservations } from "@/lib/history-chart";
 import type { CatalogResponse } from "@/lib/catalog";
 import { WEEKEND_FILTER } from "@/lib/weekend-games";
 import { WeekendRecommendation, WeekendTag } from "@/app/components/WeekendRecommendation";
@@ -1156,16 +1157,14 @@ function PriceHistoryChart({
   useEffect(() => {
     setFocusedStore(currentWinner && chartStores.includes(currentWinner) ? currentWinner : chartStores[0] ?? null);
   }, [currentWinner, enabledStores, entries]);
-  const realChartEntries = dedupeDailyHistoryEntries(
-    entries.filter((entry) => chartStores.includes(entry.store) && entry.arsFinalPrice != null && entry.arsFinalPrice > 0)
-  );
+  const realChartEntries = entries.filter((entry) => entry.kind !== "historical_low" && chartStores.includes(entry.store) && entry.arsFinalPrice != null && entry.arsFinalPrice > 0);
   const firstEntryDate = realChartEntries.length ? new Date(Math.min(...realChartEntries.map((entry) => Date.parse(entry.timestamp)))) : new Date();
   const endDate = new Date();
   const sixMonthsAgo = new Date(endDate);
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
   const rangeStart = firstEntryDate.getTime() <= sixMonthsAgo.getTime() ? sixMonthsAgo : firstEntryDate;
   const startDate = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), 1);
-  const chartEntries = buildMonthlyHistoryPoints(realChartEntries, startDate, endDate);
+  const chartEntries = historyChartObservations(realChartEntries, startDate, endDate);
   const values = chartEntries.map((entry) => entry.arsFinalPrice ?? 0);
   const minValue = values.length ? Math.min(...values) : 0;
   const maxValue = values.length ? Math.max(...values) : 1;
@@ -1220,7 +1219,7 @@ function PriceHistoryChart({
             const points = chartEntries
               .filter((entry) => entry.store === store)
               .sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp))
-              .map((entry) => `${x(entry.timestamp)},${y(entry.arsFinalPrice ?? 0)}`)
+              .flatMap((entry, index, series) => index ? [`${x(entry.timestamp)},${y(series[index - 1].arsFinalPrice ?? 0)}`, `${x(entry.timestamp)},${y(entry.arsFinalPrice ?? 0)}`] : [`${x(entry.timestamp)},${y(entry.arsFinalPrice ?? 0)}`])
               .join(" ");
             return points ? (
               <polyline
@@ -1289,7 +1288,7 @@ function PriceHistoryChart({
         ))}
       </div>
       <small>
-        Últimos 6 meses cuando hay registros suficientes; si no, desde el primer registro real. Se agregan puntos mensuales manteniendo el último precio conocido.
+        Registros observados de los últimos 6 meses. Los mínimos históricos se muestran por separado; no representan una evolución continua.
       </small>
       <LowestHistoricalLow
         lows={lows}
@@ -1441,58 +1440,6 @@ function formatMonthLabel(date: Date): string {
 
 function formatFullDate(timestamp: string): string {
   return new Intl.DateTimeFormat("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(timestamp));
-}
-
-function dedupeDailyHistoryEntries(entries: PriceHistoryReport["entriesByGame"][string]): PriceHistoryReport["entriesByGame"][string] {
-  const byStoreDay = new Map<string, (typeof entries)[number]>();
-  for (const entry of entries) {
-    const day = new Date(entry.timestamp).toISOString().slice(0, 10);
-    const key = `${entry.store}:${day}`;
-    const current = byStoreDay.get(key);
-    if (!current || Date.parse(entry.timestamp) >= Date.parse(current.timestamp)) {
-      byStoreDay.set(key, entry);
-    }
-  }
-  return [...byStoreDay.values()].sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
-}
-
-function buildMonthlyHistoryPoints(
-  entries: PriceHistoryReport["entriesByGame"][string],
-  startDate: Date,
-  endDate: Date
-): PriceHistoryReport["entriesByGame"][string] {
-  const byKey = new Map<string, (typeof entries)[number]>();
-  for (const entry of entries) {
-    const time = Date.parse(entry.timestamp);
-    if (time < startDate.getTime() || time > endDate.getTime()) continue;
-    const day = new Date(entry.timestamp).toISOString().slice(0, 10);
-    byKey.set(`${entry.store}:${day}`, entry);
-  }
-
-  for (const store of STORES) {
-    const storeEntries = entries.filter((entry) => entry.store === store).sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
-    if (!storeEntries.length) continue;
-    const cursor = new Date(startDate.getFullYear(), startDate.getMonth(), 1, 12);
-    while (cursor.getTime() <= endDate.getTime()) {
-      const lastKnown = storeEntries.filter((entry) => Date.parse(entry.timestamp) <= cursor.getTime()).at(-1);
-      if (lastKnown) {
-        const timestamp = cursor.toISOString();
-        const day = timestamp.slice(0, 10);
-        const key = `${store}:${day}`;
-        if (!byKey.has(key)) byKey.set(key, { ...lastKnown, timestamp, source: "snapshot" });
-      }
-      cursor.setMonth(cursor.getMonth() + 1);
-    }
-    const lastKnown = storeEntries.filter((entry) => Date.parse(entry.timestamp) <= endDate.getTime()).at(-1);
-    if (lastKnown) {
-      const timestamp = endDate.toISOString();
-      const day = timestamp.slice(0, 10);
-      const key = `${store}:${day}`;
-      if (!byKey.has(key)) byKey.set(key, { ...lastKnown, timestamp, source: "snapshot" });
-    }
-  }
-
-  return [...byKey.values()].sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
 }
 
 function formatCompactCurrency(value: number, currency: string, locale: string): string {

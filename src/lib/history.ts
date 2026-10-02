@@ -45,7 +45,7 @@ export async function appendLatestToHistory(latest: LatestPrices): Promise<void>
         gameId: row.gameId,
         gameTitle: row.gameTitle,
         store,
-        timestamp: latest.timestamp,
+        timestamp: price.fetchedAt ?? latest.timestamp,
         originalCurrency: price.originalCurrency,
         originalFinalPrice: price.originalFinalPrice,
         originalBasePrice: price.originalBasePrice,
@@ -55,11 +55,14 @@ export async function appendLatestToHistory(latest: LatestPrices): Promise<void>
         url: price.url,
         source: "snapshot"
       };
-      byDay.set(ownHistoryKey(entry), entry);
+      const key = ownHistoryKey(entry);
+      const current = byDay.get(key);
+      if (!current || Date.parse(entry.timestamp) >= Date.parse(current.timestamp)) byDay.set(key, entry);
     }
   }
 
-  await writeJson(filePath, { timestamp: latest.timestamp, entries: compactOwnHistory([...byDay.values()]) });
+  const timestamp = Date.parse(history.timestamp ?? "") > Date.parse(latest.timestamp) ? history.timestamp : latest.timestamp;
+  await writeJson(filePath, { timestamp, entries: compactOwnHistory([...byDay.values()]) });
 }
 
 export async function getPriceHistoryReport(
@@ -72,10 +75,12 @@ export async function getPriceHistoryReport(
     options.gameIds
   );
   const itad = await getItadHistory(latest, options.refreshItad ?? false);
-  const itadEntries = filterEntriesByGameIds(itad.entries, options.gameIds);
-  const baseEntries = [...ownEntries, ...itadEntries];
+  const itadEntries = filterEntriesByGameIds(itad.entries, options.gameIds).map(entry => ({ ...entry, kind: "historical_low" as const }));
+  const cachedFull = options.includeFullItad ? await readJson<ItadHistoryFile>(itadFullHistoryPath(parseRegion(latest.region)), emptyItad) : emptyItad;
+  const cachedFullEntries = filterEntriesByGameIds(cachedFull.entries, options.gameIds);
+  const baseEntries = [...ownEntries, ...itadEntries, ...cachedFullEntries];
   const fullHistoryGameIds = options.includeFullItad && options.gameIds
-    ? gameIdsMissingHistory(baseEntries, options.gameIds)
+    ? gameIdsMissingHistory([...ownEntries, ...cachedFullEntries], options.gameIds)
     : new Set<string>();
   const fullItad = fullHistoryGameIds.size ? await getFullItadHistory(latest, fullHistoryGameIds) : emptyItad;
   const entries = normalizeHistoricalEntries(
@@ -220,7 +225,7 @@ function latestToHistoryEntries(latest: LatestPrices): PriceHistoryEntry[] {
           gameId: row.gameId,
           gameTitle: row.gameTitle,
           store,
-          timestamp,
+          timestamp: price.fetchedAt ?? timestamp,
           originalCurrency: price.originalCurrency,
           originalFinalPrice: price.originalFinalPrice,
           originalBasePrice: price.originalBasePrice,
@@ -294,10 +299,10 @@ function entryKey(entry: PriceHistoryEntry): string {
 }
 
 function ownHistoryKey(entry: PriceHistoryEntry): string {
-  return `${entry.gameId}:${entry.store}:${entryDay(entry.timestamp)}`;
+  return `${entry.gameId}:${entry.store}:${entryDay(entry.timestamp)}:${entry.originalCurrency}:${entry.originalFinalPrice ?? entry.arsFinalPrice}`;
 }
 
-function compactOwnHistory(entries: PriceHistoryEntry[]): PriceHistoryEntry[] {
+export function compactOwnHistory(entries: PriceHistoryEntry[]): PriceHistoryEntry[] {
   const cutoff = Date.now() - getOwnHistoryRetentionDays() * 24 * 60 * 60 * 1000;
   const byGameStoreDay = new Map<string, PriceHistoryEntry>();
   for (const entry of entries) {

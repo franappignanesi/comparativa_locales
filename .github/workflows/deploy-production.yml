@@ -1,6 +1,11 @@
 name: Deploy application with current price data
 
 on:
+  workflow_dispatch:
+    inputs:
+      history_recovery_cache:
+        description: "Optional exact public cache key to recover prior observations without replacing current prices"
+        default: ""
   workflow_call:
   push:
     branches: [main]
@@ -67,11 +72,55 @@ jobs:
           cache: npm
       - run: npm ci
         if: steps.public-data.outputs.cache-matched-key != ''
+      - name: Preserve current data before history recovery
+        if: inputs.history_recovery_cache != '' && steps.public-data.outputs.cache-matched-key != ''
+        run: npx tsx scripts/recover-price-history.ts --capture
+      - name: Restore prior observations for history recovery
+        id: history-recovery
+        if: inputs.history_recovery_cache != '' && steps.public-data.outputs.cache-matched-key != ''
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            data/generated/game-sample.json
+            data/generated/latest-prices*.json
+            data/generated/price-history*.json
+            data/generated/price-history*.json.gz
+            data/generated/itad-history*.json
+            data/generated/itad-full-history*.json
+            data/generated/pending-releases.json
+            data/generated/catalog-expansion.json
+            data/generated/steam-sale-refresh-cursor-*.json
+          key: ${{ inputs.history_recovery_cache }}
+          fail-on-cache-miss: true
+      - name: Require exact recovery cache
+        if: inputs.history_recovery_cache != '' && steps.public-data.outputs.cache-matched-key != ''
+        env:
+          RECOVERY_CACHE: ${{ inputs.history_recovery_cache }}
+          MATCHED_CACHE: ${{ steps.history-recovery.outputs.cache-matched-key }}
+        run: test "$RECOVERY_CACHE" = "$MATCHED_CACHE"
+      - name: Merge historical observations and restore current prices
+        if: inputs.history_recovery_cache != '' && steps.public-data.outputs.cache-matched-key != ''
+        run: npx tsx scripts/recover-price-history.ts
       - name: Compact price history
         if: steps.public-data.outputs.cache-matched-key != ''
         env:
           PRICE_HISTORY_GZIP_ONLY: "1"
         run: npm run worker:compact-price-history
+      - name: Preserve recovered history for future refreshes
+        if: inputs.history_recovery_cache != '' && steps.public-data.outputs.cache-matched-key != ''
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            data/generated/game-sample.json
+            data/generated/latest-prices*.json
+            data/generated/price-history*.json
+            data/generated/price-history*.json.gz
+            data/generated/itad-history*.json
+            data/generated/itad-full-history*.json
+            data/generated/pending-releases.json
+            data/generated/catalog-expansion.json
+            data/generated/steam-sale-refresh-cursor-*.json
+          key: barateam-public-data-${{ github.run_id }}-history-recovery
       - name: Link Vercel project
         if: steps.public-data.outputs.cache-matched-key != ''
         shell: bash

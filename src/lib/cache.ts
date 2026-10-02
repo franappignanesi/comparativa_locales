@@ -43,6 +43,19 @@ export async function writeJson(filePath: string, data: unknown): Promise<void> 
 }
 
 async function readLocalJson<T>(filePath: string, fallback: T | null): Promise<T | null> {
+  if (/price-history(?:-[A-Z]{2})?\.json$/.test(filePath)) {
+    const candidates: Array<{ value: T; time: number }> = [];
+    for (const compressed of [false, true]) {
+      try {
+        const bytes = await fs.readFile(compressed ? `${filePath}.gz` : filePath);
+        const content = compressed ? await gunzipAsync(bytes) : bytes;
+        const value = JSON.parse(content.toString("utf8")) as T;
+        const time = Date.parse((value as { timestamp?: string }).timestamp ?? "");
+        candidates.push({ value, time: Number.isFinite(time) ? time : -Infinity });
+      } catch { /* Missing or invalid variants must not hide the other copy. */ }
+    }
+    return candidates.sort((a, b) => b.time - a.time)[0]?.value ?? fallback;
+  }
   try {
     const content = await fs.readFile(filePath, "utf8");
     return JSON.parse(content) as T;

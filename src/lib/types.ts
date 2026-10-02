@@ -125,6 +125,7 @@ export type LatestPrices = {
 };
 
 export type PriceHistoryEntry = {
+  kind?: "observation" | "historical_low";
   gameId: string;
   gameTitle?: string;
   store: StoreId;
