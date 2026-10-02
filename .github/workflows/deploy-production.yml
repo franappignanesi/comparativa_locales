@@ -132,13 +132,19 @@ jobs:
         run: npm run worker:compact-price-history
       - name: Recover observations from legacy backups
         if: inputs.history_recovery_caches != '' && steps.public-data.outputs.cache-matched-key != ''
+        run: npm install --no-save --package-lock=false @actions/cache@4
+      - name: Merge backed-up historical observations
+        if: inputs.history_recovery_caches != '' && steps.public-data.outputs.cache-matched-key != ''
+        uses: actions/github-script@v8
         env:
           RECOVERY_CACHES: ${{ inputs.history_recovery_caches }}
+        with:
+          script: await import(`${process.env.GITHUB_WORKSPACE}/scripts/recover-history-caches.mjs`)
+      - name: Compact recovered history
+        if: inputs.history_recovery_caches != '' && steps.public-data.outputs.cache-matched-key != ''
+        env:
           PRICE_HISTORY_GZIP_ONLY: "1"
-        run: |
-          npm install --no-save --package-lock=false @actions/cache@4
-          node scripts/recover-history-caches.mjs
-          npm run worker:compact-price-history
+        run: npm run worker:compact-price-history
       - name: Preserve recovered history for future refreshes
         if: (inputs.history_recovery_cache != '' || inputs.history_recovery_caches != '') && steps.public-data.outputs.cache-matched-key != ''
         uses: actions/cache/save@v4
