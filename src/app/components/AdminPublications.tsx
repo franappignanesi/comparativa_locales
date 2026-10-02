@@ -4,7 +4,7 @@ import { ArrowDown, ArrowUp, Copy, Download, ImagePlus, LoaderCircle, Plus, Refr
 import { useEffect, useRef, useState } from "react";
 import { REGIONS, type RegionId } from "@/lib/regions";
 import { MAX_PUBLICATION_GAMES, publicationCaption, type PublicationDraft, type PublicationGame } from "@/lib/social-publications";
-import { PublicationCover, PublicationCta, PublicationPoster, type PosterOptions } from "./PublicationPoster";
+import { PublicationCover, PublicationCta, PublicationPoster, type PosterOptions, type PublicationBackgroundGame } from "./PublicationPoster";
 import styles from "./publications.module.css";
 
 type SearchGame = { id: string; title: string };
@@ -20,6 +20,9 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
   const [coverTitle, setCoverTitle] = useState("Ofertas para viciar");
   const [includeCover, setIncludeCover] = useState(false);
   const [coverImages, setCoverImages] = useState(true);
+  const [showCallout, setShowCallout] = useState(true);
+  const [coverCallout, setCoverCallout] = useState("DESLIZÁ Y COMPARÁ PRECIOS");
+  const [backgroundGames, setBackgroundGames] = useState<PublicationBackgroundGame[]>([]);
   const [includeCta, setIncludeCta] = useState(true);
   const [ctaQuestion, setCtaQuestion] = useState("");
   const [preview, setPreview] = useState<"game" | "cover" | "cta">("game");
@@ -60,6 +63,8 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
         setDrafts(items); setRegion(saved.region); setActive(items[0]?.game.id ?? "");
         setIncludeCover(saved.includeCover === true);
         setCoverImages(saved.coverImages !== false);
+        setShowCallout(saved.showCallout !== false);
+        if (typeof saved.coverCallout === "string") setCoverCallout(saved.coverCallout.slice(0, 80));
         setIncludeCta(saved.includeCta !== false);
         if (typeof saved.ctaQuestion === "string") setCtaQuestion(saved.ctaQuestion.slice(0, 120));
         if (saved.options && typeof saved.options === "object") setOptions(current => ({
@@ -78,10 +83,21 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
   useEffect(() => {
     if (!restored.current) return;
     // Store only editorial choices; prices are always reloaded from the protected API.
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ version: 1, region, includeCover, coverTitle, coverImages, includeCta, ctaQuestion, options,
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ version: 1, region, includeCover, coverTitle, coverImages, showCallout, coverCallout, includeCta, ctaQuestion, options,
       items: drafts.map(draft => ({ id: draft.game.id, headline: draft.headline, description: draft.description })) })); }
     catch { /* Storage may be unavailable in private browsing. */ }
-  }, [drafts, region, includeCover, coverTitle, coverImages, includeCta, ctaQuestion, options]);
+  }, [drafts, region, includeCover, coverTitle, coverImages, showCallout, coverCallout, includeCta, ctaQuestion, options]);
+
+  useEffect(() => {
+    if (!includeCta) return;
+    const controller = new AbortController();
+    void fetch("/api/admin/publications?background=1", { signal: controller.signal }).then(async response => {
+      if (!response.ok) throw new Error("No pudimos cargar el fondo de biblioteca. Reabrí Publicaciones para reintentar.");
+      const payload = await response.json();
+      if (!controller.signal.aborted) setBackgroundGames(payload.games);
+    }).catch(reason => { if (!controller.signal.aborted) setError(errorText(reason)); });
+    return () => controller.abort();
+  }, [includeCta]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -149,6 +165,9 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
 
   async function download(all: boolean) {
     if (busy || !selected || stale || missingPrices) return;
+    if (includeCta && (all || preview === "cta") && !backgroundGames.length) {
+      setError("El fondo de biblioteca todavía no está disponible. Esperá o desactivá el cierre."); return;
+    }
     setError(""); setMessage(""); setBusy("Preparando imágenes...");
     try {
       await document.fonts.ready;
@@ -217,22 +236,31 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
           <button disabled={Boolean(busy)} title="Quitar juego" aria-label={`Quitar ${draft.game.title}`} onClick={() => setDrafts(current => current.filter(item => item.game.id !== draft.game.id))}><Trash2 size={15} /></button>
         </li>)}</ol>
         <fieldset disabled={Boolean(busy)} className={styles.settings}>
+          <legend>Portada</legend>
           <label><input type="checkbox" checked={includeCover} onChange={event => { setIncludeCover(event.target.checked); if (!event.target.checked && preview === "cover") setPreview("game"); }} />Incluir portada</label>
           {includeCover ? <><label>Título de portada<input maxLength={72} value={coverTitle} onChange={event => setCoverTitle(event.target.value)} /></label>
-            <label><input type="checkbox" checked={coverImages} onChange={event => setCoverImages(event.target.checked)} />Mostrar portadas de juegos</label></> : null}
-          <label><input type="checkbox" checked={includeCta} onChange={event => { setIncludeCta(event.target.checked); if (!event.target.checked && preview === "cta") setPreview("game"); }} />Incluir cierre BARATEAM</label>
-          {includeCta ? <label>Pregunta para la audiencia (opcional)<input maxLength={120} value={ctaQuestion} onChange={event => setCtaQuestion(event.target.value)} /></label> : null}
+            <label><input type="checkbox" checked={coverImages} onChange={event => setCoverImages(event.target.checked)} />Mostrar portadas de juegos</label>
+            <label><input type="checkbox" checked={showCallout} onChange={event => setShowCallout(event.target.checked)} />Mostrar invitación a deslizar</label>
+            {showCallout ? <label>Invitación a deslizar<input maxLength={80} value={coverCallout} onChange={event => setCoverCallout(event.target.value)} /></label> : null}</> : null}
+        </fieldset>
+        <fieldset disabled={Boolean(busy)} className={styles.settings}>
+          <legend>Juegos</legend>
           <label><input type="checkbox" checked={options.showEyebrow} onChange={event => setOptions(current => ({ ...current, showEyebrow: event.target.checked }))} />Mostrar epígrafe</label>
           {options.showEyebrow ? <label>Epígrafe<input maxLength={60} value={options.eyebrow} onChange={event => setOptions(current => ({ ...current, eyebrow: event.target.value }))} /></label> : null}
           <label><input type="checkbox" checked={options.hideMissing} onChange={event => setOptions(current => ({ ...current, hideMissing: event.target.checked }))} />Ocultar tiendas sin dato</label>
           <label><input type="checkbox" checked={options.hideStale} onChange={event => setOptions(current => ({ ...current, hideStale: event.target.checked }))} />Excluir precios desactualizados</label>
           <label><input type="checkbox" checked={options.discounts} onChange={event => setOptions(current => ({ ...current, discounts: event.target.checked }))} />Mostrar descuentos</label>
           <label><input type="checkbox" checked={options.lows} onChange={event => setOptions(current => ({ ...current, lows: event.target.checked }))} />Mostrar mínimos históricos</label>
-        </fieldset>
-        {selected ? <fieldset disabled={Boolean(busy)} className={styles.settings}>
+          {selected ? <>
           <label>Título<input value={selected.headline} maxLength={90} onChange={event => edit({ headline: event.target.value })} /></label>
           <label>Descripción<textarea value={selected.description} maxLength={170} rows={3} onChange={event => edit({ description: event.target.value })} /><small>{selected.description.length}/170</small></label>
-        </fieldset> : null}
+          </> : null}
+        </fieldset>
+        <fieldset disabled={Boolean(busy)} className={styles.settings}>
+          <legend>Cierre</legend>
+          <label><input type="checkbox" checked={includeCta} onChange={event => { setIncludeCta(event.target.checked); if (!event.target.checked && preview === "cta") setPreview("game"); }} />Incluir cierre BARATEAM</label>
+          {includeCta ? <label>Pregunta para la audiencia (opcional)<input maxLength={120} value={ctaQuestion} onChange={event => setCtaQuestion(event.target.value)} /></label> : null}
+        </fieldset>
       </div>
       <div className={styles.preview}>
         <div className={styles.previewBar}><span>1080 × 1350</span>{selected ? <div>
@@ -242,7 +270,7 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
         </div> : null}</div>
         {selected ? <div ref={viewport} className={styles.viewport}>
           <div style={{ transform: `scale(${width / 1080})`, transformOrigin: "top left" }}>
-            {preview === "cover" && includeCover ? <PublicationCover drafts={drafts} title={coverTitle} showImages={coverImages} total={total} /> : preview === "cta" && includeCta ? <PublicationCta drafts={drafts} question={ctaQuestion} total={total} /> : <PublicationPoster draft={selected} options={options} index={drafts.indexOf(selected) + 1 + Number(includeCover)} total={total} />}
+            {preview === "cover" && includeCover ? <PublicationCover drafts={drafts} title={coverTitle} showImages={coverImages} showCallout={showCallout} callout={coverCallout} total={total} /> : preview === "cta" && includeCta ? <PublicationCta drafts={drafts} question={ctaQuestion} total={total} backgroundGames={backgroundGames} /> : <PublicationPoster draft={selected} options={options} index={drafts.indexOf(selected) + 1 + Number(includeCover)} total={total} />}
           </div>
         </div> : <div className={styles.empty}><ImagePlus size={32} /><p>Elegí un juego</p></div>}
         <div className={styles.actions}>
@@ -255,9 +283,9 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
       </div>
     </div>
     <div className={styles.exportRoot} ref={exports} aria-hidden="true">
-      {includeCover && drafts.length ? <div data-publication-export="cover"><PublicationCover drafts={drafts} title={coverTitle} showImages={coverImages} total={total} /></div> : null}
+      {includeCover && drafts.length ? <div data-publication-export="cover"><PublicationCover drafts={drafts} title={coverTitle} showImages={coverImages} showCallout={showCallout} callout={coverCallout} total={total} /></div> : null}
       {drafts.map((draft, index) => <div key={draft.game.id} data-publication-export={`game-${draft.game.id}`}><PublicationPoster draft={draft} options={options} index={index + 1 + Number(includeCover)} total={total} /></div>)}
-      {includeCta && drafts.length ? <div data-publication-export="cta"><PublicationCta drafts={drafts} question={ctaQuestion} total={total} /></div> : null}
+      {includeCta && drafts.length ? <div data-publication-export="cta"><PublicationCta drafts={drafts} question={ctaQuestion} total={total} backgroundGames={backgroundGames} /></div> : null}
     </div>
   </section>;
 }

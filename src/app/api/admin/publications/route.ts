@@ -13,6 +13,17 @@ export async function GET(request: NextRequest) {
   if (!isAdminEmail(user.email)) return NextResponse.json({ error: "Acceso restringido" }, { status: 403 });
   const headers = { "Cache-Control": "private, no-store" };
   const sample = await getGameSample();
+  if (request.nextUrl.searchParams.get("background") === "1") {
+    const seen = new Set<string>();
+    const games = sample.broadSample.filter(game => {
+      const identity = normalize(game.title);
+      if (seen.has(identity) || !publicationAssetUrl(game.coverUrl ?? "")) return false;
+      seen.add(identity);
+      return true;
+    }).slice(0, 24).map(game => ({ id: game.id, title: game.title,
+      coverUrl: `/api/admin/publications?asset=1&gameId=${encodeURIComponent(game.id)}` }));
+    return NextResponse.json({ games }, { headers });
+  }
   const gameId = request.nextUrl.searchParams.get("gameId");
   if (!gameId) {
     const query = normalize(request.nextUrl.searchParams.get("q") ?? "").slice(0, 120);

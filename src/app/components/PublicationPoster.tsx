@@ -6,6 +6,7 @@ import { STORE_LOGOS } from "@/lib/store-assets";
 import { publicationDate, publicationMoney, type PublicationDraft } from "@/lib/social-publications";
 
 export type PosterOptions = { hideMissing: boolean; hideStale: boolean; discounts: boolean; lows: boolean; showEyebrow: boolean; eyebrow: string };
+export type PublicationBackgroundGame = { id: string; title: string; coverUrl: string };
 
 export function PublicationPoster({ draft, options, index, total }: { draft: PublicationDraft; options: PosterOptions; index: number; total: number }) {
   const { game } = draft;
@@ -37,7 +38,7 @@ export function PublicationPoster({ draft, options, index, total }: { draft: Pub
   </article>;
 }
 
-export function PublicationCover({ drafts, title, showImages = true, total = drafts.length + 1 }: { drafts: PublicationDraft[]; title: string; showImages?: boolean; total?: number }) {
+export function PublicationCover({ drafts, title, showImages = true, showCallout = true, callout = "DESLIZÁ Y COMPARÁ PRECIOS", total = drafts.length + 1 }: { drafts: PublicationDraft[]; title: string; showImages?: boolean; showCallout?: boolean; callout?: string; total?: number }) {
   return <article className="publicationPoster publicationCover">
     <PosterHeader draft={drafts[0]} index={1} total={total} />
     <div className="publicationCoverCopy">
@@ -47,22 +48,20 @@ export function PublicationCover({ drafts, title, showImages = true, total = dra
     <div className="publicationCoverImages">{showImages ? drafts.slice(0, 4).map(({ game }) => <div key={game.id}>
       {game.coverUrl ? <img src={game.coverUrl} alt="" /> : null}<strong>{game.title}</strong>
     </div>) : null}</div>
-    <div className="publicationCoverCallout">DESLIZÁ Y COMPARÁ PRECIOS <span>→</span></div>
+    <div className="publicationCoverCallout">{showCallout && callout.trim() ? <><FittedText as="strong" text={callout} max={32} min={20} /><span>→</span></> : null}</div>
     <PosterFooter date={publicationDate(drafts[0].game.timestamp)} />
   </article>;
 }
 
-export function PublicationCta({ drafts, question, total }: { drafts: PublicationDraft[]; question: string; total: number }) {
+export function PublicationCta({ drafts, question, total, backgroundGames = [] }: { drafts: PublicationDraft[]; question: string; total: number; backgroundGames?: PublicationBackgroundGame[] }) {
   return <article className="publicationPoster publicationCta">
-    <div className="publicationCtaBackground">{Array.from({ length: 12 }, (_, index) => {
-      const game = drafts[index % drafts.length].game;
-      return <div key={index}>{game.coverUrl ? <img src={game.coverUrl} alt="" /> : null}<strong>{game.title}</strong></div>;
-    })}</div>
+    <div className="publicationCtaBackground">{backgroundGames.map(game =>
+      <div key={game.id}><img src={game.coverUrl} alt="" /><strong>{game.title}</strong></div>
+    )}</div>
     <PosterHeader draft={drafts[0]} index={total} total={total} />
-    <div className="publicationCtaCopy">
+    <div className="publicationCtaCopy" data-question={Boolean(question.trim())}>
       {question.trim() ? <FittedText as="h2" text={question} max={72} min={36} /> : null}
-      <b>BARATEAM</b>
-      <FittedText as="p" text="Compará precios en distintas tiendas y países, consultá históricos y creá tu wishlist con notificaciones personalizadas en BARATEAM" max={44} min={30} />
+      <FittedText as="p" text="Compará precios en distintas tiendas y países, consultá históricos y creá tu wishlist con notificaciones personalizadas en BARATEAM 🤙" max={36} min={28} />
       <span>shuxteam.com</span>
     </div>
     <footer className="publicationCtaFooter">Una herramienta de Shux</footer>

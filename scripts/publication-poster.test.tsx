@@ -27,3 +27,16 @@ test("cover can reserve blank space and CTA can omit the question", () => {
   assert.match(cta, /notificaciones personalizadas en BARATEAM/);
   assert.match(renderToStaticMarkup(<PublicationCta drafts={[draft]} question="¿Qué vas a jugar?" total={3} />), /¿Qué vas a jugar/);
 });
+
+test("cover invitation is editable and optional", () => {
+  assert.match(renderToStaticMarkup(<PublicationCover drafts={[draft]} title="Ofertas" callout="Mirá estas ofertas" />), /Mirá estas ofertas/);
+  assert.doesNotMatch(renderToStaticMarkup(<PublicationCover drafts={[draft]} title="Ofertas" showCallout={false} />), /DESLIZÁ|→/);
+});
+
+test("CTA uses distinct catalog covers and makes the question the primary message", () => {
+  const backgroundGames = Array.from({ length: 24 }, (_, index) => ({ id: `game-${index}`, title: `Game ${index}`, coverUrl: `/cover-${index}.jpg` }));
+  const html = renderToStaticMarkup(<PublicationCta drafts={[draft]} question="¿Cuál elegís?" total={3} backgroundGames={backgroundGames} />);
+  assert.equal((html.match(/src="\/cover-/g) ?? []).length, 24);
+  assert.equal((html.match(/<b>BARATEAM<\/b>/g) ?? []).length, 1);
+  assert.match(html, /BARATEAM 🤙/);
+});
