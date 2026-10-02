@@ -20,7 +20,7 @@ export async function GET(request: Request) {
       const price = row.prices.steam!;
       return [{ gameId: row.gameId, title: row.gameTitle, coverUrl: row.coverUrl, votes: item.votes,
         discount: steamOfferDiscount(row), price: price.originalFinalPrice, currency: price.originalCurrency }];
-    }).slice(0, 12);
+    }).slice(0, 10);
     return NextResponse.json({ games, counts }, { headers: { "Cache-Control": "public, max-age=0, s-maxage=30, stale-while-revalidate=30" } });
   } catch {
     return NextResponse.json({ message: "No pudimos cargar las ofertas de la comunidad." }, { status: 503, headers: { "Cache-Control": "no-store" } });

@@ -2467,7 +2467,7 @@ select option {
 .communityOffers { margin-bottom: 30px; padding-bottom: 25px; border-bottom: 1px solid #343434; min-width: 0; }
 .communityHeading { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 16px; }
 .communityHeading h2 { display: flex; align-items: center; gap: 8px; font-size: 22px; margin: 8px 0; color: #ffd1bc; }
-.communityHeading p { margin: 0; font-size: 13px; color: #bdb8b4; line-height: 1.5; max-width: 650px; }
+.communityHeading p { margin: 0; font-size: 16px; color: #d9d1cb; line-height: 1.65; max-width: 760px; }
 .communityControls { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
 .communityControls button { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid #4a413b; border-radius: 4px; color: #ffd1bc; background: #191716; cursor: pointer; }
 .communityControls button:disabled { opacity: .3; cursor: default; }
@@ -2511,6 +2511,25 @@ select option {
   .communitySkeleton > div:nth-child(n+3) { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .communitySkeleton > div { animation: none; } }
+
+.autumnOffers { position: relative; isolation: isolate; }
+.autumnLeaves { position: fixed; inset: 64px 0 0; z-index: -1; overflow: hidden; pointer-events: none; user-select: none; }
+.autumnLeavesForeground { z-index: 2; }
+.autumnFallingLeaf { position: absolute; top: -40px; left: var(--leaf-left); color: #dfaa63; animation: autumnLeafFall var(--leaf-duration) linear var(--leaf-delay) infinite; }
+.autumnFallingLeaf:nth-child(3n+2) { color: #cf765d; }
+.autumnFallingLeaf:nth-child(3n) { color: #d9bb78; }
+.autumnLeafSway { display: block; animation: autumnLeafSway 7s ease-in-out var(--leaf-delay) infinite alternate; }
+.autumnLeafSway svg { display: block; fill: currentColor; animation: autumnLeafTurn 11s ease-in-out var(--leaf-delay) infinite alternate; }
+.autumnLeaves[data-paused="true"] *, .autumnLeaves[data-paused="true"] svg { animation-play-state: paused; }
+@keyframes autumnLeafFall {
+  0% { transform: translate3d(0, -40px, 0); opacity: 0; }
+  12%, 80% { opacity: var(--leaf-opacity); }
+  100% { transform: translate3d(var(--leaf-drift), calc(100dvh + 40px), 0); opacity: 0; }
+}
+@keyframes autumnLeafSway { from { transform: translateX(-18px) rotate(-20deg); } to { transform: translateX(18px) rotate(25deg); } }
+@keyframes autumnLeafTurn { from { transform: rotate(15deg) rotateY(-25deg); } to { transform: rotate(155deg) rotateY(40deg); } }
+@media (max-width: 700px) { .autumnFallingLeaf:nth-child(n+4), .autumnLeavesForeground .autumnFallingLeaf:nth-child(n+2) { display: none; } }
+@media (prefers-reduced-motion: reduce) { .autumnLeaves { display: none; } .autumnLeaves *, .autumnLeaves svg { animation: none; } }
 
 .discountRibbon-steam {
   background: #2a8cff;

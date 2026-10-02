@@ -55,6 +55,7 @@ import { PopularWishlist } from "@/app/components/PopularWishlist";
 import { AutumnNavLink } from "@/app/components/AutumnNavLink";
 import { AUTUMN_FILTER, steamAtHistoricalLow, steamOfferDiscount } from "@/lib/autumn-offers";
 import { CommunityOffers, OfferVoteButton, useCommunityVotes } from "@/app/components/CommunityOffers";
+import { AutumnLeaves } from "@/app/components/AutumnLeaves";
 
 type ApiPayload = {
   autumnSelection?: CatalogResponse["autumnSelection"];
@@ -423,6 +424,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
 
   return (
     <div className={`appShell${autumn ? " autumnOffers" : ""}`}>
+      {autumn ? <AutumnLeaves /> : null}
       <nav className="brandBar">
         <div className="brandCluster">
           <Link className="brand" href="/">BARATEAM</Link>

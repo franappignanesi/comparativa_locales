@@ -104,7 +104,7 @@ export function CommunityOffers({ state, loggedIn, enabled, onOpen }: {
     {state.error ? <p className="communityError" role="alert">{state.error} <button type="button" onClick={state.refresh}>Reintentar</button></p> : null}
     {!enabled ? <p>Activá Steam para ver las ofertas de la comunidad.</p> : state.loading ? <div className="communitySkeleton" aria-label="Cargando ofertas de la comunidad" aria-busy="true">{[0,1,2,3].map(value => <div key={value} />)}</div> :
       state.data.games.length ? <div className="communityRail" ref={rail} onScroll={updateEdges}>
-        {state.data.games.map((game, index) => <article className="communityGame" key={game.gameId}>
+        {state.data.games.slice(0, 10).map((game, index) => <article className="communityGame" key={game.gameId}>
           <a className="communityGameLink" href={`/juegos/${game.gameId}`} onClick={event => {
             if (!event.ctrlKey && !event.metaKey && !event.shiftKey && event.button === 0) { event.preventDefault(); onOpen(game.gameId); }
           }}>
