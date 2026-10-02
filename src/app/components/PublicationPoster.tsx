@@ -12,7 +12,7 @@ export function PublicationPoster({ draft, options, index, total }: { draft: Pub
   const { game } = draft;
   const prices = game.prices.filter(price => (!options.hideMissing || price.amount != null) && (!options.hideStale || !price.stale));
   const title = draft.headline.trim() || game.title;
-  return <article className="publicationPoster">
+  return <article className="publicationPoster publicationGame">
     <PosterHeader draft={draft} index={index} total={total} />
     <div className="publicationArtwork">
       {game.coverUrl ? <img src={game.coverUrl} alt="" /> : <span>{game.title}</span>}
@@ -22,7 +22,7 @@ export function PublicationPoster({ draft, options, index, total }: { draft: Pub
       <FittedText as="h2" text={title} max={72} min={30} />
       {draft.description.trim() ? <FittedText as="p" text={draft.description} max={29} min={20} /> : null}
     </div>
-    <div className="publicationPriceGrid" data-count={prices.length} style={{ gridTemplateRows: `repeat(${Math.max(1, Math.ceil(prices.length / 2))}, minmax(0, 1fr))` }}>
+    <div className="publicationPricesArea"><div className="publicationPriceGrid" data-count={prices.length} style={{ gridTemplateRows: `repeat(${Math.max(1, Math.ceil(prices.length / 2))}, minmax(0, 1fr))` }}>
       {prices.map((price, index) => <div key={price.store} className={`publicationPrice ${price.cheapest ? "best" : ""} ${prices.length % 2 && index === prices.length - 1 ? "wide" : ""}`}>
         <div className="publicationStore"><img src={STORE_LOGOS[price.store]} alt="" /><span>{price.label}</span>
           {options.discounts && price.discount > 0 ? <b className="publicationDiscount">-{price.discount}%</b> : null}
@@ -33,7 +33,7 @@ export function PublicationPoster({ draft, options, index, total }: { draft: Pub
           {options.lows && price.historicalLow ? <span className="publicationLow">MÍNIMO HISTÓRICO REGISTRADO</span> : null}
         </div>
       </div>)}
-    </div>
+    </div></div>
     <PosterFooter date={publicationDate(game.timestamp)} />
   </article>;
 }
