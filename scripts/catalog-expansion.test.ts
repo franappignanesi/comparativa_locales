@@ -79,7 +79,15 @@ test("every public dataset cache uses identical paths for save and restore", asy
     const workflow = load(await readFile(`.github/workflows/${file}.yml`, "utf8")) as { jobs: Record<string, { steps: Array<{ uses?: string; with?: { key?: string; path?: string } }> }> };
     const steps = Object.values(workflow.jobs).flatMap(job => job.steps).filter(step => step.uses?.startsWith("actions/cache/") && (step.with?.key?.startsWith("barateam-public-data-") || step.with?.key?.includes("inputs.history_recovery_cache")));
     assert.ok(steps.length, `Public cache missing in ${file}`);
-    for (const step of steps) paths.push(step.with!.path!.split(/\r?\n/).map(line => line.trim()).filter(Boolean).join("\n"));
+    for (const step of steps) {
+      const path = step.with!.path!.split(/\r?\n/).map(line => line.trim()).filter(Boolean).join("\n");
+      if ((step as { id?: string }).id === "legacy-history-recovery") {
+        assert.equal(path.split("\n").length, 8);
+        assert.ok(!path.includes("data/generated/catalog-expansion.json"));
+        continue;
+      }
+      paths.push(path);
+    }
   }
   assert.equal(paths.length, 11);
   assert.equal(new Set(paths).size, 1, "Different cache paths create incompatible GitHub cache versions and restore old data");
