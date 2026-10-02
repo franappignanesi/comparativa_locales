@@ -1,5 +1,6 @@
 "use client";
 import { AutumnNavLink } from "@/app/components/AutumnNavLink";
+import { AutumnLeafBudget } from "@/app/components/AutumnLeafBudget";
 
 import { BarChart3, ChevronDown, History, Library, ShieldAlert, Star } from "lucide-react";
 import Link from "next/link";
@@ -172,6 +173,7 @@ export default function ComparativaClient({ initialPayload }: { initialPayload: 
           <ReleaseBadge />
         </div>
         <div className="navTools">
+          <AutumnLeafBudget userSub={user?.sub} />
           <ProblemReportButton user={user} />
           <Link className="wishlistNavButton" href="/wishlist">
             <Star size={15} />
@@ -208,7 +210,7 @@ export default function ComparativaClient({ initialPayload }: { initialPayload: 
               <Link href="/biblioteca?filter=ofertas&sort=descuento" className="sideSubLink">Ofertas 🎁</Link>
               <Link href="/biblioteca?filter=diferencias&sort=diferencia" className="sideSubLink">Más baratos que Steam 👀</Link>
               <Link href="/biblioteca?filter=historicos" className="sideSubLink">Mínimos históricos 📉</Link>
-              <Link href="/biblioteca/juego-del-finde" className="sideSubLink">Juego del finde</Link>
+              <Link href="/biblioteca/juego-del-finde" className="sideSubLink">Juego del finde 📅</Link>
             </div>
           </div>
           <AutumnNavLink />

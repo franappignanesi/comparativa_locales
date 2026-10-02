@@ -54,6 +54,7 @@ import { WeekendRecommendation, WeekendTag } from "@/app/components/WeekendRecom
 import { WeekendShowcase } from "@/app/components/WeekendShowcase";
 import { PopularWishlist } from "@/app/components/PopularWishlist";
 import { AutumnNavLink } from "@/app/components/AutumnNavLink";
+import { AutumnLeafBudget } from "@/app/components/AutumnLeafBudget";
 import { AUTUMN_FILTER, steamAtHistoricalLow, steamOfferDiscount } from "@/lib/autumn-offers";
 import { CommunityOffers, OfferVoteButton, useCommunityVotes } from "@/app/components/CommunityOffers";
 import { AutumnLeaves } from "@/app/components/AutumnLeaves";
@@ -448,6 +449,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
           <ReleaseBadge />
         </div>
         <div className="navTools">
+          <AutumnLeafBudget userSub={user?.sub} votes={autumn ? communityVotes.votes : undefined} ready={communityVotes.ready} />
           <ProblemReportButton user={user} />
           <Link className="wishlistNavButton" href="/wishlist">
             <Star size={15} />
@@ -491,7 +493,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
                   </button>
                 );
               })}
-              <Link href="/biblioteca/juego-del-finde" className={filter === WEEKEND_FILTER ? "sideSubLink active" : "sideSubLink"}>Juego del finde</Link>
+              <Link href="/biblioteca/juego-del-finde" className={filter === WEEKEND_FILTER ? "sideSubLink active" : "sideSubLink"}>Juego del finde 📅</Link>
             </div>
           </div>
           <AutumnNavLink active={autumn} />

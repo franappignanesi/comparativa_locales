@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { RegionSelector } from "@/app/components/RegionSelector";
 import { GoogleUser, UserMenu, WishlistGame } from "@/app/components/UserMenu";
 import { ProblemReportButton } from "@/app/components/ProblemReportButton";
+import { AutumnLeafBudget } from "@/app/components/AutumnLeafBudget";
 import { deleteWishlistItem, fetchWishlist, fetchWishlistAlerts, persistSession, readStoredUser, updateWishlistItem, type WishlistAlert } from "@/app/components/userPersistence";
 import { formatGameCategory } from "@/lib/categories";
 import { DEFAULT_REGION, type RegionId } from "@/lib/regions";
@@ -100,6 +101,7 @@ export default function WishlistPage() {
           <ReleaseBadge />
         </div>
         <div className="navTools">
+          <AutumnLeafBudget userSub={user?.sub} />
           <ProblemReportButton user={user} />
           <Link className="wishlistNavButton active" href="/wishlist">
             <Bell size={15} />

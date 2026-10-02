@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ReleaseBadge } from "@/app/components/ReleaseBadge";
 import { useEffect, useMemo, useState } from "react";
 import { ProblemReportButton } from "@/app/components/ProblemReportButton";
+import { AutumnLeafBudget } from "@/app/components/AutumnLeafBudget";
 import { AdminGameSuggestions } from "@/app/components/AdminGameSuggestions";
 import { RegionSelector } from "@/app/components/RegionSelector";
 import { GoogleUser, UserMenu } from "@/app/components/UserMenu";
@@ -138,6 +139,7 @@ export default function AdminReportsPage() {
           <ReleaseBadge />
         </div>
         <div className="navTools">
+          <AutumnLeafBudget userSub={user?.sub} />
           <ProblemReportButton user={user} />
           <Link className="wishlistNavButton" href="/wishlist">
             <Bell size={15} />

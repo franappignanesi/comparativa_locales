@@ -313,6 +313,24 @@ select {
   gap: 14px;
 }
 
+.autumnLeafBudget {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 44px;
+  min-height: 34px;
+  flex-shrink: 0;
+  color: #f2ba83;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.autumnLeafBudget:hover { color: var(--primary-soft); }
+.autumnLeafBudget:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
 .wishlistNavButton {
   min-height: 34px;
   display: inline-flex;
@@ -1024,11 +1042,12 @@ select {
   text-decoration: none;
   display: flex;
   align-items: center;
-  padding: 0 12px 0 42px;
+  padding: 0 8px 0 24px;
   cursor: pointer;
   font-size: 12px;
   font-weight: 850;
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
+  white-space: nowrap;
   text-align: left;
 }
 

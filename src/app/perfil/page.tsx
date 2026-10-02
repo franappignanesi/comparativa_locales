@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { RegionSelector } from "@/app/components/RegionSelector";
 import { GoogleUser, UserMenu, WishlistGame } from "@/app/components/UserMenu";
 import { ProblemReportButton } from "@/app/components/ProblemReportButton";
+import { AutumnLeafBudget } from "@/app/components/AutumnLeafBudget";
 import {
   DEFAULT_NOTIFICATION_SETTINGS,
   fetchNotificationSettings,
@@ -129,6 +130,7 @@ export default function ProfilePage() {
           <ReleaseBadge />
         </div>
         <div className="navTools">
+          <AutumnLeafBudget userSub={user?.sub} />
           <ProblemReportButton user={user} />
           <Link className="wishlistNavButton" href="/wishlist">
             <Bell size={15} />
