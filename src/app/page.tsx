@@ -16,7 +16,7 @@ export default async function LandingPage() {
       mode: "broad",
       region: DEFAULT_REGION,
       sort: "diferencia",
-      limit: 5,
+      limit: 6,
       offset: 0,
       refresh: false,
       useCachedExchangeRate: true

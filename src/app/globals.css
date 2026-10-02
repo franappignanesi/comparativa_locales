@@ -211,7 +211,7 @@ select {
 }
 
 .brandCluster {
-  gap: 28px;
+  gap: 6px;
 }
 
 .packTag { display: block; margin-bottom: 4px; color: #72d7b3; font-size: 10px; font-weight: 800; letter-spacing: 0; }
@@ -2441,23 +2441,24 @@ select option {
 }
 @media (prefers-reduced-motion: reduce) { .autumnExpand svg { transition: none; } }
 
-.autumnOffers .gameGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.autumnOffers .autumnGameCard .gameCardBody { padding: 12px; gap: 12px; }
-.autumnOffers .autumnGameCard .gameHero { min-height: 154px; }
-.autumnOffers .autumnGameCard .gameHeroText { left: 12px; right: 12px; }
-.autumnOffers .autumnGameCard .gameHeroText h3 { font-size: 17px; line-height: 1.15; overflow-wrap: anywhere; }
-.autumnOffers .autumnGameCard .priceTiles { gap: 6px; }
-.autumnOffers .autumnGameCard .priceTile { min-height: 98px; padding: 14px 7px 8px; gap: 5px; }
-.autumnOffers .autumnGameCard .priceTile strong { font-size: 16px; line-height: 1.15; overflow-wrap: anywhere; }
-.autumnOffers .autumnGameCard .storeName { gap: 4px; font-size: 10px; letter-spacing: 0; }
+.catalogCards .gameGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.catalogCards .gameGrid .gameCardBody { padding: 12px; gap: 12px; }
+.catalogCards .gameGrid .gameHero { min-height: 154px; }
+.catalogCards .gameGrid .gameHeroText { left: 12px; right: 12px; }
+.catalogCards .gameGrid .gameHeroText h3 { font-size: 17px; line-height: 1.15; overflow-wrap: anywhere; }
+.catalogCards .gameGrid .priceTiles { gap: 6px; }
+.catalogCards .gameGrid .priceTile { min-height: 98px; padding: 14px 7px 8px; gap: 5px; }
+.catalogCards .gameGrid .priceTile strong { font-size: 16px; line-height: 1.15; overflow-wrap: anywhere; }
+.catalogCards .gameGrid .storeName { gap: 4px; font-size: 10px; letter-spacing: 0; }
 .compactOtherLogos { display: flex; align-items: center; gap: 7px; min-height: 18px; }
 .compactOtherLogos > span { display: inline-flex; opacity: .55; }
 .compactOtherLogos > .selected { opacity: 1; }
 .compactOtherLogos .storeLogo { width: 16px; height: 16px; }
 .compactNoAlternative { display: grid; place-items: center; border: 1px dashed #3a3430; border-radius: 4px; font-size: 11px; line-height: 1.5; color: #a9a39d; text-align: center; padding: 8px; }
-.autumnOffers .compactComparison .priceTile { min-height: 112px; }
-.autumnOffers .autumnGameCard .wishlistStar { opacity: 1; transform: none; }
-.autumnOffers .autumnGameCard .weekendCardTag { top: 49px; right: 10px; }
+.catalogCards .gameGrid .compactComparison .priceTile { min-height: 112px; }
+.catalogCards .gameGrid .winnerDiff { position: static; align-self: flex-end; max-width: 100%; margin-top: auto; text-align: right; overflow-wrap: anywhere; }
+.catalogCards .gameGrid .wishlistStar { opacity: 1; transform: none; }
+.catalogCards .gameGrid .weekendCardTag { top: 49px; right: 10px; }
 .offerVote { position: absolute; z-index: 4; top: 10px; right: 49px; min-width: 45px; height: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 0 6px; border: 1px solid #b47a50; border-radius: 17px; color: #ffd1bc; background: #181310e8; cursor: pointer; font-size: 11px; font-weight: 800; }
 .offerVote.active { background: #ef9c79; color: #22160f; border-color: #ef9c79; }
 .offerVote.active svg { fill: currentColor; }
@@ -2489,16 +2490,16 @@ select option {
 .communitySkeleton { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .communitySkeleton > div { height: 215px; border-radius: 6px; background: #252321; animation: loadingPulse 1.5s ease-in-out infinite; }
 @media (max-width: 1250px) {
-  .autumnOffers .gameGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .catalogCards .gameGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .autumnSelection.collapsed .gameCard:nth-child(n+4) { display: none; }
   .communityRail { grid-auto-columns: calc((100% - 24px) / 3); }
 }
 @media (max-width: 1000px) {
-  .autumnOffers .gameGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .catalogCards .gameGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .autumnSelection.collapsed .gameCard:nth-child(n+3) { display: none; }
 }
 @media (max-width: 700px) {
-  .autumnOffers .gameGrid { grid-template-columns: minmax(0, 1fr); }
+  .catalogCards .gameGrid { grid-template-columns: minmax(0, 1fr); }
   .autumnSelection { padding: 12px; }
   .autumnSelection.collapsed .gameCard:nth-child(n+2) { display: none; }
   .autumnSectionHeading { margin-bottom: 12px; }
@@ -4723,7 +4724,7 @@ select option {
 
   .brandCluster {
     min-width: 0;
-    gap: 14px;
+    gap: 6px;
   }
 
   .brand {

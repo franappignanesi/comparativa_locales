@@ -79,7 +79,7 @@ export function LandingClient({
     setLoading(true);
     Promise.all([
       fetch(`/api/stats?region=${region}`, { signal: controller.signal }).then((res) => res.json()),
-      fetch(`/api/catalog?mode=broad&region=${region}&sort=diferencia&limit=5&offset=0`, { signal: controller.signal }).then((res) => res.json())
+      fetch(`/api/catalog?mode=broad&region=${region}&sort=diferencia&limit=6&offset=0`, { signal: controller.signal }).then((res) => res.json())
     ])
       .then(([nextStats, nextCatalog]) => {
         setStats(nextStats);
@@ -126,8 +126,6 @@ export function LandingClient({
           <Link href="/biblioteca" className="landingNavButton">
             Explorar juegos
           </Link>
-          <Link href="/ofertas-de-otono" className="landingNavButton autumnLandingLink">Ofertas de otoño</Link>
-          <Link href="/biblioteca/juego-del-finde" className="landingNavButton">Juego del finde</Link>
         </div>
       </nav>
 
@@ -209,7 +207,7 @@ export function LandingClient({
         <div className="sectionSplit">
           <div>
             <SectionTitle>Ojo a estos</SectionTitle>
-            <p>Top 5 mayores diferencias de precio detectadas contra Steam.</p>
+            <p>Top 6 mayores diferencias de precio detectadas contra Steam.</p>
           </div>
           <Link href="/biblioteca?sort=diferencia" className="completeLink">
             Ver lista completa <ArrowRight size={16} />

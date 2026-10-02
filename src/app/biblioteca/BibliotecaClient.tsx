@@ -22,7 +22,7 @@ import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "
 import Link from "next/link";
 import { ReleaseBadge } from "@/app/components/ReleaseBadge";
 import { LegalLinks } from "@/app/components/LegalLinks";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { RegionSelector } from "@/app/components/RegionSelector";
 import { GoogleUser, UserMenu, WishlistGame } from "@/app/components/UserMenu";
 import { ProblemReportButton } from "@/app/components/ProblemReportButton";
@@ -134,6 +134,7 @@ function BibliotecaQuerySync({ onChange }: { onChange: (search: string) => void 
 }
 
 function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchParams }: { initialPayload: ApiPayload | null; initialFilter: string; initialSort: string; searchParams: URLSearchParams }) {
+  const router = useRouter();
   const [payload, setPayload] = useState<ApiPayload | null>(initialPayload);
   const [query, setQuery] = useState(searchParams.get("query") ?? "");
   const [debouncedQuery, setDebouncedQuery] = useState(searchParams.get("query") ?? "");
@@ -359,9 +360,17 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
   }
 
   function activateSidebar(item: (typeof SIDEBAR_ITEMS)[number]) {
-    setFilter(filter === item.filter && sort === item.sort ? "todos" : item.filter);
-    setSort(item.sort);
+    navigateFilter(filter === item.filter && sort === item.sort ? "todos" : item.filter, item.sort);
     setCategory("todas");
+  }
+
+  function navigateFilter(nextFilter: string, nextSort = nextFilter === AUTUMN_FILTER ? "relevancia" : sort) {
+    setFilter(nextFilter);
+    setSort(nextSort);
+    const path = nextFilter === AUTUMN_FILTER ? "/ofertas-de-otono" : nextFilter === WEEKEND_FILTER ? "/biblioteca/juego-del-finde" : "/biblioteca";
+    const params = new URLSearchParams({ filter: nextFilter, sort: nextSort });
+    if (query.trim()) params.set("query", query.trim());
+    router.push(`${path}?${params.toString()}`, { scroll: false });
   }
 
   async function handleUserChange(nextUser: GoogleUser) {
@@ -408,7 +417,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
     }
   }
 
-  function renderCatalogCard(row: PriceRow, compactComparison = false) {
+  function renderCatalogCard(row: PriceRow, compactComparison = true) {
     return <GameCard key={row.gameId} row={row} analysis={summary.games[row.gameId]}
       historyLows={payload!.history.lowsByGame[row.gameId] ?? {}} enabledStores={enabledStores}
       steamFocus={autumn} wishlisted={wishlist.some(item => item.gameId === row.gameId)}
@@ -423,7 +432,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
   }
 
   return (
-    <div className={`appShell${autumn ? " autumnOffers" : ""}`}>
+    <div className={`appShell catalogCards${autumn ? " autumnOffers" : ""}`}>
       {autumn ? <AutumnLeaves /> : null}
       <nav className="brandBar">
         <div className="brandCluster">
@@ -577,7 +586,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
           </div>
           <label className="iconSelect">
             <SlidersHorizontal size={20} />
-            <select value={filter} onChange={(event) => setFilter(event.target.value)} aria-label="Filtro">
+            <select value={filter} onChange={(event) => navigateFilter(event.target.value)} aria-label="Filtro">
               <option value="todos">Todos</option>
               <option value="ofertas">Ofertas 🎁</option>
               <option value={AUTUMN_FILTER}>Ofertas de otoño</option>
