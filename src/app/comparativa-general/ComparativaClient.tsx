@@ -282,12 +282,19 @@ export default function ComparativaClient({ initialPayload }: { initialPayload: 
                   <img className="storeLogo large" src={STORE_LOGOS[row.store]} alt="" aria-hidden="true" />
                   <strong>{STORE_LABELS[row.store]}</strong>
                 </div>
-                <strong>{formatArs(row.average)}</strong>
-                <span>{formatIndex(row.index)}</span>
-                <span>{row.wins}</span>
-                <span>{row.offers}</span>
-                <span>{Math.round(row.discount)}%</span>
-                <span>{row.coverage}</span>
+                {[
+                  ["Promedio", formatArs(row.average)],
+                  ["Índice", formatIndex(row.index)],
+                  ["Victorias", row.wins],
+                  ["Ofertas", row.offers],
+                  ["Descuento", `${Math.round(row.discount)}%`],
+                  ["Cobertura", row.coverage]
+                ].map(([label, value]) => (
+                  <dl className="rankingMetric" key={label}>
+                    <dt>{label}</dt>
+                    <dd>{value}</dd>
+                  </dl>
+                ))}
               </div>
             ))}
           </div>

@@ -589,14 +589,19 @@ select {
 
 .userMenu {
   position: relative;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
 }
 
 .userButton {
   width: 36px;
   height: 36px;
   padding: 0;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   border: 1px solid rgba(255, 232, 172, 0);
   border-radius: 999px;
   background: transparent;
@@ -816,14 +821,19 @@ select {
 
 .regionSelector {
   position: relative;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
 }
 
 .regionButton {
   width: 36px;
   height: 36px;
   padding: 0;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   border: 1px solid rgba(255, 232, 172, 0.22);
   border-radius: 999px;
   background: rgba(17, 14, 5, 0.72);
@@ -3542,12 +3552,26 @@ select option {
   flex-basis: 28px;
 }
 
-.rankingRow > strong,
-.rankingRow > span {
+.rankingMetric {
+  margin: 0;
   min-width: 0;
 }
 
-.rankingRow > strong {
+.rankingMetric dt {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.rankingMetric dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.rankingMetric:nth-child(2) dd {
   color: var(--primary-soft);
 }
 
@@ -4655,14 +4679,38 @@ select option {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .rankingHeader,
-  .rankingRow {
-    grid-template-columns: minmax(150px, 1fr) repeat(3, minmax(80px, 0.7fr));
+  .rankingHeader {
+    display: none;
   }
 
-  .rankingHeader span:nth-child(n + 5),
-  .rankingRow > span:nth-child(n + 5) {
-    display: none;
+  .rankingRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 16px;
+    padding: 14px;
+  }
+
+  .rankingStore {
+    grid-column: 1 / -1;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .rankingMetric dt {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+    margin-bottom: 4px;
+  }
+
+  .rankingMetric dd {
+    font-size: 14px;
+    line-height: 1.4;
   }
 
   .wishlistSectionGrid {
@@ -4760,7 +4808,7 @@ select option {
     max-width: 100%;
     flex: 1 1 100%;
     justify-content: flex-start;
-    overflow-x: auto;
+    overflow: visible;
     padding-bottom: 2px;
     gap: 8px;
     scrollbar-width: none;
@@ -4768,6 +4816,25 @@ select option {
 
   .navTools::-webkit-scrollbar {
     display: none;
+  }
+
+  .navTools > .regionSelector {
+    margin-left: auto;
+  }
+
+  .navTools > .problemReport {
+    min-width: 0;
+    flex-shrink: 1;
+  }
+
+  .navTools .problemReportButton {
+    max-width: 100%;
+  }
+
+  .navTools .problemReportButton > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .wishlistNavButton,
@@ -5157,4 +5224,10 @@ select option {
   .dashboardGrid .discountPanel strong { grid-row: span 2; align-self: center; font-size: 18px; }
   .dashboardGrid .discountPanel span { font-size: 9px; letter-spacing: 0; text-transform: none; }
   .dashboardGrid .discountPanel em { font-size: 8px; letter-spacing: 0; text-transform: none; }
+}
+
+@media (max-width: 360px) {
+  .navTools { gap: 4px; }
+  .navTools .problemReportButton,
+  .navTools .wishlistNavButton { padding-inline: 6px; gap: 4px; font-size: 10px; }
 }
