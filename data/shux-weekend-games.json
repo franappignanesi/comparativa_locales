@@ -1,8 +1,19 @@
 {
   "curatorId": 35362522,
   "sourceUrl": "https://store.steampowered.com/curator/35362522-ShuxTeam/",
-  "updatedAt": "2026-10-04T00:14:53.165Z",
+  "updatedAt": "2026-10-05T00:20:06.163Z",
   "reviews": [
+    {
+      "steamAppId": 4019220,
+      "title": "Dressmaker",
+      "steamUrl": "https://store.steampowered.com/app/4019220/",
+      "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/4019220/f1cd08127872e60e4c47a4bc3e40d682d94741bf/header_292x136.jpg?t=1790947386",
+      "videoUrl": "https://www.instagram.com/p/DeFI4QhvOXP/",
+      "reviewType": "recommended",
+      "reviewDateLabel": "4 de octubre",
+      "reviewDate": "2026-10-04",
+      "review": "jamas pensabamos que un juego de hacer vestidos nos iba a divertir tanto y no solo a nosotros, es boom de ventas y tiene 97% de positivos. realmente vale la pena darle una probadita a ver si te gusta."
+    },
     {
       "steamAppId": 108600,
       "title": "Project Zomboid",

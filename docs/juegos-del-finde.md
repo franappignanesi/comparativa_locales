@@ -2,12 +2,13 @@
 
 Fuente: [Mentor de ShuxTeam](https://store.steampowered.com/curator/35362522-ShuxTeam/).
 
-194 reseñas; 184 con enlace a video. Se incluyen las reseñas informativas y negativas, identificadas por tipo.
+195 reseñas; 185 con enlace a video. Se incluyen las reseñas informativas y negativas, identificadas por tipo.
 
 La fecha completa se obtiene de la etiqueta de Steam: cuando omite el año, corresponde al año de la consulta. Los juegos retirados se conservan en importaciones posteriores.
 
 | Juego | Fecha en Steam | Tipo | Video | Steam App ID |
 | --- | --- | --- | --- | --- |
+| [Dressmaker](https://store.steampowered.com/app/4019220/) | 4 de octubre | Recomendado | [Ver video](https://www.instagram.com/p/DeFI4QhvOXP/) | 4019220 |
 | [Project Zomboid](https://store.steampowered.com/app/108600/) | 30 de septiembre | Recomendado | [Ver video](https://www.instagram.com/shuxteam/reel/DcWLtU2vHoO/) | 108600 |
 | [How to Fish](https://store.steampowered.com/app/4001890/) | 30 de septiembre | Recomendado | [Ver video](https://www.instagram.com/shuxteam/reel/Dcov0Sfpe3b/) | 4001890 |
 | [Machine Party](https://store.steampowered.com/app/4108000/) | 30 de septiembre | Recomendado | [Ver video](https://www.instagram.com/shuxteam/reel/Dc6DZbAPDn6/) | 4108000 |
