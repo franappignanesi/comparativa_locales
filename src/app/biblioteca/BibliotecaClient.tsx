@@ -56,7 +56,7 @@ import { PopularWishlist } from "@/app/components/PopularWishlist";
 import { AutumnSelectionVideo } from "@/app/components/AutumnSelectionVideo";
 import { AutumnNavLink } from "@/app/components/AutumnNavLink";
 import { AutumnLeafBudget } from "@/app/components/AutumnLeafBudget";
-import { AUTUMN_FILTER, steamAtHistoricalLow, steamOfferDiscount } from "@/lib/autumn-offers";
+import { AUTUMN_FILTER, AUTUMN_OFFERS_ENABLED, activeCatalogFilter, steamAtHistoricalLow, steamOfferDiscount } from "@/lib/autumn-offers";
 import { CommunityOffers, OfferVoteButton, useCommunityVotes } from "@/app/components/CommunityOffers";
 import { AutumnLeaves } from "@/app/components/AutumnLeaves";
 
@@ -142,7 +142,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
   const [query, setQuery] = useState(searchParams.get("query") ?? "");
   const [debouncedQuery, setDebouncedQuery] = useState(searchParams.get("query") ?? "");
   const [category, setCategory] = useState("todas");
-  const [filter, setFilter] = useState(searchParams.get("filter") ?? initialFilter);
+  const [filter, setFilter] = useState(activeCatalogFilter(searchParams.get("filter") ?? initialFilter));
   const [sort, setSort] = useState(searchParams.get("sort") ?? initialSort);
   const [libraryMenuOpen, setLibraryMenuOpen] = useState(true);
   const [mobileFilters, setMobileFilters] = useState(false);
@@ -179,7 +179,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
   useEffect(() => {
     setQuery(searchParams.get("query") ?? "");
     setDebouncedQuery(searchParams.get("query") ?? "");
-    setFilter(searchParams.get("filter") ?? initialFilter);
+    setFilter(activeCatalogFilter(searchParams.get("filter") ?? initialFilter));
     setSort(searchParams.get("sort") ?? initialSort);
   }, [searchParams, initialFilter, initialSort]);
 
@@ -596,7 +596,7 @@ function BibliotecaContent({ initialPayload, initialFilter, initialSort, searchP
             <select value={filter} onChange={(event) => navigateFilter(event.target.value)} aria-label="Filtro">
               <option value="todos">Todos</option>
               <option value="ofertas">Ofertas 🎁</option>
-              <option value={AUTUMN_FILTER}>Ofertas de otoño</option>
+              {AUTUMN_OFFERS_ENABLED ? <option value={AUTUMN_FILTER}>Ofertas de otoño</option> : null}
               <option value="diferencias">Más baratos que Steam 👀</option>
               <option value="historicos">Mínimos históricos 📉</option>
               <option value={WEEKEND_FILTER}>Juego del finde</option>

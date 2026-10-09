@@ -3,7 +3,12 @@ import type { HistoricalLow, LatestPrices, SampleGame, StoreIdentifiers } from "
 
 export const AUTUMN_FILTER = "otono";
 export const AUTUMN_PATH = "/ofertas-de-otono";
+export const AUTUMN_OFFERS_ENABLED = false;
 export const AUTUMN_SELECTION = selection;
+
+export function activeCatalogFilter(filter: string): string {
+  return !AUTUMN_OFFERS_ENABLED && filter === AUTUMN_FILTER ? "todos" : filter;
+}
 type Row = LatestPrices["prices"][number];
 
 export function steamIdentity(ids: StoreIdentifiers): string {
