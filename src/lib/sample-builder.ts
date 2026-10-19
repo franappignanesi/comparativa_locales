@@ -15,6 +15,7 @@ import autumnAdditions from "../../data/autumn-catalog-additions.json";
 import autumnVerifiedItad from "../../data/autumn-verified-itad.json";
 import { steamIdentity } from "./autumn-offers";
 import { withDiscoveredMicrosoftGames } from "./microsoft-discovery";
+import { getWeekendGames, type WeekendGame } from "./weekend-games";
 
 const curatedCandidates = weekendAdditions as GameCandidate[];
 
@@ -80,14 +81,36 @@ export async function buildGameSample(): Promise<GameSample> {
     categoryCoverage
   };
 
-  const enriched = await withDiscoveredMicrosoftGames(sample);
+  const enriched = await withDiscoveredMicrosoftGames(withWeekendRecommendations(sample));
   await writeJson(dataPath("generated", "game-sample.json"), enriched);
   return enriched;
 }
 
 export async function getGameSample(): Promise<GameSample> {
   const sample = await readJson<GameSample>(dataPath("generated", "game-sample.json"), emptySample);
-  return sample.timestamp ? withDiscoveredMicrosoftGames(withManualStoreMatches(withSeasonalGames(withCuratedGames(withSourceCandidates(sample))))) : withSeasonalGames(await buildGameSample());
+  return sample.timestamp ? withDiscoveredMicrosoftGames(withManualStoreMatches(withWeekendRecommendations(withSeasonalGames(withCuratedGames(withSourceCandidates(sample)))))) : withSeasonalGames(await buildGameSample());
+}
+
+export function withWeekendRecommendations(sample: GameSample, recommendations: WeekendGame[] = getWeekendGames()): GameSample {
+  const apps = new Set(sample.broadSample.map(game => game.identifiers.steamAppId));
+  const ids = new Set(sample.broadSample.map(game => game.id));
+  const added: SampleGame[] = [];
+  for (const recommendation of recommendations) {
+    if (!recommendation.videoUrl || apps.has(recommendation.steamAppId)) continue;
+    const game = toSampleGame({ title: recommendation.title, edition: "standard", category: "AA", releaseYear: 0,
+      coverUrl: recommendation.coverUrl, notes: "Automatically included from the SHUX curator video recommendations.",
+      expectedStores: ["steam"], identifiers: { steamAppId: recommendation.steamAppId }, confidence: "high" }, []);
+    if (ids.has(game.id)) game.id = `shux-steam-${recommendation.steamAppId}`;
+    apps.add(recommendation.steamAppId);
+    ids.add(game.id);
+    added.push(game);
+  }
+  if (!added.length) return sample;
+  const broadSample = [...sample.broadSample, ...added];
+  return { ...sample, broadSample,
+    storeCoverage: Object.fromEntries(STORES.map(store => [store, broadSample.filter(game => game.availableStores.includes(store)).length])),
+    missingByStore: Object.fromEntries(STORES.map(store => [store, broadSample.filter(game => game.missingStores.includes(store)).map(game => game.title)])),
+    categoryCoverage: broadSample.reduce<GameSample["categoryCoverage"]>((counts, game) => { counts[game.category] = (counts[game.category] ?? 0) + 1; return counts; }, {}) };
 }
 
 export function withSeasonalGames(sample: GameSample): GameSample {

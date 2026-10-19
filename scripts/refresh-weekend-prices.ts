@@ -3,13 +3,14 @@ import additions from "../data/weekend-catalog-additions.json";
 import { getGameSample } from "../src/lib/sample-builder";
 import { refreshPriceBatch } from "../src/lib/prices";
 import { REGIONS } from "../src/lib/regions";
+import { getWeekendGames } from "../src/lib/weekend-games";
 
 loadEnvConfig(process.cwd());
 
 async function main() {
   const region = REGIONS.find((region) => region.id === process.env.PRICE_REGION);
   if (!region) throw new Error("A valid PRICE_REGION is required");
-  const apps = new Set(additions.map((game) => game.identifiers.steamAppId));
+  const apps = new Set([...additions.map(game => game.identifiers.steamAppId), ...getWeekendGames().map(game => game.steamAppId)]);
   const sample = await getGameSample();
   const targets = (process.env.TARGET_PRICE_GAME_IDS ?? "").split(",").map((id) => id.trim()).filter(Boolean);
   const gameIds = targets.length ? new Set(targets) : new Set(sample.broadSample.filter((game) => apps.has(game.identifiers.steamAppId!)).map((game) => game.id));

@@ -121,7 +121,7 @@ async function evaluateWishlistAlerts(
     for (const store of STORES) {
       if (!enabledStores.has(store)) continue;
       const price = row.prices[store];
-      if (!price?.available || price.arsFinalPrice == null) continue;
+      if (!price?.available || price.isStale || price.isEstimated || price.arsFinalPrice == null) continue;
 
       if (preferences.priceDrop) {
         const previous = findPreviousSnapshot(entries, store, latest);

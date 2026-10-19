@@ -1,6 +1,20 @@
 name: Daily full price refresh
 
 on:
+  workflow_call:
+    inputs:
+      weekend_games_only:
+        type: boolean
+        default: false
+      regions:
+        type: string
+        default: "AR,MX,ES,PE,CL"
+      publish:
+        type: string
+        default: "true"
+      catalog_ref:
+        type: string
+        default: ""
   workflow_dispatch:
     inputs:
       catalog_expansion:
@@ -76,6 +90,8 @@ jobs:
       MICROSOFT_DISCOVERY_MAX_MS: ${{ inputs.microsoft_catalog_audit && '3600000' || '240000' }}
     steps:
       - uses: actions/checkout@v7.0.0
+        with:
+          ref: ${{ inputs.catalog_ref || github.sha }}
       - name: Restore latest public dataset
         uses: actions/cache/restore@v4
         with:
@@ -106,7 +122,7 @@ jobs:
       - name: Configure fortnightly Steam top sellers backfill
         shell: bash
         env:
-          FORCE_TOP_SELLERS_BACKFILL: ${{ github.event.inputs.top_sellers_backfill || 'false' }}
+          FORCE_TOP_SELLERS_BACKFILL: ${{ inputs.top_sellers_backfill || 'false' }}
         run: |
           set -euo pipefail
           day="$(date -u +%d)"
@@ -174,16 +190,16 @@ jobs:
       ITAD_API_KEY: ${{ secrets.ITAD_API_KEY }}
       DIGITAL_VAT_RATE: ${{ secrets.DIGITAL_VAT_RATE }}
       PRICE_REGION: ${{ matrix.region }}
-      TARGET_PRICE_GAME_IDS: ${{ github.event.inputs.target_game_ids || '' }}
+      TARGET_PRICE_GAME_IDS: ${{ inputs.target_game_ids || '' }}
       PRICE_REFRESH_CONCURRENCY: "2"
       PRICE_REFRESH_LIMIT: "10000"
       MICROSOFT_REQUIRE_REFRESH_SUCCESS: ${{ inputs.microsoft_catalog_audit && '1' || '0' }}
       FULL_REFRESH_BATCH_SIZE: ${{ inputs.batch_size || '100' }}
       FULL_REFRESH_MAX_MS: ${{ inputs.max_ms || '19800000' }}
-      FULL_REFRESH_MAX_BATCHES: ${{ github.event.inputs.max_batches || '' }}
+      FULL_REFRESH_MAX_BATCHES: ${{ inputs.max_batches || '' }}
       FULL_REFRESH_RESERVE_MS: "180000"
       FULL_REFRESH_SLEEP_MS: "1000"
-      STEAM_LIVE_FALLBACK: ${{ contains(format(',{0},', github.event.inputs.steam_live_regions || ''), format(',{0},', matrix.region)) && '1' || '0' }}
+      STEAM_LIVE_FALLBACK: "1"
       FULL_REFRESH_ITAD: "1"
       STEAM_CHUNK_SIZE: ${{ matrix.region == 'AR' && '25' || '50' }}
       STEAM_CHUNK_SLEEP_MS: ${{ matrix.region == 'AR' && '250' || '3500' }}
@@ -192,10 +208,12 @@ jobs:
       STEAM_REQUEST_TIMEOUT_MS: "12000"
     steps:
       - uses: actions/checkout@v7.0.0
-        if: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
+        if: ${{ contains(format(',{0},', inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
+        with:
+          ref: ${{ inputs.catalog_ref || github.sha }}
       - name: Restore latest public dataset
         uses: actions/cache/restore@v4
-        if: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
+        if: ${{ contains(format(',{0},', inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
         with:
           path: |
             data/generated/game-sample.json
@@ -211,22 +229,22 @@ jobs:
           restore-keys: |
             barateam-public-data-
       - uses: actions/download-artifact@v4
-        if: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
+        if: ${{ contains(format(',{0},', inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
         continue-on-error: true
         with:
           name: catalog-state
           path: data
       - uses: actions/setup-node@v6.4.0
-        if: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
+        if: ${{ contains(format(',{0},', inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
         with:
           node-version: 24
           cache: npm
       - run: npm ci
-        if: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
-      - run: ${{ inputs.microsoft_catalog_audit && 'npm run refresh:microsoft-prices' || ((github.event.inputs.weekend_games_only == 'true' || (github.event.inputs.target_game_ids || '') != '') && 'npm run worker:weekend-refresh' || 'npm run worker:full-refresh') }}
-        if: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
+        if: ${{ contains(format(',{0},', inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
+      - run: ${{ inputs.microsoft_catalog_audit && 'npm run refresh:microsoft-prices' || ((inputs.weekend_games_only || (inputs.target_game_ids || '') != '') && 'npm run worker:weekend-refresh' || 'npm run worker:full-refresh') }}
+        if: ${{ contains(format(',{0},', inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
       - name: Complete historical observations gradually
-        if: ${{ contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) && (github.event.inputs.target_game_ids || '') == '' && !inputs.microsoft_catalog_audit }}
+        if: ${{ contains(format(',{0},', inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) && (inputs.target_game_ids || '') == '' && !inputs.microsoft_catalog_audit }}
         continue-on-error: true
         timeout-minutes: 6
         env:
@@ -236,7 +254,7 @@ jobs:
       - name: Collect region cache
         # Historical imports are bounded and cannot prevent current prices from publishing.
         # This step is kept separate from the price refresh itself.
-        if: ${{ always() && contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
+        if: ${{ always() && contains(format(',{0},', inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
         shell: bash
         run: |
           set -euo pipefail
@@ -254,7 +272,7 @@ jobs:
           fi
           cp "data/generated/github-full-refresh-status-${PRICE_REGION}.json" "price-cache/data/generated/github-full-refresh-status-${PRICE_REGION}.json" 2>/dev/null || true
       - uses: actions/upload-artifact@v4
-        if: ${{ always() && contains(format(',{0},', github.event.inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
+        if: ${{ always() && contains(format(',{0},', inputs.regions || 'AR,MX,ES,PE,CL'), format(',{0},', matrix.region)) }}
         with:
           name: price-cache-${{ matrix.region }}
           if-no-files-found: error
@@ -269,7 +287,7 @@ jobs:
     concurrency:
       group: vercel-production-deploy
       cancel-in-progress: false
-    if: ${{ !cancelled() && needs.refresh-region.result == 'success' && (github.event.inputs.publish || 'true') != 'false' }}
+    if: ${{ !cancelled() && needs.refresh-region.result == 'success' && (inputs.publish || 'true') != 'false' }}
     env:
       GLITCHPRICE_PUBLIC_CACHE_SOURCE: file
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -286,7 +304,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.0
         with:
-          ref: main
+          ref: ${{ inputs.catalog_ref || github.sha }}
       - uses: actions/download-artifact@v4
         continue-on-error: true
         with:

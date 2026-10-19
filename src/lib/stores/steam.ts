@@ -157,7 +157,7 @@ async function fetchStorePricesIndividually(
 }
 
 function steamDetailsUrl(appIds: string, region?: RegionConfig): string {
-  return `https://store.steampowered.com/api/appdetails?appids=${appIds}&cc=${region?.steamCc ?? "AR"}&l=spanish&filters=price_overview,basic`;
+  return `https://store.steampowered.com/api/appdetails?appids=${appIds}&cc=${region?.steamCc ?? "AR"}&l=spanish&filters=price_overview`;
 }
 
 function steamPackageDetailsUrl(packageIds: string, region?: RegionConfig): string {

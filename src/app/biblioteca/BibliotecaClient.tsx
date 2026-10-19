@@ -47,7 +47,7 @@ import { STORE_LOGOS } from "@/lib/store-assets";
 import { GameCover } from "@/app/components/GameCover";
 import type { LatestPrices, NormalizedPrice, PriceHistoryReport, StoreId } from "@/lib/types";
 import { STORES } from "@/lib/types";
-import { historyChartObservations } from "@/lib/history-chart";
+import { historyChartMarkers, historyChartObservations } from "@/lib/history-chart";
 import type { CatalogResponse } from "@/lib/catalog";
 import { WEEKEND_FILTER } from "@/lib/weekend-games";
 import { WeekendRecommendation, WeekendTag } from "@/app/components/WeekendRecommendation";
@@ -1234,7 +1234,7 @@ function PriceHistoryChart({
   const startDate = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), 1);
   const chartEntries = historyChartObservations(realChartEntries, startDate, endDate);
   const values = chartEntries.map((entry) => entry.arsFinalPrice ?? 0);
-  const minValue = values.length ? Math.min(...values) : 0;
+  const minValue = 0;
   const maxValue = values.length ? Math.max(...values) : 1;
   const hasSeries = chartEntries.length > 0;
   const width = 720;
@@ -1298,7 +1298,7 @@ function PriceHistoryChart({
               />
             ) : null;
           })}
-          {chartEntries.map((entry) => {
+          {historyChartMarkers(chartEntries).map((entry) => {
             const pointX = x(entry.timestamp);
             const pointY = y(entry.arsFinalPrice ?? 0);
             return (

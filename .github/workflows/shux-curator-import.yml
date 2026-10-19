@@ -62,5 +62,9 @@ jobs:
   publish:
     needs: import
     if: needs.import.outputs.changed == 'true'
-    uses: ./.github/workflows/deploy-production.yml
+    uses: ./.github/workflows/daily-price-refresh.yml
+    with:
+      weekend_games_only: true
+      publish: "true"
+      catalog_ref: main
     secrets: inherit

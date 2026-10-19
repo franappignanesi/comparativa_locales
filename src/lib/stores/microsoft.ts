@@ -155,7 +155,9 @@ export function hasMicrosoftPcPurchase(product: unknown): boolean {
     const hasPcPackage = properties?.Packages?.some((pkg: Record<string, any>) =>
       pkg.PlatformDependencies?.some((platform: { PlatformName?: string }) => platform.PlatformName?.toLowerCase() === "windows.desktop")
     );
-    return hasPcPackage && properties?.IsTrial !== true && entry.Availabilities?.some((availability: Record<string, any>) =>
+    // Standard-edition purchase bundles have no package of their own. XPA explicitly guarantees a PC entitlement.
+    const hasPlayAnywhereBundle = properties?.BundledSkus?.length > 0 && catalog.Properties?.Attributes?.some((attribute: { Name?: string }) => attribute.Name === "XPA");
+    return (hasPcPackage || hasPlayAnywhereBundle) && properties?.IsTrial !== true && entry.Availabilities?.some((availability: Record<string, any>) =>
       availability.Actions?.includes("Purchase") && isAvailabilityActive(availability) && !isLegacyGoldDiscount(availability) &&
       availability.Conditions?.ClientConditions?.AllowedPlatforms?.some((platform: { PlatformName?: string }) => platform.PlatformName?.toLowerCase() === "windows.desktop")
     );
@@ -274,6 +276,7 @@ function cleanMicrosoftTitle(value: string): string {
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/:\s*20\d{2}\s+edition\s*$/, "")
     .replace(/\bfor (?:windows|pc)\b/g, "")
+    .replace(/\b(edicion|estandar)\b/g, "")
     .replace(/\b(the|edition|standard|pc|game)\b/g, "")
     .replace(/[^a-z0-9]+/g, " ")
     .replace(/\b(windows|xbox|one|series|xs)\b/g, "")

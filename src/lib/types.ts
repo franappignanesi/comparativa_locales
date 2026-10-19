@@ -81,6 +81,7 @@ export type StorePrice = {
   fetchedAt?: string | null;
   isStale?: boolean;
   staleReason?: string | null;
+  isEstimated?: boolean;
 };
 
 export type NormalizedPrice = StorePrice & {
@@ -126,6 +127,7 @@ export type LatestPrices = {
 };
 
 export type PriceHistoryEntry = {
+  priceSource?: StorePrice["source"];
   kind?: "observation" | "historical_low";
   gameId: string;
   gameTitle?: string;

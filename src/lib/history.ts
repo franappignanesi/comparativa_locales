@@ -43,7 +43,7 @@ export async function appendLatestToHistory(latest: LatestPrices): Promise<void>
   for (const row of latest.prices) {
     for (const store of STORES) {
       const price = row.prices[store];
-      if (!price?.available || price.arsFinalPrice == null) continue;
+      if (!isReliableHistoryPrice(price)) continue;
       const entry: PriceHistoryEntry = {
         gameId: row.gameId,
         gameTitle: row.gameTitle,
@@ -56,7 +56,8 @@ export async function appendLatestToHistory(latest: LatestPrices): Promise<void>
         arsBasePrice: price.arsBasePrice,
         discountPct: price.discountPct,
         url: price.url,
-        source: "snapshot"
+        source: "snapshot",
+        priceSource: price.source
       };
       const key = ownHistoryKey(entry);
       const current = byDay.get(key);
@@ -66,6 +67,10 @@ export async function appendLatestToHistory(latest: LatestPrices): Promise<void>
 
   const timestamp = Date.parse(history.timestamp ?? "") > Date.parse(latest.timestamp) ? history.timestamp : latest.timestamp;
   await writeJson(filePath, { timestamp, entries: compactOwnHistory([...byDay.values()]) });
+}
+
+export function isReliableHistoryPrice(price: LatestPrices["prices"][number]["prices"][StoreId]): price is NonNullable<typeof price> {
+  return Boolean(price?.available && !price.isStale && !price.isEstimated && price.arsFinalPrice != null && Number.isFinite(price.arsFinalPrice) && price.arsFinalPrice > 0);
 }
 
 export async function getPriceHistoryReport(
@@ -235,7 +240,7 @@ function latestToHistoryEntries(latest: LatestPrices): PriceHistoryEntry[] {
   return latest.prices.flatMap((row) =>
     STORES.flatMap((store) => {
       const price = row.prices[store];
-      if (!price?.available || price.arsFinalPrice == null) return [];
+      if (!isReliableHistoryPrice(price)) return [];
       return [
         {
           gameId: row.gameId,
@@ -249,7 +254,8 @@ function latestToHistoryEntries(latest: LatestPrices): PriceHistoryEntry[] {
           arsBasePrice: price.arsBasePrice,
           discountPct: price.discountPct,
           url: price.url,
-          source: "snapshot" as const
+          source: "snapshot" as const,
+          priceSource: price.source
         }
       ];
     })
@@ -343,7 +349,8 @@ function compactSnapshotEntry(entry: PriceHistoryEntry): PriceHistoryEntry {
     arsFinalPrice: entry.arsFinalPrice ?? null,
     arsBasePrice: entry.arsBasePrice ?? null,
     discountPct: entry.discountPct ?? null,
-    source: "snapshot"
+    source: "snapshot",
+    ...(entry.priceSource ? { priceSource: entry.priceSource } : {})
   };
   return compact;
 }

@@ -171,6 +171,7 @@ export function normalizePrice(price: StorePrice, exchangeRate: ExchangeRate | n
 
   return {
     ...price,
+    isEstimated: Boolean(price.isEstimated || rate.region === "AR" && price.store === "steam" && price.source === "itad" && normalizeCurrency(price.currency) === "ARS"),
     originalCurrency: original.currency,
     originalFinalPrice: original.finalPrice,
     originalBasePrice: original.basePrice,

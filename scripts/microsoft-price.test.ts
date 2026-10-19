@@ -1,12 +1,38 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { discoverMicrosoftProduct, findMicrosoftPrice, hasMicrosoftPcPurchase, selectMicrosoftSearchResult } from "../src/lib/stores/microsoft";
-import { applyDiscoveredMicrosoftGames } from "../src/lib/microsoft-discovery";
+import { applyDiscoveredMicrosoftGames, upgradeMicrosoftDiscoveryState } from "../src/lib/microsoft-discovery";
 import { getGameSample } from "../src/lib/sample-builder";
 
 function availability(price: number, platform: string, end = "2099-01-01") {
   return { Actions: ["Purchase"], Conditions: { StartDate: "2020-01-01", EndDate: end, ClientConditions: { AllowedPlatforms: [{ PlatformName: platform }] } }, OrderManagementData: { Price: { ListPrice: price, MSRP: 1399, CurrencyCode: "ARS" } } };
 }
+test("Spanish standard editions match without accepting sequels or premium editions", () => {
+  const result = (title: string) => ({ ProductId: title, Title: title, CardActions: ["Purchase"] });
+  assert.equal(selectMicrosoftSearchResult({ title: "Forza Horizon 5" }, [result("Forza Horizon 5: Edición Estándar")])?.ProductId, "Forza Horizon 5: Edición Estándar");
+  assert.equal(selectMicrosoftSearchResult({ title: "Forza Horizon 5" }, [result("Forza Horizon 6 Standard Edition"), result("Forza Horizon 5 Premium Edition")]), null);
+});
+
+test("Play Anywhere purchase bundles count as PC games, console-only and trial bundles do not", () => {
+  const bundle = { ProductType: "Game", Properties: { Attributes: [{ Name: "XPA" }] }, DisplaySkuAvailabilities: [{
+    Sku: { Properties: { BundledSkus: [{ BigId: "base" }], Packages: [] as unknown[], IsTrial: false } },
+    Availabilities: [availability(26399, "Windows.Desktop")],
+  }] };
+  assert.equal(hasMicrosoftPcPurchase(bundle), true);
+  assert.equal(hasMicrosoftPcPurchase({ ...bundle, Properties: { Attributes: [] } }), false);
+  assert.equal(hasMicrosoftPcPurchase({ ...bundle, DisplaySkuAvailabilities: [{ ...bundle.DisplaySkuAvailabilities[0], Availabilities: [availability(100, "Windows.Xbox")] }] }), false);
+  assert.equal(hasMicrosoftPcPurchase({ ...bundle, DisplaySkuAvailabilities: [{ ...bundle.DisplaySkuAvailabilities[0], Sku: { Properties: { ...bundle.DisplaySkuAvailabilities[0].Sku.Properties, IsTrial: true } } }] }), false);
+});
+
+test("upgrading discovery retries negative matches without losing verified identities or progress", () => {
+  const old = { matches: { valid: "9VALID" }, checkedAt: { valid: "2026-10-19", missed: "2026-10-19" } };
+  const updated = upgradeMicrosoftDiscoveryState(old);
+  assert.deepEqual(updated.checkedAt, { valid: "2026-10-19" });
+  assert.deepEqual(updated.matches, old.matches);
+  assert.equal(upgradeMicrosoftDiscoveryState(updated), updated);
+  assert.ok(old.checkedAt.missed);
+});
+
 test("Microsoft takes active PC sale prices, not expired or console-only offers", () => {
   const product = { Availabilities: [availability(1399, "Windows.Desktop"), availability(139.9, "Windows.Desktop"), availability(1, "Windows.Xbox"), availability(50, "Windows.Desktop", "2020-01-02")] };
   assert.deepEqual(findMicrosoftPrice(product), { basePrice: 1399, finalPrice: 139.9, currency: "ARS" });

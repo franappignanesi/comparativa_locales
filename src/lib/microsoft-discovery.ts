@@ -3,9 +3,18 @@ import type { GameSample, StoreId } from "./types";
 import { STORES } from "./types";
 
 export type MicrosoftDiscoveryState = {
+  algorithmVersion?: number;
   matches: Record<string, string>;
   checkedAt: Record<string, string>;
 };
+
+export const MICROSOFT_DISCOVERY_VERSION = 2;
+
+export function upgradeMicrosoftDiscoveryState(state: MicrosoftDiscoveryState): MicrosoftDiscoveryState {
+  if (state.algorithmVersion === MICROSOFT_DISCOVERY_VERSION) return state;
+  return { ...state, algorithmVersion: MICROSOFT_DISCOVERY_VERSION,
+    checkedAt: Object.fromEntries(Object.entries(state.checkedAt).filter(([id]) => Boolean(state.matches[id]))) };
+}
 
 export const microsoftDiscoveryPath = () => dataPath("generated", "microsoft-discovery.json");
 export const emptyMicrosoftDiscovery = (): MicrosoftDiscoveryState => ({ matches: {}, checkedAt: {} });

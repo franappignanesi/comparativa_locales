@@ -5,13 +5,30 @@ import os from "node:os";
 import path from "node:path";
 import { gzipSync } from "node:zlib";
 import { readJson } from "../src/lib/cache";
-import { compactOwnHistory, gameIdsMissingHistory, isFullHistoryCacheFresh, fullHistoryGameIdsToRefresh } from "../src/lib/history";
-import { historyChartObservations } from "../src/lib/history-chart";
+import { compactOwnHistory, gameIdsMissingHistory, isFullHistoryCacheFresh, fullHistoryGameIdsToRefresh, isReliableHistoryPrice } from "../src/lib/history";
+import { normalizePrice } from "../src/lib/normalize";
+import { historyChartMarkers, historyChartObservations } from "../src/lib/history-chart";
 import { steamAppIdFromUrl } from "../src/lib/itad";
 import { mergeFullHistoryArchive, type FullHistoryArchive } from "../src/lib/history-backfill";
 import type { PriceHistoryEntry } from "../src/lib/types";
 
 const entry = (timestamp: string, price: number): PriceHistoryEntry => ({ gameId: "test", store: "steam", timestamp, originalCurrency: "USD", originalFinalPrice: price, originalBasePrice: 50, arsFinalPrice: price * 1000, arsBasePrice: 50000, discountPct: 0, source: "snapshot" });
+
+test("reconstructed ITAD Steam prices cannot become historical observations or masquerade as native USD", () => {
+  const estimated = normalizePrice({ store: "steam", title: "Test", available: true, finalPrice: 50000, basePrice: 50000, currency: "ARS", discountPct: 0, url: null, raw: null, source: "itad" }, 2000);
+  assert.equal(estimated.isEstimated, true);
+  assert.equal(isReliableHistoryPrice(estimated), false);
+  assert.equal(isReliableHistoryPrice({ ...estimated, isEstimated: false, source: "live", isStale: true }), false);
+  assert.equal(isReliableHistoryPrice({ ...estimated, isEstimated: false, source: "live" }), true);
+});
+
+test("tiny daily changes do not produce a cascade of markers but real discounts survive", () => {
+  const rows = [48.36, 48.35, 48.34, 39.19, 38.79, 38.67, 38.62, 48.99, 48.43, 48.28, 48.44, 48.43].map((price, index) => entry(`2026-10-${String(index + 1).padStart(2, "0")}T12:00:00Z`, price));
+  const markers = historyChartMarkers(rows);
+  assert.ok(markers.length < rows.length);
+  for (const index of [0, 3, 7, rows.length - 1]) assert.ok(markers.includes(rows[index]));
+  assert.equal(rows.length, 12);
+});
 
 test("chart collapses daily repetitions without losing sale transitions or latest observation", () => {
   const prices = [50, 50, 50, 25, 25, 25, 50];

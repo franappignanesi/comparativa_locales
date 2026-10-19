@@ -1,12 +1,12 @@
 import { dataPath, writeJson } from "../src/lib/cache";
 import { readFile } from "node:fs/promises";
-import { emptyMicrosoftDiscovery, microsoftDiscoveryPath, type MicrosoftDiscoveryState } from "../src/lib/microsoft-discovery";
+import { emptyMicrosoftDiscovery, microsoftDiscoveryPath, upgradeMicrosoftDiscoveryState, type MicrosoftDiscoveryState } from "../src/lib/microsoft-discovery";
 import { getGameSample } from "../src/lib/sample-builder";
 import { discoverMicrosoftProduct } from "../src/lib/stores/microsoft";
 
 async function main() {
   const sample = await getGameSample();
-  const state: MicrosoftDiscoveryState = await readFile(microsoftDiscoveryPath(), "utf8").then((data) => JSON.parse(data)).catch(() => emptyMicrosoftDiscovery());
+  const state = upgradeMicrosoftDiscoveryState(await readFile(microsoftDiscoveryPath(), "utf8").then((data) => JSON.parse(data) as MicrosoftDiscoveryState).catch(() => emptyMicrosoftDiscovery()));
   const limit = Math.min(10000, Math.max(1, Number(process.env.MICROSOFT_DISCOVERY_LIMIT) || 150));
   const maxMs = Math.min(7200000, Math.max(1000, Number(process.env.MICROSOFT_DISCOVERY_MAX_MS) || 240000));
   const targets = process.env.MICROSOFT_DISCOVERY_GAME_IDS?.split(",");
@@ -14,7 +14,7 @@ async function main() {
   const selected = sample.broadSample.filter((game) =>
     game.productKind !== "pack" &&
     !game.identifiers.microsoftProductId && !game.identifiers.microsoftUrl && !state.matches[game.id] &&
-    (!targets || targets.includes(game.id)) && (!state.checkedAt[game.id] || Date.parse(state.checkedAt[game.id]) < cutoff)
+    (!targets || targets.includes(game.id)) && (Boolean(targets) || !state.checkedAt[game.id] || Date.parse(state.checkedAt[game.id]) < cutoff)
   ).sort((a, b) => Number(b.expectedStores.includes("microsoft")) - Number(a.expectedStores.includes("microsoft"))).slice(0, limit);
   let cursor = 0;
   let completed = 0;

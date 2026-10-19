@@ -1,5 +1,28 @@
 import type { PriceHistoryEntry } from "./types";
 
+// The line retains every observation; markers emphasize changes rather than daily currency noise.
+export function historyChartMarkers(entries: PriceHistoryEntry[]): PriceHistoryEntry[] {
+  const stores = new Map<string, PriceHistoryEntry[]>();
+  for (const entry of entries) {
+    const series = stores.get(entry.store) ?? [];
+    series.push(entry);
+    stores.set(entry.store, series);
+  }
+  const markers: PriceHistoryEntry[] = [];
+  for (const series of stores.values()) {
+    series.sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
+    let anchor = series[0];
+    for (const [index, entry] of series.entries()) {
+      const change = Math.abs((entry.arsFinalPrice ?? 0) - (anchor.arsFinalPrice ?? 0)) / Math.max(1, anchor.arsFinalPrice ?? 0);
+      if (index === 0 || index === series.length - 1 || change >= 0.01) {
+        markers.push(entry);
+        anchor = entry;
+      }
+    }
+  }
+  return markers;
+}
+
 export function historyChartObservations(entries: PriceHistoryEntry[], start: Date, end: Date): PriceHistoryEntry[] {
   const byTime = new Map<string, PriceHistoryEntry>();
   for (const entry of entries) {
