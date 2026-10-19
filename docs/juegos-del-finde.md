@@ -2,12 +2,15 @@
 
 Fuente: [Mentor de ShuxTeam](https://store.steampowered.com/curator/35362522-ShuxTeam/).
 
-195 reseñas; 185 con enlace a video. Se incluyen las reseñas informativas y negativas, identificadas por tipo.
+198 reseñas; 188 con enlace a video. Se incluyen las reseñas informativas y negativas, identificadas por tipo.
 
 La fecha completa se obtiene de la etiqueta de Steam: cuando omite el año, corresponde al año de la consulta. Los juegos retirados se conservan en importaciones posteriores.
 
 | Juego | Fecha en Steam | Tipo | Video | Steam App ID |
 | --- | --- | --- | --- | --- |
+| [Tenebris Somnia](https://store.steampowered.com/app/2121510/) | 17 de octubre | Recomendado | [Ver video](https://www.instagram.com/p/DenAnqjvHiF/) | 2121510 |
+| [Happy Wheels](https://store.steampowered.com/app/4705510/) | 10 de octubre | Recomendado | [Ver video](https://www.instagram.com/p/DeVEG_YpG5e/) | 4705510 |
+| [Gears of War: E-Day](https://store.steampowered.com/app/3010850/) | 6 de octubre | Recomendado | [Ver video](https://www.instagram.com/p/DeKDuErPvbr/) | 3010850 |
 | [Dressmaker](https://store.steampowered.com/app/4019220/) | 4 de octubre | Recomendado | [Ver video](https://www.instagram.com/p/DeFI4QhvOXP/) | 4019220 |
 | [Project Zomboid](https://store.steampowered.com/app/108600/) | 30 de septiembre | Recomendado | [Ver video](https://www.instagram.com/shuxteam/reel/DcWLtU2vHoO/) | 108600 |
 | [How to Fish](https://store.steampowered.com/app/4001890/) | 30 de septiembre | Recomendado | [Ver video](https://www.instagram.com/shuxteam/reel/Dcov0Sfpe3b/) | 4001890 |
