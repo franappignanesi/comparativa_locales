@@ -15,6 +15,8 @@ async function main() {
   const { readDiscordPrices } = await import("../src/lib/discord-notifications");
   const { discordDmConsentValid, discordDmOffersValid } = await import("../src/lib/discord-dm-validation");
   const { REGIONS } = await import("../src/lib/regions");
+  const { wishlistNotificationStates } = await import("../src/lib/wishlist-notification-state");
+  const { wishlistNotificationAllowed } = await import("../src/lib/wishlist-notification-policy");
   const deadline = Date.now() + boundedDiscordSetting("DISCORD_WORKER_MAX_MS", 180000, 300000);
   const maximum = boundedDiscordSetting("DISCORD_MAX_MESSAGES_PER_RUN", 30, 100);
   let sent = 0, blocked = 0, failures = 0;
@@ -37,6 +39,9 @@ async function main() {
           prices.set(region, latest);
           const valid = discordDmOffersValid(job, settings, wishlist, latest);
           if (!valid) { await finishDiscordJob(job, "blocked"); blocked++; continue; }
+          const states = await wishlistNotificationStates("discord", job.userSub);
+          const allowed = job.payload.prices!.every(price => wishlistNotificationAllowed({ ...price, region }, states.get(price.gameId)));
+          if (!allowed) { await finishDiscordJob(job, "blocked"); blocked++; continue; }
           await sendDiscordDm(job.recipient, { content: job.payload.content, embeds: job.payload.embeds }, job.id);
         } else {
           if (process.env.DISCORD_WEEKLY_ENABLED !== "1") { await finishDiscordJob(job, "blocked"); blocked++; continue; }

@@ -8,6 +8,7 @@ import type { WishlistAlert } from "./wishlist-alerts";
 import type { LatestPrices, NormalizedPrice } from "./types";
 import type { RegionId } from "./regions";
 import { legacyDiscordNotificationKey } from "./wishlist-notification-key";
+import { filterWishlistNotifications } from "./wishlist-notification-state";
 
 export async function readDiscordPrices(region: RegionId): Promise<LatestPrices> {
   const file = region === "AR" ? "latest-prices.json" : `latest-prices-${region}.json`;
@@ -24,9 +25,11 @@ export async function enqueueDiscordWishlist(user: StoredUser, alerts: WishlistA
   if (!discordSendsEnabled() || !user.notificationSettings.discord || !alerts.length) return 0;
   const link = await getDiscordLink(user.sub);
   if (!link?.verified || !discordRecipientAllowed(link.discordId)) return 0;
+  const filtered = await filterWishlistNotifications("discord", user.sub, alerts);
   const legacyKeys = (alert: WishlistAlert) => (["price_drop", "historical_low", "below_usd"] as const).map(type => legacyDiscordNotificationKey({ ...alert, type }));
   const delivered = await discordUnsentSignatures(user.sub, alerts.flatMap(alert => [discordAlertSignature(alert), ...legacyKeys(alert)]));
-  const fresh = alerts.filter((alert) => !delivered.has(discordAlertSignature(alert)) && !legacyKeys(alert).some(key => delivered.has(key)) && alert.currentOfficialPrice != null && alert.currentCurrency);
+  const fresh = filtered.alerts.filter(alert => filtered.states.has(alert.gameId) ||
+    !delivered.has(discordAlertSignature(alert)) && !legacyKeys(alert).some(key => delivered.has(key)));
   if (!fresh.length) return 0;
   const payload = buildDiscordWishlistMessage(fresh);
   if (!payload.signatures?.length) return 0;

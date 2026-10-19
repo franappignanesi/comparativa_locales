@@ -9,6 +9,7 @@ import { claimNotificationDelivery } from "./notification-delivery-store";
 import type { LatestPrices, PriceHistoryEntry, StoreId } from "./types";
 import { STORES } from "./types";
 import { enqueueDiscordWishlist } from "./discord-notifications";
+import { alertNotificationPrice, filterWishlistNotifications, rearmWishlistNotifications, recordWishlistNotifications } from "./wishlist-notification-state";
 
 export type WishlistAlertType = "price_drop" | "below_usd" | "historical_low";
 
@@ -67,6 +68,16 @@ export async function evaluateAllWishlistAlerts(regions: RegionId[] = REGIONS.ma
     regionsChecked.add(region);
     const userAlerts = await evaluateWishlistAlerts(user.sub, wishlist, region, settings);
     alerts.push(...userAlerts);
+    const latest = await getLatestPrices({ region });
+    const rows = new Map(latest.prices.map(row => [row.gameId, row]));
+    const stores = settings.enabledStores.length ? settings.enabledStores : STORES;
+    const observedIds = wishlist.filter(item => item.notificationEnabled && stores.every(store => {
+      const price = rows.get(item.gameId)?.prices[store];
+      const age = Date.now() - Date.parse(price?.fetchedAt ?? latest.timestamp ?? "");
+      return price && !price.isStale && Number.isFinite(age) && age >= -300000 && age <= 48 * 3600000 &&
+        (!price.available || price.originalFinalPrice != null);
+    })).map(item => item.gameId);
+    await rearmWishlistNotifications(user.sub, userAlerts.map(alert => alert.gameId), observedIds);
     const userDelivered = await deliverAlerts(user, userAlerts, settings);
     delivered.email += userDelivered.email;
     delivered.webPush += userDelivered.webPush;
@@ -157,17 +168,20 @@ async function deliverAlerts(user: StoredUser, alerts: WishlistAlert[], notifica
   if (settings.email && process.env.RESEND_API_KEY) {
     const claimed = await claimAlerts("email", user.sub, alerts);
     email = await sendEmailAlerts(user, claimed);
+    if (email) await recordWishlistNotifications("email", user.sub, claimed.map(alertNotificationPrice));
   }
   if (settings.webPush && process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
     const claimed = await claimAlerts("web_push", user.sub, alerts);
     webPush = await sendWebPushAlerts(user, claimed);
+    if (webPush) await recordWishlistNotifications("web_push", user.sub, claimed.map(alertNotificationPrice));
   }
   return { email, webPush };
 }
 
 async function claimAlerts(channel: "email" | "web_push", userSub: string, alerts: WishlistAlert[]): Promise<WishlistAlert[]> {
   const claimed: WishlistAlert[] = [];
-  for (const alert of alerts) {
+  const filtered = await filterWishlistNotifications(channel, userSub, alerts);
+  for (const alert of filtered.alerts) {
     const ok = await claimNotificationDelivery({
       channel,
       userSub,
@@ -177,7 +191,8 @@ async function claimAlerts(channel: "email" | "web_push", userSub: string, alert
       type: alert.type,
       currentCurrency: alert.currentCurrency,
       currentOfficialPrice: alert.currentOfficialPrice,
-      thresholdUsd: alert.thresholdUsd
+      thresholdUsd: alert.thresholdUsd,
+      deliveryCycle: filtered.states.get(alert.gameId)?.sentAt
     });
     if (ok) claimed.push(alert);
   }

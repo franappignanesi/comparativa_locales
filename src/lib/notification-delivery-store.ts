@@ -10,10 +10,11 @@ let initialized = false;
 export async function claimNotificationDelivery(input: WishlistNotificationIdentity & {
   channel: NotificationChannel;
   userSub: string;
+  deliveryCycle?: string;
 }): Promise<boolean> {
   if (!hasPostgresConfig()) return false;
   await ensureSchema();
-  const signature = wishlistNotificationKey(input);
+  const signature = wishlistNotificationKey(input, input.deliveryCycle);
   const rows = (await getSql().query(
     `INSERT INTO notification_deliveries (channel, user_sub, signature, created_at)
      VALUES ($1, $2, $3, $4)

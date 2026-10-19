@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { neon } from "@neondatabase/serverless";
+import { ensureWishlistNotificationState } from "./wishlist-notification-state";
 
 let client: ReturnType<typeof neon> | undefined;
 let schema: Promise<void> | undefined;
@@ -32,6 +33,17 @@ async function ready() {
     await sql().query(`CREATE TABLE IF NOT EXISTS discord_alert_receipts (
       user_sub VARCHAR(191) NOT NULL, signature VARCHAR(64) NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       PRIMARY KEY (user_sub, signature))`);
+    await ensureWishlistNotificationState();
+    // Seed from confirmed old messages before the outbox retention removes them.
+    await sql().query(`INSERT INTO wishlist_notification_state (channel,user_sub,game_id,region,currency,price,sent_at)
+      SELECT DISTINCT ON (o.user_sub,p->>'gameId') 'discord',o.user_sub,p->>'gameId',o.payload->>'region',
+        p->>'currency',(p->>'price')::double precision,o.sent_at
+      FROM discord_outbox o CROSS JOIN LATERAL jsonb_array_elements(COALESCE(o.payload->'prices','[]'::jsonb)) p
+      WHERE o.kind='dm' AND o.status='sent' AND o.sent_at IS NOT NULL AND o.payload->>'region' IS NOT NULL
+        AND p->>'gameId' IS NOT NULL AND p->>'currency' IS NOT NULL AND jsonb_typeof(p->'price')='number'
+        AND (p->>'price')::double precision>=0
+      ORDER BY o.user_sub,p->>'gameId',o.sent_at DESC
+      ON CONFLICT (channel,user_sub,game_id) DO NOTHING`);
     await sql().query("CREATE TABLE IF NOT EXISTS discord_controls (id INT PRIMARY KEY, enabled BOOLEAN NOT NULL)");
     await sql().query("INSERT INTO discord_controls (id,enabled) VALUES (1,TRUE) ON CONFLICT DO NOTHING");
   })().catch((error) => { schema = undefined; throw error; });
@@ -125,7 +137,14 @@ export async function finishDiscordJob(job: DiscordJob, status: "sent" | "pendin
   // Commit the confirmed weekly delivery and its cooldown together, guarded by claim ownership.
   await sql().query(`WITH finished AS (
     UPDATE discord_outbox SET status=$1::varchar,next_at=$2,sent_at=CASE WHEN $1::varchar='sent' THEN NOW() ELSE sent_at END
-    WHERE id=$3 AND owner=$4 AND status='sending' RETURNING kind,status)
+    WHERE id=$3 AND owner=$4 AND status='sending' RETURNING kind,status,user_sub,payload,sent_at),
+    remembered AS (
+      INSERT INTO wishlist_notification_state (channel,user_sub,game_id,region,currency,price,sent_at)
+      SELECT 'discord',f.user_sub,p->>'gameId',f.payload->>'region',p->>'currency',(p->>'price')::double precision,f.sent_at
+      FROM finished f CROSS JOIN LATERAL jsonb_array_elements(COALESCE(f.payload->'prices','[]'::jsonb)) p
+      WHERE f.kind='dm' AND f.status='sent'
+      ON CONFLICT (channel,user_sub,game_id) DO UPDATE SET region=EXCLUDED.region,currency=EXCLUDED.currency,
+        price=EXCLUDED.price,sent_at=EXCLUDED.sent_at,rearmed=FALSE)
     INSERT INTO discord_weekly_bargains (game_id,sent_at)
     SELECT DISTINCT game_id,NOW() FROM unnest($5::text[]) AS game_id
     WHERE EXISTS (SELECT 1 FROM finished WHERE kind='weekly' AND status='sent')
