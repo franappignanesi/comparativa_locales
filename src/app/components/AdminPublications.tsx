@@ -6,6 +6,7 @@ import { REGIONS, type RegionId } from "@/lib/regions";
 import { MAX_PUBLICATION_IMAGES, publicationGameLimit, publicationCaption, type PublicationDraft, type PublicationGame } from "@/lib/social-publications";
 import { PublicationCover, PublicationCta, PublicationPoster, type PosterOptions, type PublicationBackgroundGame } from "./PublicationPoster";
 import styles from "./publications.module.css";
+import { downloadPublicationImages } from "@/lib/publication-export";
 
 type SearchGame = { id: string; title: string };
 const DRAFT_KEY = "barateam-publications-v1";
@@ -184,34 +185,11 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
     }
     setError(""); setMessage(""); setBusy("Preparando imágenes...");
     try {
-      await document.fonts.ready;
-      const { toBlob, getFontEmbedCSS } = await import("html-to-image");
       const nodes = Array.from(exports.current!.querySelectorAll<HTMLElement>("[data-publication-export]"));
       const chosen = all ? nodes : nodes.filter(node => node.dataset.publicationExport === (preview === "cover" && includeCover ? "cover" : preview === "cta" && includeCta ? "cta" : `game-${selected.game.id}`));
-      const images: Array<{ name: string; blob: Blob }> = [];
-      let fontEmbedCSS: string | undefined;
-      for (const [index, wrapper] of chosen.entries()) {
-        setBusy(`Generando ${index + 1}/${chosen.length}...`);
-        const node = wrapper.firstElementChild as HTMLElement;
-        await Promise.all(Array.from(node.querySelectorAll("img")).map(async image => {
-          await image.decode();
-          if (!image.naturalWidth) throw new Error("Falta una imagen. Reintentá antes de descargar.");
-        }));
-        if (Array.from(node.querySelectorAll<HTMLElement>("h2, .publicationCopy p, .publicationCtaCopy p, .publicationEyebrow, .publicationStore, .publicationMarkers, .publicationPrice, .publicationPrice strong")).some(element => element.scrollHeight > element.clientHeight + 2 || element.scrollWidth > element.clientWidth + 2)) {
-          throw new Error("Un texto no entra en la imagen. Acortá el título o la descripción.");
-        }
-        fontEmbedCSS ??= await getFontEmbedCSS(node);
-        const blob = await toBlob(node, { width: 1080, height: 1350, pixelRatio: 1, includeQueryParams: true, fontEmbedCSS, backgroundColor: "#111111", style: { transform: "none", margin: "0" } });
-        if (!blob) throw new Error("No pudimos generar la imagen.");
-        images.push({ name: `${String(nodes.indexOf(wrapper) + 1).padStart(2, "0")}-${safeName(wrapper.dataset.publicationExport!)}.png`, blob });
-      }
-      if (all) {
-        const { default: JSZip } = await import("jszip");
-        const zip = new JSZip();
-        images.forEach(image => zip.file(image.name, image.blob));
-        zip.file("texto-publicacion.txt", caption);
-        saveBlob(await zip.generateAsync({ type: "blob" }), `barateam-${region.toLowerCase()}-carrusel.zip`);
-      } else if (images[0]) saveBlob(images[0].blob, images[0].name);
+      await downloadPublicationImages({ nodes: chosen.map(wrapper => ({ node: wrapper.firstElementChild as HTMLElement,
+        name: `${String(nodes.indexOf(wrapper) + 1).padStart(2, "0")}-${safeName(wrapper.dataset.publicationExport!)}.png` })),
+        all, filename: `barateam-${region.toLowerCase()}-carrusel`, caption, progress: setBusy });
       setMessage(all ? "Carrusel descargado." : "Imagen descargada.");
     } catch (reason) { setError(errorText(reason)); }
     finally { setBusy(""); }
@@ -319,11 +297,3 @@ export function AdminPublications({ initialRegion }: { initialRegion: RegionId }
 
 function errorText(reason: unknown) { return reason instanceof Error ? reason.message : "No pudimos completar la operación. Reintentá."; }
 function safeName(value: string) { return value.replace(/[^a-zA-Z0-9-]/g, "-").slice(0, 80); }
-function saveBlob(blob: Blob, name: string) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url; link.download = name;
-  document.body.appendChild(link);
-  link.click(); link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 60000);
-}

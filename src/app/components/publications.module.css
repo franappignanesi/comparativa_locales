@@ -137,3 +137,94 @@
 .generator :global(.publicationCtaFooter) { display: grid; place-items: center; font-size: 24px; color: #c9c7bf; }
 .generator :global(.publicationCopy h2), .generator :global(.publicationCoverCopy h2) { line-height: 1.2; }
 .generator :global(.publicationPrice strong) { line-height: 1.2; }
+
+.studioModes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.studioModes button { font-size: 13px; }
+.studioModes button[aria-pressed="true"] { color: var(--primary); border-color: var(--primary); }
+.toolbar { flex-wrap: wrap; }
+.toolbar > div { flex-wrap: wrap; }
+.studioQueue li { grid-template-columns: minmax(0, 1fr) repeat(4, 28px); }
+.addPlate { display: grid; gap: 8px; margin: 12px 0; }
+.generator .addPlate select, .settings select { width: 100%; min-width: 0; background: var(--surface-card); color: var(--text); padding: 8px; border: 1px solid var(--line); border-radius: 4px; font: inherit; }
+.selectedGame { font-size: 12px; color: var(--primary); overflow-wrap: anywhere; }
+.settings label.search { display: flex; align-items: center; }
+.settings label.search input { min-width: 0; width: 100%; }
+.storeChoices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.uploadButton { cursor: pointer; }
+.settings .uploadButton input[type="file"] { padding: 6px; font-size: 11px; }
+.chartRowEditor { display: grid; gap: 8px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.rowActions { display: flex; gap: 5px; justify-content: flex-end; }
+.generator :global(.studioPoster) { box-sizing: border-box; width: 1080px; height: 1350px; padding: 56px; display: flex; flex-direction: column; gap: 24px; background: #111111; color: #f5f0df; overflow: hidden; font-family: inherit; --studio-accent: #ffcf00; }
+.generator :global(.studioPoster *) { box-sizing: border-box; letter-spacing: 0; }
+.generator :global(.studioPoster.studio-story) { height: 1920px; padding: 160px 64px 220px; }
+.generator :global(.studioNews) { --studio-accent: #ff565e; background: #121212; }
+.generator :global(.studioHeader) { height: 64px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.generator :global(.studioHeader > div), .generator :global(.studioHeader > span) { display: flex; align-items: center; gap: 14px; }
+.generator :global(.studioHeader b) { font-size: 44px; font-weight: 900; }
+.generator :global(.studioHeader img) { width: 60px; height: 60px; object-fit: contain; }
+.generator :global(.studioHeader > span) { font-size: 22px; color: #c9c7bf; }
+.generator :global(.studioHeader > span img) { width: 36px; height: 36px; }
+.generator :global(.studioHeader small) { font-size: 20px; color: var(--studio-accent); }
+.generator :global(.studioArtwork) { position: relative; flex: 1; min-height: 200px; overflow: hidden; border-bottom: 5px solid var(--studio-accent); background: #202020; display: grid; place-items: center; }
+.generator :global(.studioArtwork img), .generator :global(.studioVersusArtwork img), .generator :global(.studioComparisonCover img) { width: 100%; height: 100%; object-fit: cover; display: block; }
+.generator :global(.studioArtwork img) { position: absolute; inset: 0; }
+.generator :global(.studioArtwork > span) { font-size: 72px; font-weight: 900; color: #888; }
+.generator :global(.studioNews .studioArtwork::after) { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 65%, #121212dc); pointer-events: none; }
+.generator :global(.studioCopy) { display: flex; flex-direction: column; gap: 14px; flex-shrink: 0; min-width: 0; }
+.generator :global(.studioPoster h2) { margin: 0; max-height: 220px; font-weight: 900; line-height: 1.18; overflow-wrap: anywhere; flex-shrink: 0; }
+.generator :global(.studioPoster p) { margin: 0; line-height: 1.4; max-height: 310px; white-space: pre-wrap; overflow-wrap: anywhere; flex-shrink: 0; }
+.generator :global(.studioEyebrow) { font-size: 23px; line-height: 1.25; color: var(--studio-accent); font-weight: 800; }
+.generator :global(.studioFooter) { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-shrink: 0; min-height: 70px; border-top: 1px solid #414141; padding-top: 16px; }
+.generator :global(.studioFooter > div) { display: grid; gap: 5px; }
+.generator :global(.studioFooter b) { font-size: 30px; color: var(--studio-accent); }
+.generator :global(.studioFooter span), .generator :global(.studioFooter p) { font-size: 17px; color: #b9b9b1; }
+.generator :global(.studioFooter p) { text-align: right; }
+.generator :global(.studioCenteredCopy) { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 44px; }
+.generator :global(.studioCenteredCopy p) { max-height: 760px; }
+.generator :global(.studio-story .studioCenteredCopy p) { max-height: 1080px; }
+.generator :global(.studio-cta .studioCenteredCopy) { text-align: center; align-items: center; padding: 40px; }
+.generator :global(.studio-cta .studioCenteredCopy p) { max-height: 420px; color: #c9c7bf; }
+.generator :global(.studioCtaLink) { font-size: 42px; color: var(--studio-accent); margin-top: 24px; }
+.generator :global(.studioPoster .publicationPriceGrid) { height: 320px; }
+.generator :global(.studioPoster .publicationPricesArea) { flex-shrink: 0; }
+.generator :global(.studio-story .publicationPriceGrid) { height: 420px; }
+.generator :global(.studio-game-offer .studioCopy p) { max-height: 108px; }
+.generator :global(.studio-game-offer h2) { max-height: 190px; }
+.generator :global(.studioLinkSlot) { height: 130px; flex-shrink: 0; }
+.generator [data-preview="true"] :global(.studioLinkSlot) { border: 2px dashed #555; border-radius: 8px; }
+.generator :global(.studioVersusArtwork) { flex: 1; min-height: 300px; position: relative; overflow: hidden; background: #242424; }
+.generator :global(.studioVersusHalf) { position: absolute; inset: 0; }
+.generator :global(.studioVersusHalf.half-0) { right: 38%; clip-path: polygon(0 0, 100% 0, 61.29% 100%, 0 100%); }
+.generator :global(.studioVersusHalf.half-1) { left: 38%; clip-path: polygon(38.71% 0, 100% 0, 100% 100%, 0 100%); }
+.generator :global(.studioVs) { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: #111; background: #ffcf00; font-size: 60px; font-weight: 900; padding: 12px 20px; }
+.generator :global(.studioVersusNames) { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+.generator :global(.studioVersusNames strong) { max-height: 140px; line-height: 1.25; overflow-wrap: anywhere; }
+.generator :global(.studioVersusNames strong:last-child) { text-align: right; }
+.generator :global(.studioVersusPrices) { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; min-height: 0; }
+.generator :global(.studioGameComparison) { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 20px; }
+.generator :global(.studioComparisonCover) { position: relative; flex: 1; min-height: 200px; max-height: 520px; overflow: hidden; }
+.generator :global(.studioComparisonCover img) { position: absolute; inset: 0; }
+.generator :global(.studioGameComparison h2) { max-height: 150px; }
+.generator :global(.studioGameComparison .publicationPriceGrid) { height: 620px; grid-template-columns: 1fr; grid-template-rows: none !important; grid-auto-rows: minmax(0, 1fr); }
+.generator :global(.studio-story .studioGameComparison .publicationPriceGrid) { height: 650px; }
+.generator :global(.studioGameComparison .publicationPrice) { padding: 6px 14px !important; gap: 4px !important; }
+.generator :global(.studioGameComparison .publicationPrice > *) { flex-shrink: 0; }
+.generator :global(.studioGameComparison .publicationStore) { font-size: 23px !important; }
+.generator :global(.studioGameComparison .publicationStore img) { width: 28px !important; height: 28px !important; }
+.generator :global(.studioGameComparison .publicationDiscount) { font-size: 24px !important; padding: 4px 8px !important; }
+.generator :global(.studioGameComparison .publicationMarkers) { font-size: 16px !important; line-height: 1.2; }
+.generator :global(.studioBars) { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: space-evenly; gap: 18px; }
+.generator :global(.studioBarRow) { display: grid; grid-template-columns: 260px minmax(0, 1fr) 180px; align-items: center; gap: 18px; min-width: 0; }
+.generator :global(.studioBarLabel) { display: flex; align-items: center; gap: 12px; min-width: 0; font-size: 28px; line-height: 1.25; }
+.generator :global(.studioBarLabel span) { min-width: 0; overflow-wrap: anywhere; }
+.generator :global(.studioBarLabel img) { width: 60px; height: 60px; object-fit: contain; flex-shrink: 0; }
+.generator :global(.studioBarTrack) { height: 36px; background: #2c2c2c; overflow: hidden; }
+.generator :global(.studioBarTrack > span) { display: block; height: 100%; background: #ffcf00; }
+.generator :global(.studioBarValue) { font-size: 30px; text-align: right; overflow-wrap: anywhere; }
+.generator :global(.studioBarValue strong) { display: block; max-height: 78px; }
+.generator :global(.studioWatermark) { position: absolute; right: 24px; top: 24px; z-index: 1; font-size: 40px; color: #fff; opacity: .24; }
+.generator :global(.studio-text-image .studioCopy p) { max-height: 400px; }
+.generator :global(.studio-image-caption .studioCopy h2) { max-height: 150px; }
+.generator :global(.studio-image-caption .studioCopy p) { max-height: 180px; }
+.generator :global(.studioBars[data-count="11"] .studioBarLabel), .generator :global(.studioBars[data-count="12"] .studioBarLabel) { font-size: 24px; }
+@media (max-width: 500px) { .toolbar select { width: 130px; } .studioModes button { flex: 1 1 140px; } }

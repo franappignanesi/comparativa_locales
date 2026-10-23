@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { REGIONS } from "@/lib/regions";
 import { STORE_LOGOS } from "@/lib/store-assets";
-import { publicationDate, publicationMoney, type PublicationDraft } from "@/lib/social-publications";
+import { publicationDate, publicationMoney, type PublicationDraft, type PublicationPrice } from "@/lib/social-publications";
 
 export type PosterOptions = { hideMissing: boolean; hideStale: boolean; discounts: boolean; lows: boolean; showEyebrow: boolean; eyebrow: string };
 export type PublicationBackgroundGame = { id: string; title: string; coverUrl: string };
@@ -22,20 +22,24 @@ export function PublicationPoster({ draft, options, index, total }: { draft: Pub
       <FittedText as="h2" text={title} max={72} min={30} />
       {draft.description.trim() ? <FittedText as="p" text={draft.description} max={29} min={20} /> : null}
     </div>
-    <div className="publicationPricesArea"><div className="publicationPriceGrid" data-count={prices.length} style={{ gridTemplateRows: `repeat(${Math.max(1, Math.ceil(prices.length / 2))}, minmax(0, 1fr))` }}>
+    <PublicationPrices prices={prices} options={options} />
+    <PosterFooter date={publicationDate(game.timestamp)} />
+  </article>;
+}
+
+export function PublicationPrices({ prices, options, compact = false }: { prices: PublicationPrice[]; options: Pick<PosterOptions, "discounts" | "lows">; compact?: boolean }) {
+  return <div className="publicationPricesArea"><div className="publicationPriceGrid" data-count={prices.length} style={{ gridTemplateRows: `repeat(${Math.max(1, Math.ceil(prices.length / 2))}, minmax(0, 1fr))` }}>
       {prices.map((price, index) => <div key={price.store} className={`publicationPrice ${price.cheapest ? "best" : ""} ${prices.length % 2 && index === prices.length - 1 ? "wide" : ""}`}>
         <div className="publicationStore"><img src={STORE_LOGOS[price.store]} alt="" /><span>{price.label}</span>
           {options.discounts && price.discount > 0 ? <b className="publicationDiscount">-{price.discount}%</b> : null}
         </div>
-        <FittedText as="strong" text={publicationMoney(price)} max={prices.length === 1 ? 104 : prices.length === 2 ? 76 : prices.length <= 4 ? 48 : 34} min={24} />
+        <FittedText as="strong" text={publicationMoney(price)} max={compact ? prices.length > 3 ? 30 : 50 : prices.length === 1 ? 104 : prices.length === 2 ? 76 : prices.length <= 4 ? 48 : 34} min={24} />
         <div className="publicationMarkers">
           {price.cheapest ? <span>MÁS BARATO</span> : null}
           {options.lows && price.historicalLow ? <span className="publicationLow">MÍNIMO HISTÓRICO REGISTRADO</span> : null}
         </div>
       </div>)}
-    </div></div>
-    <PosterFooter date={publicationDate(game.timestamp)} />
-  </article>;
+    </div></div>;
 }
 
 export function PublicationCover({ drafts, title, subtitle, showSubtitle = true, showImages = true, layout = "tiles", showCallout = true, callout = "DESLIZÁ Y COMPARÁ PRECIOS", total = drafts.length + 1 }: { drafts: PublicationDraft[]; title: string; subtitle?: string; showSubtitle?: boolean; showImages?: boolean; layout?: "tiles" | "strips"; showCallout?: boolean; callout?: string; total?: number }) {
@@ -68,7 +72,7 @@ export function PublicationCta({ drafts, question, total, backgroundGames = [] }
   </article>;
 }
 
-function FittedText({ as: Tag, text, max, min }: { as: "h2" | "p" | "strong"; text: string; max: number; min: number }) {
+export function FittedText({ as: Tag, text, max, min }: { as: "h2" | "p" | "strong"; text: string; max: number; min: number }) {
   const ref = useRef<HTMLHeadingElement & HTMLParagraphElement>(null);
   useEffect(() => {
     let cancelled = false;

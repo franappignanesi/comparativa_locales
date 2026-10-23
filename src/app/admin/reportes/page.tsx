@@ -23,7 +23,7 @@ type ResolveDraft = {
   message: string;
 };
 
-const AdminPublications = dynamic(() => import("@/app/components/AdminPublications").then(module => module.AdminPublications), { loading: () => <p className="loading">Cargando publicaciones...</p> });
+const AdminPublications = dynamic(() => import("@/app/components/AdminPublicationStudio").then(module => module.AdminPublicationStudio), { loading: () => <p className="loading">Cargando publicaciones...</p> });
 
 export default function AdminReportsPage() {
   const [region, setRegion] = useState<RegionId>(DEFAULT_REGION);

@@ -9,6 +9,7 @@ export function publicationGameLimit(includeCover: boolean, includeCta: boolean)
 export type PublicationPrice = {
   store: StoreId; label: string; amount: number | null; currency: string | null;
   discount: number; historicalLow: boolean; cheapest: boolean; stale: boolean;
+  comparisonAmount?: number | null;
 };
 export type PublicationGame = {
   id: string; title: string; coverUrl: string | null; region: RegionId;
@@ -44,7 +45,8 @@ export function buildPublicationGame(row: LatestPrices["prices"][number], latest
     const historicalLow = !stale && amount != null && currency != null && low?.originalCurrency === currency &&
       validMoney(low.originalFinalPrice) && amount <= low.originalFinalPrice! + 0.01;
     return { store, label: STORE_NAMES[store], amount: currency ? amount : null, currency, discount, historicalLow,
-      cheapest: !stale && currency != null && cheapest != null && price?.arsFinalPrice === cheapest, stale };
+      cheapest: !stale && currency != null && cheapest != null && price?.arsFinalPrice === cheapest, stale,
+      comparisonAmount: price?.arsFinalPrice ?? null };
   });
   return { id: row.gameId, title: row.gameTitle, coverUrl: row.coverUrl ?? null, region, timestamp: latest.timestamp, prices };
 }
