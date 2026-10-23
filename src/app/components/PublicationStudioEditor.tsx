@@ -14,7 +14,7 @@ import { PublicationStudioPoster } from "./PublicationStudioPoster";
 import styles from "./publications.module.css";
 
 type SearchGame = { id: string; title: string };
-const MODE_NAMES: Record<StudioMode, string> = { news: "Noticias", story: "Historia de juego", comparison: "Gráfico comparativo", versus: "Versus" };
+const MODE_NAMES: Record<StudioMode, string> = { news: "Noticias", story: "Historia de juego", comparison: "Gráfico comparativo", versus: "Versus", giveaway: "Sorteo" };
 async function loadGame(id: string, region: RegionId): Promise<PublicationGame> {
   const response = await fetch(`/api/admin/publications?gameId=${encodeURIComponent(id)}&region=${region}`, { cache: "no-store", signal: AbortSignal.timeout(30000) });
   if (!response.ok) throw new Error(response.status === 401 || response.status === 403 ? "Tu sesión admin venció. Volvé a iniciar sesión." : "No pudimos cargar el juego. Reintentá.");
@@ -154,7 +154,8 @@ export function PublicationStudioEditor({ mode, initialRegion }: { mode: StudioM
         const stores = [...new Set(pricePlates.flatMap(plate => plate.stores))];
         return [{ game: { ...game, prices: studioPrices(game, stores) }, headline: game.title, description: "" }];
       });
-      const caption = plates.map(plate => [plate.title, plate.body].filter(Boolean).join("\n")).join("\n\n") + (priceDrafts.length ? `\n\n${publicationCaption(priceDrafts, MODE_NAMES[mode])}` : "\n\n@shuxteam");
+      const caption = plates.map(plate => [plate.title, mode === "giveaway" ? games[draft.gameIds[0]]?.title : "", plate.body,
+        plate.kind === "giveaway-winners" ? plate.winners.map((name, index) => `${index + 1}. ${name}`).join("\n") : ""].filter(Boolean).join("\n")).join("\n\n") + (priceDrafts.length ? `\n\n${publicationCaption(priceDrafts, MODE_NAMES[mode])}` : "\n\n@shuxteam");
       await downloadPublicationImages({ nodes: wrappers.map(wrapper => ({ node: wrapper.firstElementChild as HTMLElement,
         name: `${String(draft.plates.findIndex(plate => plate.id === wrapper.dataset.publicationExport) + 1).padStart(2, "0")}-${mode}.png` })),
         all, filename: `shux-${mode}-${draft.format}`, caption, progress: setBusy });
@@ -172,7 +173,7 @@ export function PublicationStudioEditor({ mode, initialRegion }: { mode: StudioM
     {error ? <p className={styles.error} role="alert">{error}</p> : null}
     <div className={styles.workspace}><div className={styles.editor}>
       {mode !== "comparison" ? <fieldset className={styles.settings} disabled={disabled}><legend>{mode === "news" ? "Imagen de un juego" : "Juegos"}</legend>
-        {mode !== "news" ? <label>Destino<select aria-label="Destino del juego" value={gameTarget} onChange={event => setGameTarget(event.target.value as typeof gameTarget)}><option value="first">{mode === "versus" ? "Juego 1" : "Juego de la historia"}</option>{mode === "versus" ? <option value="second">Juego 2</option> : null}<option value="image">Imagen de esta placa</option></select></label> : null}
+        {mode !== "news" ? <label>Destino<select aria-label="Destino del juego" value={gameTarget} onChange={event => setGameTarget(event.target.value as typeof gameTarget)}><option value="first">{mode === "versus" ? "Juego 1" : mode === "giveaway" ? "Juego del sorteo" : "Juego de la historia"}</option>{mode === "versus" ? <option value="second">Juego 2</option> : null}<option value="image">Imagen de esta placa</option></select></label> : null}
         {draft.gameIds.map((id, index) => id ? <span className={styles.selectedGame} key={index}>{index + 1}. {games[id]?.title ?? "Cargando juego..."}</span> : null)}
         <label className={styles.search}><Search size={16} /><input placeholder="Buscar juego..." aria-label="Buscar juego para la placa" value={query} maxLength={120} onChange={event => setQuery(event.target.value)} /></label>
         <div className={styles.results}>{searching ? <span className={styles.status}><LoaderCircle size={16} />Buscando...</span> : results.map(game => <button type="button" key={game.id} onClick={() => void chooseGame(game.id)}><span>{game.title}</span><Plus size={16} /></button>)}</div>
@@ -194,13 +195,21 @@ export function PublicationStudioEditor({ mode, initialRegion }: { mode: StudioM
           {selected.showEyebrow ? <label>Epígrafe<input value={selected.eyebrow} maxLength={80} onChange={event => edit({ eyebrow: event.target.value })} /></label> : null}
           {mode === "versus" && selected.kind === "game-feature" ? <label>Juego de la placa<select value={selected.gameSlot} onChange={event => edit({ gameSlot: event.target.value === "1" ? 1 : 0 })}><option value="0">Juego 1</option><option value="1">Juego 2</option></select></label> : null}
           {draft.format === "story" ? <label><input type="checkbox" checked={selected.reserveLink} onChange={event => edit({ reserveLink: event.target.checked })} />Reservar espacio para enlace de Instagram</label> : null}
+          {selected.kind === "giveaway-announcement" && draft.format === "post" ? <label><input type="checkbox" checked={selected.showMoreInfo} onChange={event => edit({ showMoreInfo: event.target.checked })} />Mostrar «Más info en la descripción»</label> : null}
         </fieldset>
-        {["headline-image", "text-image", "image-caption", "game-offer", "game-feature", "versus-cover"].includes(selected.kind) ? <fieldset className={styles.settings} disabled={disabled}><legend>Imagen</legend>
+        {selected.kind === "giveaway-winners" ? <fieldset className={styles.settings} disabled={disabled}><legend>Ganadores</legend>
+          <label>Cantidad de ganadores<select aria-label="Cantidad de ganadores" value={selected.winners.length} onChange={event => edit({ winners: Array.from({ length: Number(event.target.value) }, (_, index) => selected.winners[index] ?? "") })}>{[1, 2, 3, 4, 5].map(count => <option key={count} value={count}>{count}</option>)}</select></label>
+          {selected.winners.map((name, index) => <label key={index}>Ganador {index + 1}<input maxLength={70} value={name} onChange={event => edit({ winners: selected.winners.map((value, position) => position === index ? event.target.value : value) })} /></label>)}
+        </fieldset> : null}
+        {["headline-image", "text-image", "image-caption", "game-offer", "game-feature", "versus-cover", "versus-prices", "giveaway-announcement", "giveaway-winners"].includes(selected.kind) ? <fieldset className={styles.settings} disabled={disabled}><legend>{selected.kind.startsWith("versus-") ? "Portadas" : "Imagen"}</legend>
+          {selected.kind !== "versus-prices" ? <>
           <label className={styles.uploadButton}><ImagePlus size={17} />Subir imagen<input type="file" accept="image/png,image/jpeg,image/webp" aria-label="Subir imagen de la placa" onChange={event => { void upload(event.target.files?.[0]); event.target.value = ""; }} /></label>
           {selected.image || selected.coverGameId ? <button onClick={() => edit({ image: null, coverGameId: "" })}><Trash2 size={15} />Quitar imagen personalizada</button> : null}
-          <details className={styles.cropPanel}><summary>Encuadre de imagen</summary><label>Horizontal<input type="range" min={0} max={100} value={selected.imageX} onChange={event => edit({ imageX: Number(event.target.value) })} /></label><label>Vertical<input type="range" min={0} max={100} value={selected.imageY} onChange={event => edit({ imageY: Number(event.target.value) })} /></label>
-            {selected.kind === "versus-cover" ? <><label>Juego 2 · horizontal<input type="range" min={0} max={100} value={selected.secondX} onChange={event => edit({ secondX: Number(event.target.value) })} /></label><label>Juego 2 · vertical<input type="range" min={0} max={100} value={selected.secondY} onChange={event => edit({ secondY: Number(event.target.value) })} /></label></> : null}
-          </details>
+          </> : null}
+          {(selected.kind === "versus-cover" || selected.kind === "versus-prices" ? [0, 1] : [0]).map(slot => <details key={slot} className={styles.cropPanel}><summary>{selected.kind.startsWith("versus-") ? `Encuadre · ${games[draft.gameIds[slot]]?.title ?? `Juego ${slot + 1}`}` : "Encuadre de imagen"}</summary>
+            <label>Centro horizontal · {slot + 1}<input aria-label={`Centro horizontal de portada ${slot + 1}`} type="range" min={0} max={100} value={slot === 0 ? selected.imageX : selected.secondX} onChange={event => edit(slot === 0 ? { imageX: Number(event.target.value) } : { secondX: Number(event.target.value) })} /></label>
+            <label>Centro vertical · {slot + 1}<input aria-label={`Centro vertical de portada ${slot + 1}`} type="range" min={0} max={100} value={slot === 0 ? selected.imageY : selected.secondY} onChange={event => edit(slot === 0 ? { imageY: Number(event.target.value) } : { secondY: Number(event.target.value) })} /></label>
+          </details>)}
         </fieldset> : null}
         {["game-offer", "versus-prices"].includes(selected.kind) ? <fieldset className={styles.settings} disabled={disabled}><legend>Precios</legend>
           <div className={styles.storeChoices}>{STORES.map(store => <label key={store}><input type="checkbox" checked={selected.stores.includes(store)} onChange={event => edit({ stores: event.target.checked ? [...selected.stores, store] : selected.stores.filter(item => item !== store) })} />{STORE_NAMES[store]}</label>)}</div>

@@ -99,3 +99,62 @@ test("an intentionally empty sequence stays empty and duplicated chart rows rema
   assert.notEqual(result[1].rows[0].id, plate.rows[0].id);
   assert.ok(plate.stores.length > 0);
 });
+
+test("giveaways export game identity without prices and use format-specific optional calls to action", () => {
+  const draft = { ...newStudioDraft("giveaway", "AR", id), gameIds: ["first"] };
+  assert.deepEqual(draft.plates.map(plate => plate.kind), ["giveaway-announcement", "giveaway-winners"]);
+  const plate = draft.plates[0];
+  const render = () => renderToStaticMarkup(<PublicationStudioPoster draft={draft} plate={plate} games={games} index={0} />);
+  assert.match(render(), /Juego uno/);
+  assert.match(render(), /Más info en la descripción/);
+  assert.doesNotMatch(render(), /USD 10|publicationPrice|studioLinkSlot|Sin impuestos/);
+  plate.showMoreInfo = false;
+  assert.doesNotMatch(render(), /studioMoreInfo/);
+  draft.format = "story";
+  assert.match(render(), /studioLinkSlot/);
+  assert.doesNotMatch(render(), /studioMoreInfo/);
+  plate.reserveLink = false;
+  assert.doesNotMatch(render(), /studioLinkSlot/);
+  const noPrices = { first: { ...game, prices: [] } };
+  assert.equal(studioPlateError(plate, draft.gameIds, noPrices), null);
+  assert.equal(studioPlateError(plate, [], noPrices), "Elegí el juego del sorteo.");
+});
+
+test("giveaway winners require one to five names, survive restoration and duplicate independently", () => {
+  const draft = { ...newStudioDraft("giveaway", "AR", id), gameIds: ["first"] };
+  const plate = draft.plates[1];
+  for (let count = 1; count <= 5; count++) {
+    plate.winners = Array.from({ length: count }, (_, index) => `@ganador-${index + 1}`);
+    assert.equal(studioPlateError(plate, draft.gameIds, games), null);
+    const html = renderToStaticMarkup(<PublicationStudioPoster draft={draft} plate={plate} games={games} index={1} />);
+    assert.equal((html.match(/@ganador-/g) ?? []).length, count);
+    assert.doesNotMatch(html, /publicationPrice|studioMoreInfo|studioLinkSlot/);
+    assert.deepEqual(restoreStudioDraft(draft, "giveaway")?.plates[1].winners, plate.winners);
+  }
+  const copy = duplicateStudioPlate(draft.plates, plate.id, id());
+  copy[2].winners[0] = "Copy";
+  assert.notEqual(plate.winners[0], "Copy");
+  for (const names of [[], [" "], Array(6).fill("x")]) {
+    assert.match(studioPlateError({ ...plate, winners: names }, draft.gameIds, games)!, /ganadores/);
+  }
+  plate.winners = Array(8).fill("x".repeat(100));
+  assert.deepEqual(restoreStudioDraft(draft, "giveaway")!.plates[1].winners, Array(5).fill("x".repeat(70)));
+});
+
+test("versus crops are independent in the split cover and price plates and remain backward compatible", () => {
+  const draft = { ...newStudioDraft("versus", "AR", id), gameIds: ["first", "second"] };
+  for (const plate of [draft.plates[0], draft.plates[3]]) {
+    Object.assign(plate, { imageX: 15, imageY: 25, secondX: 85, secondY: 75 });
+    const html = renderToStaticMarkup(<PublicationStudioPoster draft={draft} plate={plate} games={games} index={0} />);
+    assert.match(html, /object-position:15% 25%/);
+    assert.match(html, /object-position:85% 75%/);
+  }
+  const legacy = JSON.parse(JSON.stringify(draft));
+  delete legacy.plates[0].winners;
+  delete legacy.plates[0].showMoreInfo;
+  legacy.plates[0].secondX = -100;
+  const restored = restoreStudioDraft(legacy, "versus")!;
+  assert.equal(restored.plates[0].imageX, 15);
+  assert.equal(restored.plates[0].secondX, 0);
+  assert.deepEqual(restored.plates[0].winners, [""]);
+});

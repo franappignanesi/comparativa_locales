@@ -227,4 +227,20 @@
 .generator :global(.studio-image-caption .studioCopy h2) { max-height: 150px; }
 .generator :global(.studio-image-caption .studioCopy p) { max-height: 180px; }
 .generator :global(.studioBars[data-count="11"] .studioBarLabel), .generator :global(.studioBars[data-count="12"] .studioBarLabel) { font-size: 24px; }
+.generator :global(.studioGiveawayHeading h2) { color: var(--studio-accent); max-height: 180px; }
+.generator :global(.studioGiveawayCard) { display: flex; flex-direction: column; flex: 1; min-height: 300px; border: 2px solid #ffcf00; border-radius: 8px; overflow: hidden; background: #1b1b1b; }
+.generator :global(.studioGiveawayImage) { position: relative; flex: 1; min-height: 120px; background: #202020; }
+.generator :global(.studioGiveawayImage img) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.generator :global(.studioGiveawayCard h2) { max-height: 150px; margin: 24px 28px; }
+.generator :global(.studioGiveawayDescription p) { max-height: 180px; }
+.generator :global(.studioMoreInfo) { display: flex; align-items: center; justify-content: center; gap: 16px; min-height: 72px; flex-shrink: 0; color: #ffcf00; font-size: 30px; font-weight: 800; }
+.generator :global(.studioMoreInfo svg) { flex-shrink: 0; }
+.generator :global(.studio-giveaway-winners .studioGiveawayCard) { flex: 0 0 300px; min-height: 300px; }
+.generator :global(.studio-giveaway-winners .studioGiveawayCard h2) { max-height: 100px; margin: 16px 24px; }
+.generator :global(.studioWinners) { flex: 1; min-height: 0; padding: 0; margin: 0; list-style: none; display: flex; flex-direction: column; justify-content: center; gap: 16px; }
+.generator :global(.studioWinners li) { display: grid; grid-template-columns: 70px minmax(0, 1fr); align-items: center; gap: 22px; min-height: 54px; }
+.generator :global(.studioWinners li > span) { color: #ffcf00; font-size: 30px; font-weight: 800; }
+.generator :global(.studioWinners strong) { display: block; max-height: 92px; line-height: 1.15; overflow-wrap: anywhere; }
+.generator :global(.studioWinners[data-count="5"] strong), .generator :global(.studioWinners[data-count="4"] strong) { max-height: 60px; }
+.generator :global(.studio-story.studio-giveaway-winners .studioGiveawayCard) { flex-basis: 380px; }
 @media (max-width: 500px) { .toolbar select { width: 130px; } .studioModes button { flex: 1 1 140px; } }

@@ -1,6 +1,7 @@
 "use client";
 
 import { REGIONS } from "@/lib/regions";
+import { ArrowDown } from "lucide-react";
 import { chartNumber, studioPrices, type StudioDraft, type StudioPlate } from "@/lib/publication-studio";
 import { publicationDate, type PublicationGame } from "@/lib/social-publications";
 import { FittedText, PublicationPrices } from "./PublicationPoster";
@@ -9,6 +10,7 @@ export function PublicationStudioPoster({ draft, plate, games, index }: { draft:
   const game = games[draft.gameIds[plate.gameSlot]];
   const region = REGIONS.find(region => region.id === draft.region)!;
   const news = draft.mode === "news";
+  const giveaway = plate.kind === "giveaway-announcement" || plate.kind === "giveaway-winners";
   const image = plate.image || games[plate.coverGameId]?.coverUrl || game?.coverUrl;
   const title = plate.title.trim() || (plate.kind === "game-offer" || plate.kind === "game-feature" ? game?.title ?? "" : "");
   const heading = <>{plate.showEyebrow && plate.eyebrow.trim() ? <span className="studioEyebrow" data-publication-text>{plate.eyebrow}</span> : null}{title ? <FittedText as="h2" text={title} max={plate.kind === "cta" ? 96 : 88} min={34} /> : null}</>;
@@ -18,13 +20,23 @@ export function PublicationStudioPoster({ draft, plate, games, index }: { draft:
   const chartMax = Math.max(1, ...chartValues);
   return <article className={`studioPoster studio-${draft.format} studio-${plate.kind}${news ? " studioNews" : ""}`}>
     <header className="studioHeader"><div><img src="/android-chrome-192x192.png" alt="" /><b>{news ? "SHUX" : "BARATEAM"}</b></div><span>{!news ? <><img src={region.flagSrc} alt="" />{region.label}</> : null}<small>{String(index + 1).padStart(2, "0")} / {String(draft.plates.length).padStart(2, "0")}</small></span></header>
-    {plate.kind === "cta" || plate.kind === "text" ? <div className="studioCenteredCopy">{heading}{paragraph}{plate.kind === "cta" ? <strong className="studioCtaLink">{news ? "@shuxteam" : "shuxteam.com"}</strong> : null}</div>
+    {giveaway ? <>
+        <div className="studioCopy studioGiveawayHeading">{heading}</div>
+        <div className="studioGiveawayCard">
+          <div className="studioGiveawayImage">{image ? <img src={image} alt="" style={{ objectPosition: `${plate.imageX}% ${plate.imageY}%` }} /> : null}</div>
+          <FittedText as="h2" text={game?.title ?? "Juego del sorteo"} max={58} min={30} />
+        </div>
+        {plate.kind === "giveaway-winners" ? <ol className="studioWinners" data-count={plate.winners.length}>{plate.winners.map((name, index) => <li key={index}><span>{String(index + 1).padStart(2, "0")}</span><FittedText as="strong" text={name.trim() || `Ganador ${index + 1}`} max={plate.winners.length > 3 ? 42 : 58} min={26} /></li>)}</ol> : null}
+        {paragraph ? <div className="studioCopy studioGiveawayDescription">{paragraph}</div> : null}
+        {draft.format === "post" && plate.showMoreInfo && plate.kind === "giveaway-announcement" ? <div className="studioMoreInfo"><ArrowDown size={40} aria-hidden="true" /><span>Más info en la descripción</span></div> : null}
+      </> : plate.kind === "cta" || plate.kind === "text" ? <div className="studioCenteredCopy">{heading}{paragraph}{plate.kind === "cta" ? <strong className="studioCtaLink">{news ? "@shuxteam" : "shuxteam.com"}</strong> : null}</div>
       : plate.kind === "versus-cover" ? <>
         <div className="studioCopy">{heading}</div>
         <div className="studioVersusArtwork">{[0, 1].map((slot) => {
           const selected = games[draft.gameIds[slot]];
+          const cover = slot === 0 ? plate.image || games[plate.coverGameId]?.coverUrl || selected?.coverUrl : selected?.coverUrl;
           return <div key={slot} className={`studioVersusHalf half-${slot}`}>
-            {slot === 0 && plate.image || selected?.coverUrl ? <img src={slot === 0 && plate.image ? plate.image : selected!.coverUrl!} alt="" style={{ objectPosition: `${slot === 0 ? plate.imageX : plate.secondX}% ${slot === 0 ? plate.imageY : plate.secondY}%` }} /> : null}
+            {cover ? <img src={cover} alt="" style={{ objectPosition: `${slot === 0 ? plate.imageX : plate.secondX}% ${slot === 0 ? plate.imageY : plate.secondY}%` }} /> : null}
           </div>;
         })}<span className="studioVs">VS</span></div>
         <div className="studioVersusNames">{[0, 1].map(slot => <FittedText key={slot} as="strong" text={games[draft.gameIds[slot]]?.title ?? `Juego ${slot + 1}`} max={46} min={25} />)}</div>
@@ -34,7 +46,7 @@ export function PublicationStudioPoster({ draft, plate, games, index }: { draft:
         <div className="studioVersusPrices">{[0, 1].map(slot => {
           const selected = games[draft.gameIds[slot]];
           return <section key={slot} className="studioGameComparison">
-            <div className="studioComparisonCover">{selected?.coverUrl ? <img src={selected.coverUrl} alt="" /> : null}</div>
+            <div className="studioComparisonCover">{selected?.coverUrl ? <img src={selected.coverUrl} alt="" style={{ objectPosition: `${slot === 0 ? plate.imageX : plate.secondX}% ${slot === 0 ? plate.imageY : plate.secondY}%` }} /> : null}</div>
             <FittedText as="h2" text={selected?.title ?? `Juego ${slot + 1}`} max={46} min={27} />
             <PublicationPrices prices={studioPrices(selected, plate.stores)} options={plate} compact />
           </section>;

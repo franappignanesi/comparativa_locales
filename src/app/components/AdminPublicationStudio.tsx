@@ -13,7 +13,7 @@ export function AdminPublicationStudio({ initialRegion }: { initialRegion: Regio
   const [mode, setMode] = useState<"offers" | StudioMode>("offers");
   return <div className={styles.generator}>
     <nav className={styles.studioModes} aria-label="Tipo de publicación">{([
-      ["offers", "Carrusel de ofertas"], ["story", "Historia de juego"], ["news", "Noticias"], ["comparison", "Gráfico comparativo"], ["versus", "Versus"],
+      ["offers", "Carrusel de ofertas"], ["story", "Historia de juego"], ["news", "Noticias"], ["comparison", "Gráfico comparativo"], ["versus", "Versus"], ["giveaway", "Sorteo"],
     ] as const).map(([value, label]) => <button type="button" key={value} aria-pressed={mode === value} onClick={() => setMode(value)}>{label}</button>)}</nav>
     {mode === "offers" ? <Legacy initialRegion={initialRegion} /> : <Editor key={mode} mode={mode} initialRegion={initialRegion} />}
   </div>;

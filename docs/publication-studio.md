@@ -1,7 +1,7 @@
 # Publication Studio
 
 Admin > Reportes > Publicaciones preserves the existing offer carousel and adds
-game stories, news, horizontal bar charts and versus publications.
+game stories, news, horizontal bar charts, versus publications and giveaways.
 
 ## Editorial model
 
@@ -13,6 +13,12 @@ game stories, news, horizontal bar charts and versus publications.
   The fifteen-image limit includes every plate in the sequence.
 - Stories have an optional blank link-sticker area. Its preview border is not
   included in exported images.
+- Versus cover and price-comparison plates have independent horizontal and
+  vertical crop sliders for each game's cover, grouped in named collapsible panels.
+- Giveaways start with announcement and winner plates. They show the selected
+  game's title and cover, never prices, and support one to five named winners.
+  Announcements optionally reserve story-link space or show a post-description
+  invitation. Hiding either element returns its space to the artwork.
 - Uploads accept PNG, JPEG and WebP, validate signatures, cap input size at 10 MB
   and decoded resolution at 40 MP, then resize to a maximum edge of 2200 pixels.
 
