@@ -19,6 +19,10 @@ game stories, news, horizontal bar charts, versus publications and giveaways.
   game's title and cover, never prices, and support one to five named winners.
   Announcements optionally reserve story-link space or show a post-description
   invitation. Hiding either element returns its space to the artwork.
+- Giveaway framing sliders are always visible. Compact artwork gives the
+  description more weight, with the brand signature pinned to the footer.
+  Giveaway, versus and chart exports omit country and sequence labels in the header;
+  news and game-story headers retain their original details.
 - Uploads accept PNG, JPEG and WebP, validate signatures, cap input size at 10 MB
   and decoded resolution at 40 MP, then resize to a maximum edge of 2200 pixels.
 

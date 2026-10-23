@@ -206,10 +206,9 @@ export function PublicationStudioEditor({ mode, initialRegion }: { mode: StudioM
           <label className={styles.uploadButton}><ImagePlus size={17} />Subir imagen<input type="file" accept="image/png,image/jpeg,image/webp" aria-label="Subir imagen de la placa" onChange={event => { void upload(event.target.files?.[0]); event.target.value = ""; }} /></label>
           {selected.image || selected.coverGameId ? <button onClick={() => edit({ image: null, coverGameId: "" })}><Trash2 size={15} />Quitar imagen personalizada</button> : null}
           </> : null}
-          {(selected.kind === "versus-cover" || selected.kind === "versus-prices" ? [0, 1] : [0]).map(slot => <details key={slot} className={styles.cropPanel}><summary>{selected.kind.startsWith("versus-") ? `Encuadre · ${games[draft.gameIds[slot]]?.title ?? `Juego ${slot + 1}`}` : "Encuadre de imagen"}</summary>
-            <label>Centro horizontal · {slot + 1}<input aria-label={`Centro horizontal de portada ${slot + 1}`} type="range" min={0} max={100} value={slot === 0 ? selected.imageX : selected.secondX} onChange={event => edit(slot === 0 ? { imageX: Number(event.target.value) } : { secondX: Number(event.target.value) })} /></label>
-            <label>Centro vertical · {slot + 1}<input aria-label={`Centro vertical de portada ${slot + 1}`} type="range" min={0} max={100} value={slot === 0 ? selected.imageY : selected.secondY} onChange={event => edit(slot === 0 ? { imageY: Number(event.target.value) } : { secondY: Number(event.target.value) })} /></label>
-          </details>)}
+          {(selected.kind === "versus-cover" || selected.kind === "versus-prices" ? [0, 1] : [0]).map(slot => mode === "giveaway"
+            ? <div key={slot} className={styles.cropPanel}><h4>Encuadre de portada</h4><CoverCropInputs plate={selected} slot={slot} onChange={edit} /></div>
+            : <details key={slot} className={styles.cropPanel}><summary>{selected.kind.startsWith("versus-") ? `Encuadre · ${games[draft.gameIds[slot]]?.title ?? `Juego ${slot + 1}`}` : "Encuadre de imagen"}</summary><CoverCropInputs plate={selected} slot={slot} onChange={edit} /></details>)}
         </fieldset> : null}
         {["game-offer", "versus-prices"].includes(selected.kind) ? <fieldset className={styles.settings} disabled={disabled}><legend>Precios</legend>
           <div className={styles.storeChoices}>{STORES.map(store => <label key={store}><input type="checkbox" checked={selected.stores.includes(store)} onChange={event => edit({ stores: event.target.checked ? [...selected.stores, store] : selected.stores.filter(item => item !== store) })} />{STORE_NAMES[store]}</label>)}</div>
@@ -241,5 +240,11 @@ export function PublicationStudioEditor({ mode, initialRegion }: { mode: StudioM
     </div></div>
     <div className={styles.exportRoot} ref={exports} aria-hidden="true">{draft.plates.map((plate, index) => <div key={`${plate.id}-${draft.format}`} data-publication-export={plate.id}><PublicationStudioPoster draft={draft} plate={plate} games={games} index={index} /></div>)}</div>
   </section>;
+}
+function CoverCropInputs({ plate, slot, onChange }: { plate: StudioPlate; slot: number; onChange: (changes: Partial<StudioPlate>) => void }) {
+  return <>
+    <label>Centro horizontal · {slot + 1}<input aria-label={`Centro horizontal de portada ${slot + 1}`} type="range" min={0} max={100} value={slot === 0 ? plate.imageX : plate.secondX} onChange={event => onChange(slot === 0 ? { imageX: Number(event.target.value) } : { secondX: Number(event.target.value) })} /></label>
+    <label>Centro vertical · {slot + 1}<input aria-label={`Centro vertical de portada ${slot + 1}`} type="range" min={0} max={100} value={slot === 0 ? plate.imageY : plate.secondY} onChange={event => onChange(slot === 0 ? { imageY: Number(event.target.value) } : { secondY: Number(event.target.value) })} /></label>
+  </>;
 }
 function errorText(reason: unknown) { return reason instanceof Error ? reason.message : "No pudimos completar la operación."; }

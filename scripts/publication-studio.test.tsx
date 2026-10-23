@@ -158,3 +158,25 @@ test("versus crops are independent in the split cover and price plates and remai
   assert.equal(restored.plates[0].secondX, 0);
   assert.deepEqual(restored.plates[0].winners, [""]);
 });
+
+test("giveaway, versus and comparison headers omit country and numbering without changing news or stories", () => {
+  for (const mode of ["giveaway", "versus", "comparison", "news", "story"] as const) {
+    const draft = { ...newStudioDraft(mode, "AR", id), gameIds: ["first", "second"] };
+    const html = renderToStaticMarkup(<PublicationStudioPoster draft={draft} plate={draft.plates[0]} games={games} index={0} />);
+    const header = html.match(/<header class="studioHeader">(.*?)<\/header>/)![1];
+    if (mode === "news" || mode === "story") assert.match(header, /<small>/);
+    else assert.doesNotMatch(header, /<small>|Argentina|<span>/);
+    assert.match(header, mode === "news" ? /SHUX/ : /BARATEAM/);
+  }
+});
+
+test("giveaway framing reaches both slides and the description precedes the footer", () => {
+  const draft = { ...newStudioDraft("giveaway", "AR", id), gameIds: ["first"] };
+  for (const plate of draft.plates) {
+    plate.imageX = 20; plate.imageY = 80; plate.body = "Participá con SHUX";
+    const html = renderToStaticMarkup(<PublicationStudioPoster draft={draft} plate={plate} games={games} index={0} />);
+    assert.match(html, /object-position:20% 80%/);
+    assert.match(html, /studioGiveawayContent/);
+    assert.ok(html.indexOf("Participá con SHUX") < html.indexOf('<footer class="studioFooter">'));
+  }
+});

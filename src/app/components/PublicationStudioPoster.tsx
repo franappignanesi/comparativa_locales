@@ -10,24 +10,27 @@ export function PublicationStudioPoster({ draft, plate, games, index }: { draft:
   const game = games[draft.gameIds[plate.gameSlot]];
   const region = REGIONS.find(region => region.id === draft.region)!;
   const news = draft.mode === "news";
+  const showHeaderDetails = draft.mode === "news" || draft.mode === "story";
   const giveaway = plate.kind === "giveaway-announcement" || plate.kind === "giveaway-winners";
   const image = plate.image || games[plate.coverGameId]?.coverUrl || game?.coverUrl;
   const title = plate.title.trim() || (plate.kind === "game-offer" || plate.kind === "game-feature" ? game?.title ?? "" : "");
   const heading = <>{plate.showEyebrow && plate.eyebrow.trim() ? <span className="studioEyebrow" data-publication-text>{plate.eyebrow}</span> : null}{title ? <FittedText as="h2" text={title} max={plate.kind === "cta" ? 96 : 88} min={34} /> : null}</>;
-  const paragraph = plate.body.trim() ? <FittedText as="p" text={plate.body} max={plate.kind === "text" ? 58 : plate.kind === "cta" ? 46 : 36} min={26} /> : null;
+  const paragraph = plate.body.trim() ? <FittedText as="p" text={plate.body} max={giveaway ? 44 : plate.kind === "text" ? 58 : plate.kind === "cta" ? 46 : 36} min={26} /> : null;
   const artwork = <div className="studioArtwork">{image ? <img src={image} alt="" style={{ objectPosition: `${plate.imageX}% ${plate.imageY}%` }} /> : <span>{news ? "SHUX" : game?.title ?? "BARATEAM"}</span>}{news ? <b className="studioWatermark">SHUX</b> : null}</div>;
   const chartValues = plate.rows.map(row => chartNumber(row.value) ?? 0);
   const chartMax = Math.max(1, ...chartValues);
   return <article className={`studioPoster studio-${draft.format} studio-${plate.kind}${news ? " studioNews" : ""}`}>
-    <header className="studioHeader"><div><img src="/android-chrome-192x192.png" alt="" /><b>{news ? "SHUX" : "BARATEAM"}</b></div><span>{!news ? <><img src={region.flagSrc} alt="" />{region.label}</> : null}<small>{String(index + 1).padStart(2, "0")} / {String(draft.plates.length).padStart(2, "0")}</small></span></header>
+    <header className="studioHeader"><div><img src="/android-chrome-192x192.png" alt="" /><b>{news ? "SHUX" : "BARATEAM"}</b></div>{showHeaderDetails ? <span>{!news ? <><img src={region.flagSrc} alt="" />{region.label}</> : null}<small>{String(index + 1).padStart(2, "0")} / {String(draft.plates.length).padStart(2, "0")}</small></span> : null}</header>
     {giveaway ? <>
         <div className="studioCopy studioGiveawayHeading">{heading}</div>
+        <div className="studioGiveawayContent">
         <div className="studioGiveawayCard">
           <div className="studioGiveawayImage">{image ? <img src={image} alt="" style={{ objectPosition: `${plate.imageX}% ${plate.imageY}%` }} /> : null}</div>
           <FittedText as="h2" text={game?.title ?? "Juego del sorteo"} max={58} min={30} />
         </div>
         {plate.kind === "giveaway-winners" ? <ol className="studioWinners" data-count={plate.winners.length}>{plate.winners.map((name, index) => <li key={index}><span>{String(index + 1).padStart(2, "0")}</span><FittedText as="strong" text={name.trim() || `Ganador ${index + 1}`} max={plate.winners.length > 3 ? 42 : 58} min={26} /></li>)}</ol> : null}
-        {paragraph ? <div className="studioCopy studioGiveawayDescription">{paragraph}</div> : null}
+        <div className="studioCopy studioGiveawayDescription">{paragraph}</div>
+        </div>
         {draft.format === "post" && plate.showMoreInfo && plate.kind === "giveaway-announcement" ? <div className="studioMoreInfo"><ArrowDown size={40} aria-hidden="true" /><span>Más info en la descripción</span></div> : null}
       </> : plate.kind === "cta" || plate.kind === "text" ? <div className="studioCenteredCopy">{heading}{paragraph}{plate.kind === "cta" ? <strong className="studioCtaLink">{news ? "@shuxteam" : "shuxteam.com"}</strong> : null}</div>
       : plate.kind === "versus-cover" ? <>
