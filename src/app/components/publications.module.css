@@ -234,7 +234,7 @@
 .generator :global(.studioGiveawayImage) { position: relative; flex: 1; min-height: 120px; background: #202020; }
 .generator :global(.studioGiveawayImage img) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .generator :global(.studioGiveawayCard h2) { max-height: 150px; margin: 24px 28px; }
-.generator :global(.studioGiveawayDescription) { justify-content: center; }
+.generator :global(.studioGiveawayDescription) { justify-content: flex-start; }
 .generator :global(.studioGiveawayDescription p) { max-height: 264px; }
 .generator :global(.studio-giveaway-announcement .studioFooter), .generator :global(.studio-giveaway-winners .studioFooter) { margin-top: auto; }
 .generator :global(.studioMoreInfo) { display: flex; align-items: center; justify-content: center; gap: 16px; min-height: 72px; flex-shrink: 0; color: #ffcf00; font-size: 30px; font-weight: 800; }
