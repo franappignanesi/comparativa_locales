@@ -78,8 +78,8 @@ La fecha completa se obtiene de la etiqueta de Steam: cuando omite el año, corr
 | [Len's Island](https://store.steampowered.com/app/1335830/) | 12 de julio de 2025 | Recomendado | [Ver video](https://www.instagram.com/p/DMAmZinup-Z/) | 1335830 |
 | [Streets of Rage 4](https://store.steampowered.com/app/985890/) | 5 de julio de 2025 | Recomendado | [Ver video](https://www.instagram.com/shuxteam/reel/DLumjG8OIVY/) | 985890 |
 | [Metro Exodus](https://store.steampowered.com/app/412020/) | 28 de junio de 2025 | Recomendado | [Ver video](https://www.instagram.com/reel/DLckh4ju-67/) | 412020 |
-| [Metro: Last Light Redux](https://store.steampowered.com/app/287390/) | 28 de junio de 2025 | Recomendado | [Ver video](https://www.instagram.com/reel/DLckh4ju-67/) | 287390 |
-| [Metro 2033 Redux](https://store.steampowered.com/app/286690/) | 28 de junio de 2025 | Recomendado | [Ver video](https://www.instagram.com/reel/DLckh4ju-67/) | 286690 |
+| [METRO Last Light Redux](https://store.steampowered.com/app/287390/) | 28 de junio de 2025 | Recomendado | [Ver video](https://www.instagram.com/reel/DLckh4ju-67/) | 287390 |
+| [METRO 2033 Redux](https://store.steampowered.com/app/286690/) | 28 de junio de 2025 | Recomendado | [Ver video](https://www.instagram.com/reel/DLckh4ju-67/) | 286690 |
 | [THE FINALS](https://store.steampowered.com/app/2073850/) | 26 de junio de 2025 | Recomendado | [Ver video](https://www.instagram.com/p/C0rqDPPOlve/) | 2073850 |
 | [SpongeBob SquarePants: Battle for Bikini Bottom - Rehydrated](https://store.steampowered.com/app/969990/) | 26 de junio de 2025 | Recomendado | [Ver video](https://www.instagram.com/p/Czg52puO67c/) | 969990 |
 | [DEATH STRANDING DIRECTOR'S CUT](https://store.steampowered.com/app/1850570/) | 22 de junio de 2025 | Recomendado | [Ver video](https://www.instagram.com/p/DLKkaXuu7MQ/) | 1850570 |
