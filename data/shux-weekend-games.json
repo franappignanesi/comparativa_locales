@@ -1,8 +1,19 @@
 {
   "curatorId": 35362522,
   "sourceUrl": "https://store.steampowered.com/curator/35362522-ShuxTeam/",
-  "updatedAt": "2026-10-24T23:52:46.104Z",
+  "updatedAt": "2026-10-25T23:41:19.920Z",
   "reviews": [
+    {
+      "steamAppId": 3115160,
+      "title": "Warhammer 40,000: Boltgun 2",
+      "steamUrl": "https://store.steampowered.com/app/3115160/",
+      "coverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3115160/c99bc374ca10d0335fe5e8f37942aea35419e4d4/header_292x136.jpg?t=1792399444",
+      "videoUrl": "https://www.instagram.com/p/De5W54mNZiP/",
+      "reviewType": "recommended",
+      "reviewDateLabel": "25 de octubre",
+      "reviewDate": "2026-10-25",
+      "review": "volvio uno de los mejores boomer shooters de la actualidad, boltgun 2 ahora nos presenta 2 personajes jugables que cambian muchisimo el gameplay. bardo total o plataformero con agilidad. vos elegis."
+    },
     {
       "steamAppId": 2121510,
       "title": "Tenebris Somnia",
