@@ -157,7 +157,7 @@
 .generator :global(.studioPoster) { box-sizing: border-box; width: 1080px; height: 1350px; padding: 56px; display: flex; flex-direction: column; gap: 24px; background: #111111; color: #f5f0df; overflow: hidden; font-family: inherit; --studio-accent: #ffcf00; }
 .generator :global(.studioPoster *) { box-sizing: border-box; letter-spacing: 0; }
 .generator :global(.studioPoster.studio-story) { height: 1920px; padding: 160px 64px 220px; }
-.generator :global(.studioNews) { --studio-accent: #ff565e; background: #121212; }
+.generator :global(.studioNews) { --studio-accent: #f8c813; background: #121212; }
 .generator :global(.studioHeader) { height: 64px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .generator :global(.studioHeader > div), .generator :global(.studioHeader > span) { display: flex; align-items: center; gap: 14px; }
 .generator :global(.studioHeader b) { font-size: 44px; font-weight: 900; }
