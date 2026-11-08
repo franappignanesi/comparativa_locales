@@ -2,12 +2,13 @@
 
 Fuente: [Mentor de ShuxTeam](https://store.steampowered.com/curator/35362522-ShuxTeam/).
 
-200 reseñas; 190 con enlace a video. Se incluyen las reseñas informativas y negativas, identificadas por tipo.
+201 reseñas; 191 con enlace a video. Se incluyen las reseñas informativas y negativas, identificadas por tipo.
 
 La fecha completa se obtiene de la etiqueta de Steam: cuando omite el año, corresponde al año de la consulta. Los juegos retirados se conservan en importaciones posteriores.
 
 | Juego | Fecha en Steam | Tipo | Video | Steam App ID |
 | --- | --- | --- | --- | --- |
+| [Scam With Your Friends](https://store.steampowered.com/app/4954910/) | 7 de noviembre | Recomendado | [Ver video](https://www.instagram.com/p/Dfct-9GPp4M/) | 4954910 |
 | [Gennady](https://store.steampowered.com/app/2430010/) | 31 de octubre | Recomendado | [Ver video](https://www.instagram.com/p/DfKbt4eP_3J/) | 2430010 |
 | [Warhammer 40,000: Boltgun 2](https://store.steampowered.com/app/3115160/) | 25 de octubre | Recomendado | [Ver video](https://www.instagram.com/p/De5W54mNZiP/) | 3115160 |
 | [Tenebris Somnia](https://store.steampowered.com/app/2121510/) | 17 de octubre | Recomendado | [Ver video](https://www.instagram.com/p/DenAnqjvHiF/) | 2121510 |
