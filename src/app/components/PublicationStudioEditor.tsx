@@ -6,7 +6,7 @@ import { REGIONS, type RegionId } from "@/lib/regions";
 import { STORES } from "@/lib/types";
 import { STORE_NAMES } from "@/lib/seo";
 import { MAX_PUBLICATION_IMAGES, publicationCaption, type PublicationGame } from "@/lib/social-publications";
-import { duplicateStudioPlate, MODE_PLATES, moveStudioPlate, newStudioDraft, newStudioPlate, PLATE_LABELS, publicationDimensions, restoreStudioDraft, studioPlateError, studioPrices,
+import { duplicateStudioPlate, MODE_PLATES, moveStudioPlate, newStudioDraft, newStudioPlate, PLATE_LABELS, publicationDimensions, restoreStudioDraft, studioPlateError, studioPrices, STUDIO_TEXT_SIZES, studioHasTextSize,
   type PlateKind, type StudioDraft, type StudioMode, type StudioPlate } from "@/lib/publication-studio";
 import { readPublicationUpload, readStudioDraft, saveStudioDraft } from "@/lib/publication-studio-storage";
 import { downloadPublicationImages } from "@/lib/publication-export";
@@ -191,6 +191,7 @@ export function PublicationStudioEditor({ mode, initialRegion }: { mode: StudioM
         <fieldset className={styles.settings} disabled={disabled}><legend>{PLATE_LABELS[selected.kind]}</legend>
           <label>Título<input value={selected.title} maxLength={180} onChange={event => edit({ title: event.target.value })} /></label>
           <label>Texto<textarea value={selected.body} maxLength={1600} rows={5} onChange={event => edit({ body: event.target.value })} /></label>
+          {studioHasTextSize(selected.kind) ? <label>Tamaño de texto<select aria-label="Tamaño de texto" value={selected.textSize} onChange={event => edit({ textSize: event.target.value as StudioPlate["textSize"] })}>{Object.entries(STUDIO_TEXT_SIZES).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label> : null}
           <label><input type="checkbox" checked={selected.showEyebrow} onChange={event => edit({ showEyebrow: event.target.checked })} />Mostrar epígrafe</label>
           {selected.showEyebrow ? <label>Epígrafe<input value={selected.eyebrow} maxLength={80} onChange={event => edit({ eyebrow: event.target.value })} /></label> : null}
           {mode === "versus" && selected.kind === "game-feature" ? <label>Juego de la placa<select value={selected.gameSlot} onChange={event => edit({ gameSlot: event.target.value === "1" ? 1 : 0 })}><option value="0">Juego 1</option><option value="1">Juego 2</option></select></label> : null}

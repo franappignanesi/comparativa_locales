@@ -226,6 +226,10 @@
 .generator :global(.studio-text-image .studioCopy p) { max-height: 400px; }
 .generator :global(.studio-image-caption .studioCopy h2) { max-height: 150px; }
 .generator :global(.studio-image-caption .studioCopy p) { max-height: 180px; }
+.generator :global(.studioAdaptiveCopy.studioCopy) { flex: 0 1 auto; min-height: 0; }
+.generator :global(.studioPoster .studioAdaptiveCopy > h2), .generator :global(.studioPoster .studioAdaptiveCopy > p) { max-height: none; margin: 0; }
+.generator :global(.studioAdaptiveCopy > *) { flex-shrink: 0; min-width: 0; }
+.generator :global(.studioAdaptiveCopy .studioCtaLink) { margin-top: 0; }
 .generator :global(.studioBars[data-count="11"] .studioBarLabel), .generator :global(.studioBars[data-count="12"] .studioBarLabel) { font-size: 24px; }
 .generator :global(.studioGiveawayHeading h2) { color: var(--studio-accent); max-height: 180px; }
 .generator :global(.studio-giveaway-announcement), .generator :global(.studio-giveaway-winners) { display: grid; grid-template-rows: 64px auto minmax(0, 1fr); grid-auto-rows: auto; }

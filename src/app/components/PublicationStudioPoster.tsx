@@ -2,7 +2,8 @@
 
 import { REGIONS } from "@/lib/regions";
 import { ArrowDown } from "lucide-react";
-import { chartNumber, studioPrices, type StudioDraft, type StudioPlate } from "@/lib/publication-studio";
+import { useEffect, useRef } from "react";
+import { chartNumber, studioHasTextSize, studioTextSizes, studioPrices, type StudioDraft, type StudioPlate } from "@/lib/publication-studio";
 import { publicationDate, type PublicationGame } from "@/lib/social-publications";
 import { FittedText, PublicationPrices } from "./PublicationPoster";
 
@@ -14,6 +15,8 @@ export function PublicationStudioPoster({ draft, plate, games, index }: { draft:
   const giveaway = plate.kind === "giveaway-announcement" || plate.kind === "giveaway-winners";
   const image = plate.image || games[plate.coverGameId]?.coverUrl || game?.coverUrl;
   const title = plate.title.trim() || (plate.kind === "game-offer" || plate.kind === "game-feature" ? game?.title ?? "" : "");
+  const editableText = studioHasTextSize(plate.kind);
+  const editorialCopy = <StudioEditorialCopy plate={plate} title={title} centered={plate.kind === "text" || plate.kind === "cta"} link={plate.kind === "cta" ? news ? "@shuxteam" : "shuxteam.com" : undefined} />;
   const heading = <>{plate.showEyebrow && plate.eyebrow.trim() ? <span className="studioEyebrow" data-publication-text>{plate.eyebrow}</span> : null}{title ? <FittedText as="h2" text={title} max={plate.kind === "cta" ? 96 : 88} min={34} /> : null}</>;
   const paragraph = plate.body.trim() ? <FittedText as="p" text={plate.body} max={giveaway ? 44 : plate.kind === "text" ? 58 : plate.kind === "cta" ? 46 : 36} min={26} /> : null;
   const artwork = <div className="studioArtwork">{image ? <img src={image} alt="" style={{ objectPosition: `${plate.imageX}% ${plate.imageY}%` }} /> : <span>{news ? "SHUX" : game?.title ?? "BARATEAM"}</span>}{news ? <b className="studioWatermark">SHUX</b> : null}</div>;
@@ -32,7 +35,7 @@ export function PublicationStudioPoster({ draft, plate, games, index }: { draft:
         <div className="studioCopy studioGiveawayDescription">{paragraph}</div>
         </div>
         {draft.format === "post" && plate.showMoreInfo && plate.kind === "giveaway-announcement" ? <div className="studioMoreInfo"><ArrowDown size={40} aria-hidden="true" /><span>Más info en la descripción</span></div> : null}
-      </> : plate.kind === "cta" || plate.kind === "text" ? <div className="studioCenteredCopy">{heading}{paragraph}{plate.kind === "cta" ? <strong className="studioCtaLink">{news ? "@shuxteam" : "shuxteam.com"}</strong> : null}</div>
+      </> : plate.kind === "cta" || plate.kind === "text" ? editorialCopy
       : plate.kind === "versus-cover" ? <>
         <div className="studioCopy">{heading}</div>
         <div className="studioVersusArtwork">{[0, 1].map((slot) => {
@@ -63,10 +66,62 @@ export function PublicationStudioPoster({ draft, plate, games, index }: { draft:
         </div>)}</div>
       </> : <>
         {artwork}
-        <div className="studioCopy">{heading}{paragraph}</div>
+        {editableText ? editorialCopy : <div className="studioCopy">{heading}{paragraph}</div>}
         {plate.kind === "game-offer" ? <PublicationPrices prices={studioPrices(game, plate.stores)} options={plate} /> : null}
       </>}
     {draft.format === "story" && plate.reserveLink ? <div className="studioLinkSlot" aria-hidden="true" /> : null}
     <footer className="studioFooter"><div><b>{news ? "@shuxteam" : "shuxteam.com"}</b><span>{news ? "SHUX" : "Una herramienta de Shux"}</span></div><p>{["game-offer", "versus-prices"].includes(plate.kind) ? <>{publicationDate(game?.timestamp ?? games[draft.gameIds[0]]?.timestamp ?? null)}<br />Sin impuestos agregados por BARATEAM.<br />Confirmá el precio final en la tienda.</> : ""}</p></footer>
   </article>;
+}
+
+function StudioEditorialCopy({ plate, title, centered, link }: { plate: StudioPlate; title: string; centered: boolean; link?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const sizes = studioTextSizes(plate.kind, plate.textSize);
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    let cancelled = false;
+    const fit = () => {
+      if (cancelled) return;
+      const titleNode = element.querySelector<HTMLElement>("h2");
+      const bodyNode = element.querySelector<HTMLElement>("p");
+      const apply = (scale: number) => {
+        if (titleNode) titleNode.style.fontSize = `${Math.max(24, Math.floor(sizes.title * scale))}px`;
+        if (bodyNode) bodyNode.style.fontSize = `${Math.max(16, Math.floor(sizes.body * scale))}px`;
+      };
+      // Measure the whole copy block, including eyebrow and CTA, against its flex budget.
+      const fits = () => {
+        const children = [...element.children] as HTMLElement[];
+        const style = getComputedStyle(element);
+        const needed = children.reduce((height, child) => height + child.offsetHeight, 0)
+          + Math.max(0, children.length - 1) * parseFloat(style.rowGap)
+          + parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+        return needed <= element.clientHeight + 1 && children.every(child => child.scrollWidth <= child.clientWidth + 1);
+      };
+      apply(1);
+      if (!fits()) {
+        let low = 10;
+        let high = 99;
+        let best = 10;
+        while (low <= high) {
+          const percent = Math.floor((low + high) / 2);
+          apply(percent / 100);
+          if (fits()) { best = percent; low = percent + 1; }
+          else high = percent - 1;
+        }
+        apply(best / 100);
+      }
+    };
+    fit();
+    void document.fonts.ready.then(fit);
+    const observer = new ResizeObserver(fit);
+    observer.observe(element);
+    return () => { cancelled = true; observer.disconnect(); };
+  }, [sizes.title, sizes.body, title, plate.body, plate.showEyebrow, plate.eyebrow, link]);
+  return <div ref={ref} data-publication-text className={`studioAdaptiveCopy ${centered ? "studioCenteredCopy" : "studioCopy"}`}>
+    {plate.showEyebrow && plate.eyebrow.trim() ? <span className="studioEyebrow" data-publication-text>{plate.eyebrow}</span> : null}
+    {title ? <h2 data-publication-text style={{ fontSize: sizes.title }}>{title}</h2> : null}
+    {plate.body.trim() ? <p data-publication-text style={{ fontSize: sizes.body }}>{plate.body}</p> : null}
+    {link ? <strong className="studioCtaLink">{link}</strong> : null}
+  </div>;
 }

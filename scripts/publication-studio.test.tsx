@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { renderToStaticMarkup } from "react-dom/server";
-import { chartNumber, duplicateStudioPlate, moveStudioPlate, newStudioDraft, newStudioPlate, publicationDimensions, restoreStudioDraft, studioPlateError, studioPrices } from "../src/lib/publication-studio";
+import { chartNumber, duplicateStudioPlate, moveStudioPlate, newStudioDraft, newStudioPlate, publicationDimensions, restoreStudioDraft, studioPlateError, studioPrices, STUDIO_TEXT_SIZES, studioTextSizes } from "../src/lib/publication-studio";
 import { publicationUploadType } from "../src/lib/publication-studio-storage";
 import { PublicationStudioPoster } from "../src/app/components/PublicationStudioPoster";
 import type { PublicationGame } from "../src/lib/social-publications";
@@ -13,6 +13,41 @@ const game: PublicationGame = { id: "first", title: "Juego uno", region: "AR", c
 const games = { first: game, second: { ...game, id: "second", title: "Juego dos", coverUrl: "/second.jpg" } };
 let counter = 0;
 const id = () => `test-${counter++}`;
+
+test("editorial font sizes persist per plate, duplicate independently and restore legacy drafts safely", () => {
+  const draft = newStudioDraft("news", "AR", id);
+  assert.equal(draft.plates[0].textSize, "medium");
+  draft.plates[1].textSize = "xlarge";
+  assert.equal(restoreStudioDraft(draft, "news")?.plates[1].textSize, "xlarge");
+  const copy = duplicateStudioPlate(draft.plates, draft.plates[1].id, id());
+  assert.equal(copy[2].textSize, "xlarge");
+  copy[2].textSize = "small";
+  assert.equal(draft.plates[1].textSize, "xlarge");
+  for (const value of [undefined, null, "invalid", "constructor", 120]) {
+    const legacy = JSON.parse(JSON.stringify(draft));
+    legacy.plates[1].textSize = value;
+    assert.equal(restoreStudioDraft(legacy, "news")?.plates[1].textSize, "medium");
+  }
+});
+
+test("all four text sizes reach editorial news and versus feature rendering", () => {
+  for (const mode of ["news", "versus"] as const) {
+    const draft = { ...newStudioDraft(mode, "AR", id), gameIds: ["first", "second"] };
+    for (const kind of mode === "news" ? ["text", "text-image", "headline-image", "image-caption", "cta"] as const : ["game-feature"] as const) {
+      let last = 0;
+      for (const textSize of Object.keys(STUDIO_TEXT_SIZES) as (keyof typeof STUDIO_TEXT_SIZES)[]) {
+        const plate = { ...newStudioPlate(kind, id()), title: "Título", body: "Texto de prueba", textSize };
+        const sizes = studioTextSizes(kind, textSize);
+        assert.ok(sizes.body > last);
+        last = sizes.body;
+        const html = renderToStaticMarkup(<PublicationStudioPoster draft={draft} plate={plate} games={games} index={0} />);
+        assert.match(html, /studioAdaptiveCopy/);
+        assert.ok(html.includes(`font-size:${sizes.body}px`));
+        assert.ok(html.includes(`font-size:${sizes.title}px`));
+      }
+    }
+  }
+});
 
 test("news and versus plates are freely generatable, duplicated, reordered and removable including CTA", () => {
   for (const mode of ["news", "versus"] as const) {

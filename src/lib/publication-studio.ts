@@ -18,18 +18,28 @@ export const MODE_PLATES: Record<StudioMode, PlateKind[]> = {
   giveaway: ["giveaway-announcement", "giveaway-winners"],
 };
 export type ChartRow = { id: string; label: string; value: string; image: string | null; showValue: boolean };
+export const STUDIO_TEXT_SIZES = { small: "Pequeño", medium: "Mediano", large: "Grande", xlarge: "Extra grande" } as const;
+export type StudioTextSize = keyof typeof STUDIO_TEXT_SIZES;
+export function studioHasTextSize(kind: PlateKind) {
+  return ["headline-image", "text-image", "text", "image-caption", "cta", "game-feature"].includes(kind);
+}
+export function studioTextSizes(kind: PlateKind, size: StudioTextSize = "medium") {
+  const factor = { small: 0.8, medium: 1, large: 1.25, xlarge: 1.5 }[size];
+  return { title: Math.round((kind === "cta" ? 96 : 88) * factor),
+    body: Math.round((kind === "text" ? 58 : kind === "cta" ? 46 : 36) * factor) };
+}
 export type StudioPlate = {
   id: string; kind: PlateKind; title: string; body: string; eyebrow: string; showEyebrow: boolean;
   image: string | null; coverGameId: string; imageX: number; imageY: number; secondX: number; secondY: number;
   gameSlot: 0 | 1; stores: StoreId[]; discounts: boolean; lows: boolean; reserveLink: boolean;
-  rows: ChartRow[]; unit: string; showMoreInfo: boolean; winners: string[];
+  rows: ChartRow[]; unit: string; showMoreInfo: boolean; winners: string[]; textSize: StudioTextSize;
 };
 export type StudioDraft = { version: 1; mode: StudioMode; format: StudioFormat; region: RegionId; gameIds: string[]; plates: StudioPlate[] };
 export const publicationDimensions = (format: StudioFormat) => ({ width: 1080, height: format === "story" ? 1920 : 1350 });
 export function newStudioPlate(kind: PlateKind, id: string): StudioPlate {
   return { id, kind, title: kind === "giveaway-announcement" ? "¡SORTEO!" : kind === "giveaway-winners" ? "¡Tenemos ganadores!" : kind === "cta" ? "¿Qué opinás?" : kind === "bar-chart" ? "Comparativa" : kind === "versus-cover" ? "¿Con cuál te quedás?" : "",
     body: kind === "cta" ? "Compará precios, consultá históricos y creá tu wishlist en BARATEAM 🤙" : "", eyebrow: "LA SELECCIÓN DE SHUX", showEyebrow: false,
-    image: null, coverGameId: "", imageX: 50, imageY: 50, secondX: 50, secondY: 50, gameSlot: 0,
+    image: null, coverGameId: "", imageX: 50, imageY: 50, secondX: 50, secondY: 50, gameSlot: 0, textSize: "medium",
     stores: [...STORES], discounts: true, lows: true, reserveLink: kind === "game-offer" || kind === "giveaway-announcement", rows: [], unit: "", showMoreInfo: true, winners: [""] };
 }
 export function newStudioDraft(mode: StudioMode, region: RegionId, id: () => string): StudioDraft {
@@ -108,6 +118,7 @@ export function restoreStudioDraft(value: unknown, mode: StudioMode): StudioDraf
     if (!id || ids.has(id) || !MODE_PLATES[mode].includes(item.kind as PlateKind)) return [];
     ids.add(id);
     const plate = newStudioPlate(item.kind as PlateKind, id);
+    if (typeof item.textSize === "string" && Object.hasOwn(STUDIO_TEXT_SIZES, item.textSize)) plate.textSize = item.textSize as StudioTextSize;
     Object.assign(plate, { title: text(item.title, 180), body: text(item.body, 1600), eyebrow: text(item.eyebrow, 80), image: safeImage(item.image),
       coverGameId: text(item.coverGameId, 200), imageX: position(item.imageX), imageY: position(item.imageY), secondX: position(item.secondX), secondY: position(item.secondY),
       gameSlot: item.gameSlot === 1 ? 1 : 0, unit: text(item.unit, 20) });
