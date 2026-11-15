@@ -5,6 +5,7 @@ import { promisify } from "util";
 import { loadEnvConfig } from "@next/env";
 import { dataPath, readJson, writeJson } from "../src/lib/cache";
 import type { PriceHistoryEntry } from "../src/lib/types";
+import { compressDeploymentCaches } from "../src/lib/deployment-cache";
 
 loadEnvConfig(process.cwd());
 
@@ -46,7 +47,9 @@ async function main(): Promise<void> {
     results.push({ file, entries: compacted.entries.length, before, after, gzip: gzipSize, saved: before - after });
   }
 
-  console.log(JSON.stringify({ ok: true, files: results.length, results }, null, 2));
+  const publicCaches = process.argv.includes("--deploy-only") ? await compressDeploymentCaches(generatedDir) : [];
+  console.log(JSON.stringify({ ok: true, files: results.length, results, publicCaches,
+    publicCacheBytesSaved: publicCaches.reduce((total, file) => total + file.before - file.after, 0) }, null, 2));
 }
 
 function compactEntry(entry: PriceHistoryEntry): PriceHistoryEntry {

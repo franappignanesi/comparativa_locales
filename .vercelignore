@@ -1,6 +1,8 @@
 .tools
 .next
 node_modules
+artifacts
+output
 tsconfig.tsbuildinfo
 npm-debug.log*
 yarn-debug.log*

@@ -6,6 +6,7 @@
     "shux:import-curator": "tsx scripts/import-shux-curator.ts",
     "dev": "next dev",
     "build": "next build",
+    "build:vercel": "tsx scripts/compact-price-history.ts --deploy-only && next build",
     "start": "next start",
     "build:game-sample": "tsx scripts/build-game-sample.ts",
     "catalog:discover-steam": "tsx scripts/discover-steam-candidates.ts",
